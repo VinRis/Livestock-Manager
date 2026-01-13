@@ -1,10 +1,11 @@
 
 "use client";
 
+import { useState } from "react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, Edit, PlusCircle } from "lucide-react";
-import { getLivestockById, type HealthRecord, type ProductionMetric } from "@/lib/data";
+import { getLivestockById, type HealthRecord, type ProductionMetric, type Livestock } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -25,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 function calculateAge(birthDate: string) {
   const birth = new Date(birthDate);
@@ -39,11 +41,85 @@ function calculateAge(birthDate: string) {
 }
 
 export default function LivestockDetailPage({ params }: { params: { id: string } }) {
-  const animal = getLivestockById(params.id);
+  const initialAnimal = getLivestockById(params.id);
+  const { toast } = useToast();
+
+  const [animal, setAnimal] = useState<Livestock | undefined>(initialAnimal);
+  
+  // Health Record State
+  const [isHealthDialogOpen, setHealthDialogOpen] = useState(false);
+  const [healthDate, setHealthDate] = useState(new Date().toISOString().split('T')[0]);
+  const [healthEvent, setHealthEvent] = useState('');
+  const [healthDescription, setHealthDescription] = useState('');
+
+  // Production Metric State
+  const [isMetricDialogOpen, setMetricDialogOpen] = useState(false);
+  const [metricDate, setMetricDate] = useState(new Date().toISOString().split('T')[0]);
+  const [metricType, setMetricType] = useState<'Milk' | 'Weight' | 'Breeding' | ''>('');
+  const [metricValue, setMetricValue] = useState('');
 
   if (!animal) {
     notFound();
   }
+
+  const handleSaveHealthRecord = () => {
+    if (!healthEvent || !healthDescription) {
+        toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please fill out all fields for the health record.",
+        });
+        return;
+    }
+
+    const newRecord: HealthRecord = {
+      id: `hr-${Date.now()}`,
+      date: healthDate,
+      event: healthEvent,
+      description: healthDescription,
+    };
+
+    setAnimal(prev => prev ? { ...prev, healthRecords: [...prev.healthRecords, newRecord] } : undefined);
+    
+    toast({
+        title: "Record Saved",
+        description: "The new health record has been added.",
+    });
+
+    // Reset form and close dialog
+    setHealthEvent('');
+    setHealthDescription('');
+    setHealthDialogOpen(false);
+  };
+
+  const handleSaveProductionMetric = () => {
+    if (!metricType || !metricValue) {
+        toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please fill out all fields for the production metric.",
+        });
+        return;
+    }
+    const newMetric: ProductionMetric = {
+      id: `pm-${Date.now()}`,
+      date: metricDate,
+      type: metricType as 'Milk' | 'Weight' | 'Breeding',
+      value: metricValue,
+    };
+
+    setAnimal(prev => prev ? { ...prev, productionMetrics: [...prev.productionMetrics, newMetric] } : undefined);
+    
+    toast({
+        title: "Metric Saved",
+        description: "The new production metric has been added.",
+    });
+    
+    // Reset form and close dialog
+    setMetricType('');
+    setMetricValue('');
+    setMetricDialogOpen(false);
+  };
   
   const age = calculateAge(animal.birthDate);
 
@@ -97,7 +173,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Health History</CardTitle>
-                    <Dialog>
+                    <Dialog open={isHealthDialogOpen} onOpenChange={setHealthDialogOpen}>
                       <DialogTrigger asChild>
                         <Button size="sm" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Add Record</Button>
                       </DialogTrigger>
@@ -111,19 +187,19 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                         <div className="grid gap-4 py-4">
                           <div className="space-y-2">
                             <Label htmlFor="health-date">Date</Label>
-                            <Input id="health-date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                            <Input id="health-date" type="date" value={healthDate} onChange={(e) => setHealthDate(e.target.value)} />
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="health-event">Event</Label>
-                            <Input id="health-event" placeholder="e.g., Vaccination, Check-up" />
+                            <Input id="health-event" placeholder="e.g., Vaccination, Check-up" value={healthEvent} onChange={(e) => setHealthEvent(e.target.value)} />
                           </div>
                            <div className="space-y-2">
                             <Label htmlFor="health-description">Description / Details</Label>
-                            <Textarea id="health-description" placeholder="Provide details about the event." />
+                            <Textarea id="health-description" placeholder="Provide details about the event." value={healthDescription} onChange={(e) => setHealthDescription(e.target.value)} />
                           </div>
                         </div>
                         <DialogFooter>
-                          <Button>Save Record</Button>
+                          <Button onClick={handleSaveHealthRecord}>Save Record</Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
@@ -154,7 +230,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                  <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Production Metrics</CardTitle>
-                    <Dialog>
+                    <Dialog open={isMetricDialogOpen} onOpenChange={setMetricDialogOpen}>
                        <DialogTrigger asChild>
                          <Button size="sm" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Add Metric</Button>
                        </DialogTrigger>
@@ -168,11 +244,11 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                            <div className="grid gap-4 py-4">
                             <div className="space-y-2">
                               <Label htmlFor="metric-date">Date</Label>
-                              <Input id="metric-date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                              <Input id="metric-date" type="date" value={metricDate} onChange={(e) => setMetricDate(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="metric-type">Type</Label>
-                                <Select>
+                                <Select onValueChange={(value) => setMetricType(value as 'Milk' | 'Weight' | 'Breeding')}>
                                     <SelectTrigger id="metric-type">
                                         <SelectValue placeholder="Select a metric type" />
                                     </SelectTrigger>
@@ -185,11 +261,11 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                             </div>
                              <div className="space-y-2">
                               <Label htmlFor="metric-value">Value</Label>
-                              <Input id="metric-value" placeholder="e.g., 30L, 550kg" />
+                              <Input id="metric-value" placeholder="e.g., 30L, 550kg" value={metricValue} onChange={(e) => setMetricValue(e.target.value)}/>
                             </div>
                           </div>
                           <DialogFooter>
-                            <Button>Save Metric</Button>
+                            <Button onClick={handleSaveProductionMetric}>Save Metric</Button>
                           </DialogFooter>
                        </DialogContent>
                     </Dialog>
@@ -233,5 +309,3 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     </>
   );
 }
-
-    
