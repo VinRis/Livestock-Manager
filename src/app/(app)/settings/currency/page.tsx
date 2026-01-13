@@ -1,5 +1,7 @@
+"use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -8,8 +10,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { currencyData } from "@/lib/data";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CurrencySettingsPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleSave = () => {
+    toast({
+      title: "Changes Saved",
+      description: "Your currency settings have been updated.",
+    });
+    router.push('/settings');
+  };
+
   return (
     <>
       <PageHeader title="Manage Currency">
@@ -54,8 +68,8 @@ export default function CurrencySettingsPage() {
                     <Input id="custom-currency-code" placeholder="e.g., BTC" />
                 </div>
             </CardContent>
-            <CardFooter className="flex justify-end">
-                <Button>Save Changes</Button>
+            <CardFooter className="flex justify-center sm:justify-end">
+                <Button onClick={handleSave} className="w-full sm:w-auto">Save Changes</Button>
             </CardFooter>
         </Card>
       </main>
