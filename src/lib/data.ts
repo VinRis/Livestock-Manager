@@ -58,6 +58,11 @@ export type BirdType = {
   traySize: number;
 };
 
+export type Currency = {
+  code: string;
+  name: string;
+};
+
 export const livestockData: Livestock[] = [
   {
     id: '1',
@@ -172,5 +177,14 @@ export const birdTypesData: BirdType[] = [
     { name: 'Turkey', traySize: 30 },
 ];
 
+export const currencyData: Currency[] = [
+    { code: 'USD', name: 'United States Dollar' },
+    { code: 'EUR', name: 'Euro' },
+    { code: 'GBP', name: 'British Pound' },
+    { code: 'KES', name: 'Kenyan Shilling' },
+    { code: 'NGN', name: 'Nigerian Naira' },
+    { code: 'GHS', name: 'Ghanaian Cedi' },
+    { code: 'ZAR', name: 'South African Rand' },
+];
 
 export const getLivestockById = (id: string) => livestockData.find(animal => animal.id === id);

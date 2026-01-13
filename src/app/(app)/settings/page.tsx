@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Upload } from "lucide-react";
 import Link from "next/link";
@@ -91,20 +90,11 @@ export default function SettingsPage() {
                     </Button>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="currency">Currency</Label>
-                    <Select defaultValue="USD">
-                        <SelectTrigger id="currency">
-                            <SelectValue placeholder="Select currency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="USD">USD - United States Dollar</SelectItem>
-                            <SelectItem value="EUR">EUR - Euro</SelectItem>
-                            <SelectItem value="GBP">GBP - British Pound</SelectItem>
-                            <SelectItem value="KES">KES - Kenyan Shilling</SelectItem>
-                            <SelectItem value="NGN">NGN - Nigerian Naira</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">This currency will be used for all financial notations.</p>
+                    <Label>Currency</Label>
+                    <p className="text-xs text-muted-foreground">Set the currency for all financial notations.</p>
+                     <Button asChild variant="outline">
+                        <Link href="/settings/currency">Manage Currency</Link>
+                    </Button>
                 </div>
             </CardContent>
         </Card>
