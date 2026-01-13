@@ -1,14 +1,15 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, Edit, PlusCircle, CheckCircle, Upload } from "lucide-react";
-import { getLivestockById, type HealthRecord, type ProductionMetric, type Livestock } from "@/lib/data";
+import Link from "next/link";
+import { ArrowLeft, Edit, PlusCircle, Upload } from "lucide-react";
+import { getLivestockById, type HealthRecord, type ProductionMetric, type Livestock, livestockData, updateLivestock } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +27,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 
 function calculateAge(birthDate: string) {
   const birth = new Date(birthDate);
@@ -41,12 +41,11 @@ function calculateAge(birthDate: string) {
 }
 
 export default function LivestockDetailPage({ params }: { params: { id: string } }) {
-  const initialAnimal = getLivestockById(params.id);
-  const { toast } = useToast();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [animal, setAnimal] = useState<Livestock | undefined>(initialAnimal);
+  const { toast } = useToast();
+  
+  const [animal, setAnimal] = useState<Livestock | undefined>(() => getLivestockById(params.id));
   
   // Health Record State
   const [isHealthDialogOpen, setHealthDialogOpen] = useState(false);
@@ -62,11 +61,21 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   
   // Edit Profile State
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
-  const [editForm, setEditForm] = useState(animal);
+  const [editForm, setEditForm] = useState<Livestock | undefined>(animal);
 
+  // Re-fetch animal data if params.id changes
+  useEffect(() => {
+    const currentAnimal = getLivestockById(params.id);
+    setAnimal(currentAnimal);
+    setEditForm(currentAnimal);
+  }, [params.id]);
+
+  const sire = useMemo(() => animal?.sireId ? getLivestockById(animal.sireId) : undefined, [animal]);
+  const dam = useMemo(() => animal?.damId ? getLivestockById(animal.damId) : undefined, [animal]);
+  const offspring = useMemo(() => livestockData.filter(a => a.sireId === animal?.id || a.damId === animal?.id), [animal]);
 
   if (!animal) {
-    notFound();
+    return notFound();
   }
 
   const handleSaveHealthRecord = () => {
@@ -85,15 +94,18 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
       event: healthEvent,
       description: healthDescription,
     };
-
-    setAnimal(prev => prev ? { ...prev, healthRecords: [newRecord, ...prev.healthRecords] } : undefined);
+    
+    if (animal) {
+        const updatedAnimal = { ...animal, healthRecords: [newRecord, ...animal.healthRecords] };
+        updateLivestock(updatedAnimal);
+        setAnimal(updatedAnimal);
+    }
     
     toast({
         title: "Record Saved",
         description: "The new health record has been added.",
     });
 
-    // Reset form and close dialog
     setHealthEvent('');
     setHealthDescription('');
     setHealthDate(new Date().toISOString().split('T')[0]);
@@ -116,14 +128,17 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
       value: metricValue,
     };
 
-    setAnimal(prev => prev ? { ...prev, productionMetrics: [newMetric, ...prev.productionMetrics] } : undefined);
+    if (animal) {
+        const updatedAnimal = { ...animal, productionMetrics: [newMetric, ...animal.productionMetrics] };
+        updateLivestock(updatedAnimal);
+        setAnimal(updatedAnimal);
+    }
     
     toast({
         title: "Metric Saved",
         description: "The new production metric has been added.",
     });
     
-    // Reset form and close dialog
     setMetricType('');
     setMetricValue('');
     setMetricDate(new Date().toISOString().split('T')[0]);
@@ -133,7 +148,9 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   const handleSaveProfile = () => {
     if (!editForm) return;
 
+    updateLivestock(editForm);
     setAnimal(editForm);
+    
     toast({
       title: "Profile Saved",
       description: `${editForm.name}'s profile has been updated.`,
@@ -165,6 +182,33 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   if (isFemaleRuminant) {
     statusOptions.push('Milking', 'Dry', 'Sick', 'In-Calf/Pregnant');
   }
+
+  const LineageCard = ({ title, animal }: { title: string, animal?: Livestock }) => (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        {!animal && <CardDescription>Not recorded</CardDescription>}
+      </CardHeader>
+      {animal && (
+        <CardContent>
+          <Link href={`/livestock/${animal.id}`} className="flex items-center gap-4 hover:bg-accent p-2 rounded-lg">
+            <Image
+              src={animal.imageUrl}
+              alt={animal.name}
+              width={64}
+              height={64}
+              className="h-16 w-16 rounded-md object-cover"
+              data-ai-hint={animal.imageHint}
+            />
+            <div>
+              <p className="font-semibold text-primary">{animal.name}</p>
+              <p className="text-sm text-muted-foreground">Tag ID: {animal.tagId}</p>
+            </div>
+          </Link>
+        </CardContent>
+      )}
+    </Card>
+  );
 
   return (
     <>
@@ -228,7 +272,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="gender">Gender</Label>
-                            <Select value={editForm.gender} onValueChange={(value) => setEditForm({ ...editForm, gender: value as 'Male' | 'Female' })}>
+                            <Select value={editForm.gender} onValueChange={(value) => editForm && setEditForm({ ...editForm, gender: value as 'Male' | 'Female' })}>
                                 <SelectTrigger id="gender">
                                     <SelectValue placeholder="Select a gender" />
                                 </SelectTrigger>
@@ -240,7 +284,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="status">Status</Label>
-                            <Select value={editForm.status} onValueChange={(value) => setEditForm({ ...editForm, status: value as any })}>
+                            <Select value={editForm.status} onValueChange={(value) => editForm && setEditForm({ ...editForm, status: value as any })}>
                                 <SelectTrigger id="status">
                                     <SelectValue placeholder="Select a status" />
                                 </SelectTrigger>
@@ -279,7 +323,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                     <Badge>{animal.breed}</Badge>
                     <Badge variant="secondary">{animal.gender}</Badge>
                     <Badge variant="secondary">{age}</Badge>
-                    <Badge variant={animal.status === 'Active' ? 'default' : 'secondary'}>
+                    <Badge variant={['Active', 'Milking'].includes(animal.status) ? 'default' : 'secondary'}>
                       {animal.status}
                     </Badge>
                   </div>
@@ -422,9 +466,38 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                  <Card>
                   <CardHeader>
                     <CardTitle>Lineage</CardTitle>
+                    <CardDescription>Parents and offspring of {animal.name}.</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Lineage tracking is not yet implemented.</p>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <LineageCard title="Sire (Father)" animal={sire} />
+                      <LineageCard title="Dam (Mother)" animal={dam} />
+                    </div>
+                    <div>
+                      <h3 className="mb-2 text-lg font-semibold">Offspring</h3>
+                      {offspring.length > 0 ? (
+                        <div className="space-y-2">
+                          {offspring.map(child => (
+                            <Link key={child.id} href={`/livestock/${child.id}`} className="flex items-center gap-4 rounded-lg border p-3 hover:bg-accent">
+                               <Image
+                                  src={child.imageUrl}
+                                  alt={child.name}
+                                  width={48}
+                                  height={48}
+                                  className="h-12 w-12 rounded-md object-cover"
+                                  data-ai-hint={child.imageHint}
+                                />
+                               <div>
+                                  <p className="font-semibold text-primary">{child.name}</p>
+                                  <p className="text-sm text-muted-foreground">Tag ID: {child.tagId}</p>
+                               </div>
+                            </Link>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground">No recorded offspring.</p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>

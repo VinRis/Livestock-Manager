@@ -11,6 +11,8 @@ export type Livestock = {
   imageHint: string;
   healthRecords: HealthRecord[];
   productionMetrics: ProductionMetric[];
+  sireId?: string;
+  damId?: string;
 };
 
 export type HealthRecord = {
@@ -64,7 +66,7 @@ export type Currency = {
   symbol: string;
 };
 
-export const livestockData: Livestock[] = [
+export let livestockData: Livestock[] = [
   {
     id: '1',
     tagId: 'LL-001',
@@ -83,6 +85,8 @@ export const livestockData: Livestock[] = [
       { id: 'pm1', date: '2024-05-01', type: 'Milk', value: '30L/day' },
       { id: 'pm2', date: '2024-02-10', type: 'Breeding', value: 'Successful insemination' },
     ],
+    sireId: 'sire-1',
+    damId: 'dam-1'
   },
   {
     id: '2',
@@ -133,6 +137,47 @@ export const livestockData: Livestock[] = [
        { id: 'pm5', date: '2024-05-10', type: 'Weight', value: '60kg' },
     ],
   },
+  {
+    id: '5',
+    tagId: 'LL-005',
+    name: 'Spot',
+    breed: 'Holstein',
+    birthDate: '2023-08-20',
+    status: 'Active',
+    gender: 'Male',
+    imageUrl: 'https://picsum.photos/seed/5/600/400',
+    imageHint: 'spotted calf',
+    sireId: '2',
+    damId: '1',
+    healthRecords: [],
+    productionMetrics: []
+  },
+  {
+    id: 'sire-1',
+    tagId: 'B-101',
+    name: 'Goliath',
+    breed: 'Holstein',
+    birthDate: '2018-02-14',
+    status: 'Active',
+    gender: 'Male',
+    imageUrl: 'https://picsum.photos/seed/sire1/600/400',
+    imageHint: 'large bull',
+    healthRecords: [],
+    productionMetrics: []
+  },
+  {
+    id: 'dam-1',
+    tagId: 'C-202',
+    name: 'Belle',
+    breed: 'Holstein',
+    birthDate: '2019-07-01',
+    status: 'Active',
+    gender: 'Female',
+    imageUrl: 'https://picsum.photos/seed/dam1/600/400',
+    imageHint: 'gentle cow',
+    healthRecords: [],
+    productionMetrics: []
+  }
 ];
 
 export const activityLogData: Activity[] = [
@@ -190,4 +235,10 @@ export const currencyData: Currency[] = [
 
 export const getLivestockById = (id: string) => livestockData.find(animal => animal.id === id);
 
+export const updateLivestock = (updatedAnimal: Livestock) => {
+  const index = livestockData.findIndex(animal => animal.id === updatedAnimal.id);
+  if (index !== -1) {
+    livestockData[index] = updatedAnimal;
+  }
+};
     
