@@ -301,6 +301,36 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                             </Select>
                         </div>
                     </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="sireId">Sire (Father)</Label>
+                            <Select value={editForm.sireId} onValueChange={(value) => editForm && setEditForm({ ...editForm, sireId: value })}>
+                                <SelectTrigger id="sireId">
+                                    <SelectValue placeholder="Select Sire" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="unknown">Unknown</SelectItem>
+                                    {livestockData.filter(a => a.gender === 'Male' && a.id !== animal.id).map(male => (
+                                        <SelectItem key={male.id} value={male.id}>{male.name} ({male.tagId})</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="damId">Dam (Mother)</Label>
+                             <Select value={editForm.damId} onValueChange={(value) => editForm && setEditForm({ ...editForm, damId: value })}>
+                                <SelectTrigger id="damId">
+                                    <SelectValue placeholder="Select Dam" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="unknown">Unknown</SelectItem>
+                                    {livestockData.filter(a => a.gender === 'Female' && a.id !== animal.id).map(female => (
+                                        <SelectItem key={female.id} value={female.id}>{female.name} ({female.tagId})</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
                   </div>
                 )}
                 <DialogFooter>

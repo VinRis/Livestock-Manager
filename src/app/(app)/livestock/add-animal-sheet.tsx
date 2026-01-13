@@ -39,6 +39,8 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
   const [gender, setGender] = useState<'Male' | 'Female' | ''>('');
   const [breed, setBreed] = useState(defaultType ? breedOptions[defaultType][0] : '');
   const [type, setType] = useState(defaultType || '');
+  const [sireId, setSireId] = useState('');
+  const [damId, setDamId] = useState('');
 
   const handleSaveAnimal = () => {
     if (!name || !tagId || !birthDate || !gender || !breed) {
@@ -57,6 +59,8 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
       birthDate,
       gender: gender as 'Male' | 'Female',
       breed,
+      sireId: sireId || undefined,
+      damId: damId || undefined,
       status: 'Active' as const,
       imageUrl: 'https://picsum.photos/seed/new/600/400',
       imageHint: 'animal',
@@ -78,6 +82,8 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
     setGender('');
     setBreed('');
     setType('');
+    setSireId('');
+    setDamId('');
     onOpenChange(false);
   };
   
@@ -149,6 +155,36 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
                         <SelectContent>
                             <SelectItem value="Male">Male</SelectItem>
                             <SelectItem value="Female">Female</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+           </div>
+           <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="sireId">Sire (Father)</Label>
+                    <Select value={sireId} onValueChange={setSireId}>
+                        <SelectTrigger id="sireId">
+                            <SelectValue placeholder="Select Sire" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="">Unknown</SelectItem>
+                            {livestockData.filter(a => a.gender === 'Male').map(male => (
+                                <SelectItem key={male.id} value={male.id}>{male.name} ({male.tagId})</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="damId">Dam (Mother)</Label>
+                    <Select value={damId} onValueChange={setDamId}>
+                        <SelectTrigger id="damId">
+                            <SelectValue placeholder="Select Dam" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="">Unknown</SelectItem>
+                            {livestockData.filter(a => a.gender === 'Female').map(female => (
+                                <SelectItem key={female.id} value={female.id}>{female.name} ({female.tagId})</SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                 </div>
