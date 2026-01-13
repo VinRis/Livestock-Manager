@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Edit, PlusCircle, Upload, GitMerge, User, Users } from "lucide-react";
+import { ArrowLeft, Edit, PlusCircle, Upload, GitMerge, User, Users, LineChart, Weight, Cake } from "lucide-react";
 import { getLivestockById, type HealthRecord, type ProductionMetric, type Livestock, livestockData, updateLivestock } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ function calculateAge(birthDate: string) {
     years--;
     months += 12;
   }
-  return `${years} years, ${months} months`;
+  return { years, months, text: `${years} years, ${months} months` };
 }
 
 export default function LivestockDetailPage({ params }: { params: { id: string } }) {
@@ -183,6 +183,8 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   if (isFemaleRuminant) {
     statusOptions.push('Milking', 'Dry', 'Sick', 'In-Calf/Pregnant');
   }
+
+  const lastWeightMetric = animal.productionMetrics.find(m => m.type === 'Weight');
   
   const LineageNode = ({ animal, role }: { animal?: Livestock, role: string }) => (
     <div className="flex items-center gap-4">
@@ -308,34 +310,54 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
         </Dialog>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="md:col-span-1">
-            <Card>
-              <CardContent className="pt-6">
-                <Image
-                  src={animal.imageUrl}
-                  alt={animal.name}
-                  width={600}
-                  height={400}
-                  className="rounded-lg object-cover"
-                  data-ai-hint={animal.imageHint}
-                />
-                <div className="mt-4 space-y-2">
-                  <h2 className="text-2xl font-bold font-headline">{animal.name}</h2>
-                  <div className="flex flex-wrap gap-2">
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="overflow-hidden">
+              <Image
+                src={animal.imageUrl}
+                alt={animal.name}
+                width={600}
+                height={400}
+                className="w-full object-cover aspect-[3/2]"
+                data-ai-hint={animal.imageHint}
+              />
+              <CardContent className="p-4">
+                <h2 className="text-2xl font-bold font-headline">{animal.name}</h2>
+                <div className="flex flex-wrap gap-2 mt-2">
                     <Badge>{animal.breed}</Badge>
                     <Badge variant="secondary">{animal.gender}</Badge>
-                    <Badge variant="secondary">{age}</Badge>
-                    <Badge variant={['Active', 'Milking'].includes(animal.status) ? 'default' : 'secondary'}>
+                    <Badge variant={['Active', 'Milking'].includes(animal.status) ? 'default' : 'outline'}>
                       {animal.status}
                     </Badge>
                   </div>
-                </div>
               </CardContent>
             </Card>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Age</CardTitle>
+                  <Cake className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{age.years}<span className="text-base font-normal text-muted-foreground">y</span> {age.months}<span className="text-base font-normal text-muted-foreground">m</span></div>
+                  <p className="text-xs text-muted-foreground">Born on {new Date(animal.birthDate).toLocaleDateString()}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Weight</CardTitle>
+                  <Weight className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{lastWeightMetric ? lastWeightMetric.value : 'N/A'}</div>
+                   <p className="text-xs text-muted-foreground">{lastWeightMetric ? `as of ${new Date(lastWeightMetric.date).toLocaleDateString()}`: 'No weight recorded'}</p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
-          <div className="md:col-span-2">
+          <div className="lg:col-span-2">
             <Tabs defaultValue="health">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="health">Health Records</TabsTrigger>
@@ -396,7 +418,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                         ))}
                          {animal.healthRecords.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={3} className="text-center text-muted-foreground">No health records found.</TableCell>
+                                <TableCell colSpan={3} className="text-center text-muted-foreground py-8">No health records found.</TableCell>
                             </TableRow>
                         )}
                       </TableBody>
@@ -467,7 +489,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                         ))}
                         {animal.productionMetrics.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={3} className="text-center text-muted-foreground">No production metrics found.</TableCell>
+                                <TableCell colSpan={3} className="text-center text-muted-foreground py-8">No production metrics found.</TableCell>
                             </TableRow>
                         )}
                       </TableBody>
@@ -482,9 +504,8 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                     <CardDescription>Family tree of {animal.name}.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {/* Parents Section */}
                     <div>
-                        <h3 className="mb-4 text-lg font-semibold flex items-center gap-2"><Users className="h-5 w-5" /> Parents</h3>
+                        <h3 className="mb-4 text-lg font-semibold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Parents</h3>
                         <div className="flex items-center justify-around relative">
                            <div className="flex-1 flex justify-center">
                                 <LineageNode animal={sire} role="Sire" />
@@ -492,15 +513,14 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                            <div className="flex-1 flex justify-center">
                                 <LineageNode animal={dam} role="Dam" />
                            </div>
-                           <div className="absolute top-1/2 left-0 w-full h-px bg-border"></div>
-                           <div className="absolute top-1/2 left-1/2 w-px h-8 -translate-x-1/2 -translate-y-full bg-border"></div>
+                           <div className="absolute top-6 left-0 w-full h-px bg-border -z-10"></div>
+                           <div className="absolute top-6 left-1/2 w-px h-8 -translate-x-1/2 -translate-y-full bg-border -z-10"></div>
                         </div>
                     </div>
                     
-                    {/* Current Animal */}
                     <div className="flex justify-center items-center my-4">
                         <div className="relative">
-                            <div className="absolute bottom-full left-1/2 w-px h-8 -translate-x-1/2 bg-border"></div>
+                            <div className="absolute bottom-full left-1/2 w-px h-8 -translate-x-1/2 bg-border -z-10"></div>
                             <div className="flex items-center gap-4 rounded-lg border p-3 bg-card shadow-sm">
                                 <Image
                                   src={animal.imageUrl}
@@ -515,20 +535,19 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                                   <p className="font-bold text-primary text-lg">{animal.name}</p>
                                </div>
                             </div>
-                           {offspring.length > 0 && <div className="absolute top-full left-1/2 w-px h-8 -translate-x-1/2 bg-border"></div>}
+                           {offspring.length > 0 && <div className="absolute top-full left-1/2 w-px h-8 -translate-x-1/2 bg-border -z-10"></div>}
                         </div>
                     </div>
 
-                    {/* Offspring Section */}
                     {offspring.length > 0 && (
                         <div>
-                            <h3 className="mb-4 text-lg font-semibold flex items-center gap-2"><GitMerge className="h-5 w-5" /> Offspring</h3>
+                            <h3 className="mb-4 text-lg font-semibold flex items-center gap-2"><GitMerge className="h-5 w-5 text-primary" /> Offspring</h3>
                              <div className="relative">
-                                <div className="absolute top-0 left-1/2 w-full h-px -translate-x-1/2 bg-border"></div>
+                                {offspring.length > 1 && <div className="absolute top-8 left-1/4 w-1/2 h-px -translate-y-1/2 bg-border -z-10"></div>}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 pt-8">
                                     {offspring.map(child => (
                                          <div key={child.id} className="flex justify-center relative">
-                                            <div className="absolute bottom-full left-1/2 w-px h-8 -translate-x-1/2 bg-border"></div>
+                                            <div className="absolute bottom-full left-1/2 w-px h-8 -translate-x-1/2 bg-border -z-10"></div>
                                             <LineageNode animal={child} role="Offspring" />
                                         </div>
                                     ))}
@@ -546,5 +565,3 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     </>
   );
 }
-
-    
