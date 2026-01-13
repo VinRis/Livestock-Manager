@@ -45,7 +45,11 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
   useEffect(() => {
     if (defaultType) {
         setType(defaultType);
-        setBreed(breedOptions[defaultType][0]);
+        if (breedOptions[defaultType]?.length > 0) {
+          setBreed(breedOptions[defaultType][0]);
+        } else {
+          setBreed('');
+        }
     } else {
         setType('');
         setBreed('');
@@ -105,7 +109,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
   
   const handleTypeChange = (value: 'cattle' | 'sheep' | 'goats') => {
       setType(value);
-      setBreed(breedOptions[value][0] || '');
+      setBreed(breedOptions[value]?.[0] || '');
   }
 
   return (
@@ -145,12 +149,12 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
             </div>
             <div className="space-y-2">
                 <Label htmlFor="breed">Breed</Label>
-                <Select value={breed} onValueChange={setBreed} disabled={!!defaultType}>
+                <Select value={breed} onValueChange={setBreed}>
                     <SelectTrigger id="breed">
                         <SelectValue placeholder="Select breed" />
                     </SelectTrigger>
                     <SelectContent>
-                        {type && breedOptions[type as 'cattle' | 'sheep' | 'goats'].map(b => (
+                        {type && breedOptions[type as 'cattle' | 'sheep' | 'goats']?.map(b => (
                             <SelectItem key={b} value={b}>{b}</SelectItem>
                         ))}
                     </SelectContent>
@@ -214,3 +218,5 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
     </Sheet>
   );
 }
+
+    
