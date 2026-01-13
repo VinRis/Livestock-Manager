@@ -149,12 +149,18 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   const handleSaveProfile = () => {
     if (!editForm) return;
 
-    updateLivestock(editForm);
-    setAnimal(editForm);
+    const finalForm = {
+        ...editForm,
+        sireId: editForm.sireId === 'unknown' ? undefined : editForm.sireId,
+        damId: editForm.damId === 'unknown' ? undefined : editForm.damId,
+    };
+
+    updateLivestock(finalForm);
+    setAnimal(finalForm);
     
     toast({
       title: "Profile Saved",
-      description: `${editForm.name}'s profile has been updated.`,
+      description: `${finalForm.name}'s profile has been updated.`,
     });
     setEditDialogOpen(false);
   };
@@ -304,7 +310,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="sireId">Sire (Father)</Label>
-                            <Select value={editForm.sireId} onValueChange={(value) => editForm && setEditForm({ ...editForm, sireId: value })}>
+                            <Select value={editForm.sireId || 'unknown'} onValueChange={(value) => editForm && setEditForm({ ...editForm, sireId: value })}>
                                 <SelectTrigger id="sireId">
                                     <SelectValue placeholder="Select Sire" />
                                 </SelectTrigger>
@@ -318,7 +324,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="damId">Dam (Mother)</Label>
-                             <Select value={editForm.damId} onValueChange={(value) => editForm && setEditForm({ ...editForm, damId: value })}>
+                             <Select value={editForm.damId || 'unknown'} onValueChange={(value) => editForm && setEditForm({ ...editForm, damId: value })}>
                                 <SelectTrigger id="damId">
                                     <SelectValue placeholder="Select Dam" />
                                 </SelectTrigger>

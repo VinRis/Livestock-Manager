@@ -59,8 +59,8 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
       birthDate,
       gender: gender as 'Male' | 'Female',
       breed,
-      sireId: sireId || undefined,
-      damId: damId || undefined,
+      sireId: sireId && sireId !== 'unknown' ? sireId : undefined,
+      damId: damId && damId !== 'unknown' ? damId : undefined,
       status: 'Active' as const,
       imageUrl: 'https://picsum.photos/seed/new/600/400',
       imageHint: 'animal',
@@ -167,7 +167,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
                             <SelectValue placeholder="Select Sire" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">Unknown</SelectItem>
+                            <SelectItem value="unknown">Unknown</SelectItem>
                             {livestockData.filter(a => a.gender === 'Male').map(male => (
                                 <SelectItem key={male.id} value={male.id}>{male.name} ({male.tagId})</SelectItem>
                             ))}
@@ -181,7 +181,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
                             <SelectValue placeholder="Select Dam" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">Unknown</SelectItem>
+                            <SelectItem value="unknown">Unknown</SelectItem>
                             {livestockData.filter(a => a.gender === 'Female').map(female => (
                                 <SelectItem key={female.id} value={female.id}>{female.name} ({female.tagId})</SelectItem>
                             ))}
