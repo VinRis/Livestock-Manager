@@ -2,6 +2,7 @@
 "use client"
 
 import { DollarSign, PlusCircle } from "lucide-react";
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,21 +11,114 @@ import { financialData } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import FinanceChart from "./finance-chart";
 import { useCurrency } from "@/contexts/currency-context";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function FinancePage() {
   const { currency } = useCurrency();
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(1);
+  const [transactionType, setTransactionType] = useState<'Income' | 'Expense' | null>(null);
+
   const totalIncome = financialData.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
   const totalExpense = financialData.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
   const netProfit = totalIncome - totalExpense;
   const recentTransactions = financialData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
 
+  const handleTypeSelect = (type: 'Income' | 'Expense') => {
+    setTransactionType(type);
+    setStep(2);
+  };
+  
+  const resetModal = () => {
+    setStep(1);
+    setTransactionType(null);
+  };
+
+  const onOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      resetModal();
+    }
+    setOpen(isOpen);
+  };
+
+  const incomeCategories = ["Milk Sales", "Livestock Sale", "Wool Sales"];
+  const expenseCategories = ["Feed", "Vet Services", "Utilities", "Maintenance"];
+
   return (
     <>
       <PageHeader title="Financials" description="Track income, expenses, and profitability.">
-        <Button>
-          <PlusCircle />
-          Add Transaction
-        </Button>
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogTrigger asChild>
+                <Button>
+                    <PlusCircle />
+                    Add Transaction
+                </Button>
+            </DialogTrigger>
+            <DialogContent onInteractOutside={resetModal}>
+                <DialogHeader>
+                    <DialogTitle>Add New Transaction</DialogTitle>
+                    <DialogDescription>
+                        {step === 1 ? "Select the type of transaction you want to add." : `Add a new ${transactionType} record.`}
+                    </DialogDescription>
+                </DialogHeader>
+                {step === 1 ? (
+                    <div className="grid grid-cols-2 gap-4 py-4">
+                        <Button variant="outline" size="lg" onClick={() => handleTypeSelect('Income')}>
+                            <div className="flex flex-col items-center gap-2">
+                                <DollarSign className="h-8 w-8 text-primary"/>
+                                <span>Income</span>
+                            </div>
+                        </Button>
+                        <Button variant="outline" size="lg" onClick={() => handleTypeSelect('Expense')}>
+                            <div className="flex flex-col items-center gap-2">
+                               <DollarSign className="h-8 w-8 text-destructive"/>
+                                <span>Expense</span>
+                            </div>
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="date">Date</Label>
+                            <Input id="date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="description">Description</Label>
+                            <Input id="description" placeholder="e.g., Sale of 2000L milk" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="category">Category</Label>
+                            <Select>
+                                <SelectTrigger id="category">
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {(transactionType === 'Income' ? incomeCategories : expenseCategories).map(cat => (
+                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="amount">Amount</Label>
+                            <Input id="amount" type="number" placeholder="0.00" />
+                        </div>
+                    </div>
+                )}
+                 <DialogFooter>
+                    {step === 2 && (
+                        <>
+                            <Button variant="outline" onClick={resetModal}>Back</Button>
+                            <Button onClick={() => onOpenChange(false)}>Save Transaction</Button>
+                        </>
+                    )}
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <div className="grid gap-4 md:grid-cols-3">
@@ -107,3 +201,5 @@ export default function FinancePage() {
     </>
   );
 }
+
+    
