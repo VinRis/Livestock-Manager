@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Edit, PlusCircle, Upload } from "lucide-react";
+import { ArrowLeft, Edit, PlusCircle, Upload, GitMerge, User, Users } from "lucide-react";
 import { getLivestockById, type HealthRecord, type ProductionMetric, type Livestock, livestockData, updateLivestock } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 function calculateAge(birthDate: string) {
   const birth = new Date(birthDate);
@@ -182,32 +183,34 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   if (isFemaleRuminant) {
     statusOptions.push('Milking', 'Dry', 'Sick', 'In-Calf/Pregnant');
   }
-
-  const LineageCard = ({ title, animal }: { title: string, animal?: Livestock }) => (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {!animal && <CardDescription>Not recorded</CardDescription>}
-      </CardHeader>
-      {animal && (
-        <CardContent>
-          <Link href={`/livestock/${animal.id}`} className="flex items-center gap-4 hover:bg-accent p-2 rounded-lg">
+  
+  const LineageNode = ({ animal, role }: { animal?: Livestock, role: string }) => (
+    <div className="flex items-center gap-4">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+        {animal ? (
+          <Link href={`/livestock/${animal.id}`}>
             <Image
               src={animal.imageUrl}
               alt={animal.name}
-              width={64}
-              height={64}
-              className="h-16 w-16 rounded-md object-cover"
+              width={48}
+              height={48}
+              className="h-12 w-12 rounded-full object-cover"
               data-ai-hint={animal.imageHint}
             />
-            <div>
-              <p className="font-semibold text-primary">{animal.name}</p>
-              <p className="text-sm text-muted-foreground">Tag ID: {animal.tagId}</p>
-            </div>
           </Link>
-        </CardContent>
-      )}
-    </Card>
+        ) : (
+          <User className="h-6 w-6 text-muted-foreground" />
+        )}
+      </div>
+      <div>
+        <p className="text-sm text-muted-foreground">{role}</p>
+        {animal ? (
+           <Link href={`/livestock/${animal.id}`} className="font-semibold text-primary hover:underline">{animal.name}</Link>
+        ) : (
+          <p className="font-semibold">Not Recorded</p>
+        )}
+      </div>
+    </div>
   );
 
   return (
@@ -391,6 +394,11 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                             <TableCell>{record.description}</TableCell>
                           </TableRow>
                         ))}
+                         {animal.healthRecords.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={3} className="text-center text-muted-foreground">No health records found.</TableCell>
+                            </TableRow>
+                        )}
                       </TableBody>
                     </Table>
                   </CardContent>
@@ -457,6 +465,11 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                             <TableCell>{metric.value}</TableCell>
                           </TableRow>
                         ))}
+                        {animal.productionMetrics.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={3} className="text-center text-muted-foreground">No production metrics found.</TableCell>
+                            </TableRow>
+                        )}
                       </TableBody>
                     </Table>
                   </CardContent>
@@ -466,38 +479,63 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                  <Card>
                   <CardHeader>
                     <CardTitle>Lineage</CardTitle>
-                    <CardDescription>Parents and offspring of {animal.name}.</CardDescription>
+                    <CardDescription>Family tree of {animal.name}.</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <LineageCard title="Sire (Father)" animal={sire} />
-                      <LineageCard title="Dam (Mother)" animal={dam} />
-                    </div>
+                  <CardContent className="space-y-6">
+                    {/* Parents Section */}
                     <div>
-                      <h3 className="mb-2 text-lg font-semibold">Offspring</h3>
-                      {offspring.length > 0 ? (
-                        <div className="space-y-2">
-                          {offspring.map(child => (
-                            <Link key={child.id} href={`/livestock/${child.id}`} className="flex items-center gap-4 rounded-lg border p-3 hover:bg-accent">
-                               <Image
-                                  src={child.imageUrl}
-                                  alt={child.name}
+                        <h3 className="mb-4 text-lg font-semibold flex items-center gap-2"><Users className="h-5 w-5" /> Parents</h3>
+                        <div className="flex items-center justify-around relative">
+                           <div className="flex-1 flex justify-center">
+                                <LineageNode animal={sire} role="Sire" />
+                           </div>
+                           <div className="flex-1 flex justify-center">
+                                <LineageNode animal={dam} role="Dam" />
+                           </div>
+                           <div className="absolute top-1/2 left-0 w-full h-px bg-border"></div>
+                           <div className="absolute top-1/2 left-1/2 w-px h-8 -translate-x-1/2 -translate-y-full bg-border"></div>
+                        </div>
+                    </div>
+                    
+                    {/* Current Animal */}
+                    <div className="flex justify-center items-center my-4">
+                        <div className="relative">
+                            <div className="absolute bottom-full left-1/2 w-px h-8 -translate-x-1/2 bg-border"></div>
+                            <div className="flex items-center gap-4 rounded-lg border p-3 bg-card shadow-sm">
+                                <Image
+                                  src={animal.imageUrl}
+                                  alt={animal.name}
                                   width={48}
                                   height={48}
-                                  className="h-12 w-12 rounded-md object-cover"
-                                  data-ai-hint={child.imageHint}
+                                  className="h-12 w-12 rounded-full object-cover"
+                                  data-ai-hint={animal.imageHint}
                                 />
                                <div>
-                                  <p className="font-semibold text-primary">{child.name}</p>
-                                  <p className="text-sm text-muted-foreground">Tag ID: {child.tagId}</p>
+                                  <p className="text-sm text-muted-foreground">Current Animal</p>
+                                  <p className="font-bold text-primary text-lg">{animal.name}</p>
                                </div>
-                            </Link>
-                          ))}
+                            </div>
+                           {offspring.length > 0 && <div className="absolute top-full left-1/2 w-px h-8 -translate-x-1/2 bg-border"></div>}
                         </div>
-                      ) : (
-                        <p className="text-muted-foreground">No recorded offspring.</p>
-                      )}
                     </div>
+
+                    {/* Offspring Section */}
+                    {offspring.length > 0 && (
+                        <div>
+                            <h3 className="mb-4 text-lg font-semibold flex items-center gap-2"><GitMerge className="h-5 w-5" /> Offspring</h3>
+                             <div className="relative">
+                                <div className="absolute top-0 left-1/2 w-full h-px -translate-x-1/2 bg-border"></div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 pt-8">
+                                    {offspring.map(child => (
+                                         <div key={child.id} className="flex justify-center relative">
+                                            <div className="absolute bottom-full left-1/2 w-px h-8 -translate-x-1/2 bg-border"></div>
+                                            <LineageNode animal={child} role="Offspring" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -508,3 +546,5 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     </>
   );
 }
+
+    
