@@ -14,6 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import AddAnimalSheet from "./add-animal-sheet";
+import AddCategorySheet from "./add-category-sheet";
 
 type LivestockCategory = {
   name: string;
@@ -68,12 +69,12 @@ function LivestockCategoryList() {
   return (
     <>
       <PageHeader title="Livestock Categories" description="Manage your herd by categories.">
-         <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen}>
+         <AddCategorySheet isOpen={isSheetOpen} onOpenChange={setSheetOpen}>
           <Button>
             <PlusCircle />
-            Add Animal
+            Add Category
           </Button>
-        </AddAnimalSheet>
+        </AddCategorySheet>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
