@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "1",
+      "description": "A holstein cow in a green pasture under a blue sky.",
+      "imageUrl": "https://images.unsplash.com/photo-1682017787383-df9abb3be0ef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjb3clMjBwYXN0dXJlfGVufDB8fHx8MTc2ODMwNDUyM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cow pasture"
+    },
+    {
+      "id": "2",
+      "description": "A powerful black angus bull standing in a field.",
+      "imageUrl": "https://images.unsplash.com/photo-1516640000-9951e17c051d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxibGFjayUyMGJ1bGx8ZW58MHx8fHwxNzY4MzA0NTI0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "black bull"
+    },
+    {
+      "id": "3",
+      "description": "A fluffy white merino sheep in a grassy meadow.",
+      "imageUrl": "https://images.unsplash.com/photo-1597131579191-79c83f1a8b88?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx3aGl0ZSUyMHNoZWVwfGVufDB8fHx8MTc2ODMwNDUyM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "white sheep"
+    },
+    {
+      "id": "4",
+      "description": "A brown boer goat with large horns looking at the camera.",
+      "imageUrl": "https://images.unsplash.com/photo-1762433343484-8996b8984b0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxicm93biUyMGdvYXR8ZW58MHx8fHwxNzY4MzA0NTIyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "brown goat"
+    }
+  ]
 }
