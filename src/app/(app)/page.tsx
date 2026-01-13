@@ -2,7 +2,7 @@
 "use client"
 
 import Link from "next/link";
-import { ArrowUpRight, CheckCircle, Clock, DollarSign, PlusCircle, ClipboardList } from "lucide-react";
+import { ArrowUpRight, CheckCircle, Clock, DollarSign, PlusCircle, ClipboardList, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
@@ -23,7 +23,14 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" description="Welcome back, here's a summary of your farm." />
+      <PageHeader title="Dashboard" description="Welcome back, here's a summary of your farm.">
+        <Button asChild>
+          <Link href="/analytics">
+            <BarChart3 />
+            View Analytics
+          </Link>
+        </Button>
+      </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
