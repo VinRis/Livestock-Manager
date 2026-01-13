@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { livestockData, updateLivestock } from "@/lib/data";
+import { Combobox } from "@/components/ui/combobox";
 
 interface AddAnimalSheetProps {
   children: React.ReactNode;
@@ -26,9 +27,9 @@ interface AddAnimalSheetProps {
 }
 
 const breedOptions = {
-    cattle: ['Holstein', 'Angus'],
-    sheep: ['Merino'],
-    goats: ['Boer'],
+    cattle: ["Ayrshire", "Brown Swiss", "Guernsey", "Holstein", "Jersey", "Angus", "Hereford", "Shorthorn", "Simmental", "Charolais", "Brahman"].map(b => ({ value: b, label: b })),
+    sheep: ["Merino", "Rambouillet", "Dorset", "Hampshire", "Suffolk", "Shropshire"].map(b => ({ value: b, label: b })),
+    goats: ["Boer", "Nubian", "Alpine", "LaMancha", "Saanen", "Toggenburg"].map(b => ({ value: b, label: b })),
 };
 
 export default function AddAnimalSheet({ children, isOpen, onOpenChange, defaultType }: AddAnimalSheetProps) {
@@ -46,7 +47,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
     if (defaultType) {
         setType(defaultType);
         if (breedOptions[defaultType]?.length > 0) {
-          setBreed(breedOptions[defaultType][0]);
+          setBreed(breedOptions[defaultType][0].value);
         } else {
           setBreed('');
         }
@@ -102,6 +103,8 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
     if (!defaultType) {
         setType('');
         setBreed('');
+    } else {
+        setBreed(breedOptions[defaultType]?.[0]?.value || '');
     }
     
     onOpenChange(false);
@@ -109,8 +112,10 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
   
   const handleTypeChange = (value: 'cattle' | 'sheep' | 'goats') => {
       setType(value);
-      setBreed(breedOptions[value]?.[0] || '');
+      setBreed(breedOptions[value]?.[0].value || '');
   }
+
+  const currentBreedOptions = type ? breedOptions[type] : [];
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -149,16 +154,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
             </div>
             <div className="space-y-2">
                 <Label htmlFor="breed">Breed</Label>
-                <Select value={breed} onValueChange={setBreed}>
-                    <SelectTrigger id="breed">
-                        <SelectValue placeholder="Select breed" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {type && breedOptions[type as 'cattle' | 'sheep' | 'goats']?.map(b => (
-                            <SelectItem key={b} value={b}>{b}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <Input id="breed" value={breed} onChange={(e) => setBreed(e.target.value)} placeholder="e.g., Holstein" />
             </div>
           </div>
            <div className="grid grid-cols-2 gap-4">
@@ -218,5 +214,3 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
     </Sheet>
   );
 }
-
-    
