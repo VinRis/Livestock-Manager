@@ -42,9 +42,9 @@ export async function ProfitSuggestions() {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {parsedSuggestions.map((suggestion, index) => (
-        <div key={index} className="rounded-lg border bg-card p-4">
-            <h4 className="font-semibold">{suggestion.title}</h4>
-            <p className="text-sm text-muted-foreground">{suggestion.description}</p>
+        <div key={index} className="rounded-lg border bg-card p-4 transition-all hover:shadow-lg">
+            <h4 className="font-semibold text-primary">{suggestion.title}</h4>
+            <p className="text-sm text-muted-foreground mt-1">{suggestion.description}</p>
         </div>
       ))}
     </div>
