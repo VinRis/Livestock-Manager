@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, Edit, PlusCircle } from "lucide-react";
+import { ArrowLeft, Edit, PlusCircle, CheckCircle } from "lucide-react";
 import { getLivestockById, type HealthRecord, type ProductionMetric, type Livestock } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { cn } from "@/lib/utils";
 
 function calculateAge(birthDate: string) {
   const birth = new Date(birthDate);
@@ -144,6 +146,11 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     const { id, value } = e.target;
     setEditForm({ ...editForm, [id]: value });
   };
+
+  const handleImageSelect = (imageUrl: string, imageHint: string) => {
+    if (!editForm) return;
+    setEditForm({ ...editForm, imageUrl, imageHint });
+  };
   
   const age = calculateAge(animal.birthDate);
   const isFemaleRuminant = (animal.gender === 'Female' && ['Holstein', 'Angus', 'Boer', 'Merino'].includes(animal.breed));
@@ -173,16 +180,36 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                 {editForm && (
                   <div className="grid gap-4 py-4">
                     <div className="space-y-2">
+                      <Label>Animal Image</Label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {PlaceHolderImages.map((image) => (
+                          <div key={image.id} className="relative cursor-pointer" onClick={() => handleImageSelect(image.imageUrl, image.imageHint)}>
+                            <Image
+                              src={image.imageUrl}
+                              alt={image.description}
+                              width={150}
+                              height={100}
+                              className={cn(
+                                "rounded-md object-cover transition-all",
+                                editForm.imageUrl === image.imageUrl ? "ring-2 ring-primary ring-offset-2" : "hover:opacity-80"
+                              )}
+                            />
+                            {editForm.imageUrl === image.imageUrl && (
+                               <div className="absolute inset-0 flex items-center justify-center bg-primary/50">
+                                <CheckCircle className="h-8 w-8 text-primary-foreground" />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="name">Name</Label>
                       <Input id="name" value={editForm.name} onChange={handleEditFormChange} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="tagId">Tag ID</Label>
                       <Input id="tagId" value={editForm.tagId} onChange={handleEditFormChange} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="imageUrl">Image URL</Label>
-                        <Input id="imageUrl" value={editForm.imageUrl} onChange={handleEditFormChange} />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
