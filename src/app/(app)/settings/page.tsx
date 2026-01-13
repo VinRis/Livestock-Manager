@@ -1,14 +1,20 @@
 
+"use client"
+
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Upload } from "lucide-react";
+import { Upload, Moon, Sun } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import React from "react";
 
 export default function SettingsPage() {
+  // A simple state to manage theme for demonstration
+  const [theme, setTheme] = React.useState('light');
+
   return (
     <>
       <PageHeader title="Settings" description="Manage your application settings." />
@@ -21,12 +27,31 @@ export default function SettingsPage() {
           <CardContent>
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
-                <Label htmlFor="dark-mode">Dark Mode</Label>
+                <Label htmlFor="dark-mode">Theme</Label>
                 <p className="text-sm text-muted-foreground">
-                  Enable or disable the dark color scheme.
+                  Select a theme for the application.
                 </p>
               </div>
-              <Switch id="dark-mode" />
+              <div className="flex items-center gap-2 rounded-full bg-muted p-1">
+                <Button
+                  variant={theme === 'light' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setTheme('light')}
+                  className={cn("rounded-full", theme === 'light' && 'bg-primary text-primary-foreground')}
+                >
+                  <Sun className="h-4 w-4" />
+                  <span className="sr-only">Light mode</span>
+                </Button>
+                <Button
+                  variant={theme === 'dark' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setTheme('dark')}
+                  className={cn("rounded-full", theme === 'dark' && 'bg-primary text-primary-foreground')}
+                >
+                  <Moon className="h-4 w-4" />
+                  <span className="sr-only">Dark mode</span>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
