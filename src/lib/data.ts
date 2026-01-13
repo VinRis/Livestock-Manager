@@ -13,6 +13,7 @@ export type Livestock = {
   productionMetrics: ProductionMetric[];
   sireId?: string;
   damId?: string;
+  category: 'Cattle' | 'Sheep' | 'Goats';
 };
 
 export type HealthRecord = {
@@ -72,6 +73,7 @@ export let livestockData: Livestock[] = [
     tagId: 'LL-001',
     name: 'Daisy',
     breed: 'Holstein',
+    category: 'Cattle',
     birthDate: '2021-04-12',
     status: 'Milking',
     gender: 'Female',
@@ -93,6 +95,7 @@ export let livestockData: Livestock[] = [
     tagId: 'LL-002',
     name: 'Buster',
     breed: 'Angus',
+    category: 'Cattle',
     birthDate: '2022-08-01',
     status: 'Active',
     gender: 'Male',
@@ -110,6 +113,7 @@ export let livestockData: Livestock[] = [
     tagId: 'LL-003',
     name: 'Flossy',
     breed: 'Merino',
+    category: 'Sheep',
     birthDate: '2020-05-20',
     status: 'Active',
     gender: 'Female',
@@ -127,6 +131,7 @@ export let livestockData: Livestock[] = [
     tagId: 'LL-004',
     name: 'Billy',
     breed: 'Boer',
+    category: 'Goats',
     birthDate: '2023-01-30',
     status: 'Active',
     gender: 'Male',
@@ -142,6 +147,7 @@ export let livestockData: Livestock[] = [
     tagId: 'LL-005',
     name: 'Spot',
     breed: 'Holstein',
+    category: 'Cattle',
     birthDate: '2023-08-20',
     status: 'Active',
     gender: 'Male',
@@ -157,6 +163,7 @@ export let livestockData: Livestock[] = [
     tagId: 'B-101',
     name: 'Goliath',
     breed: 'Holstein',
+    category: 'Cattle',
     birthDate: '2018-02-14',
     status: 'Active',
     gender: 'Male',
@@ -170,6 +177,7 @@ export let livestockData: Livestock[] = [
     tagId: 'C-202',
     name: 'Belle',
     breed: 'Holstein',
+    category: 'Cattle',
     birthDate: '2019-07-01',
     status: 'Active',
     gender: 'Female',

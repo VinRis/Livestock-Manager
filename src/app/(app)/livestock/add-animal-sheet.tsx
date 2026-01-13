@@ -23,43 +23,43 @@ interface AddAnimalSheetProps {
   children: React.ReactNode;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  defaultType?: 'cattle' | 'sheep' | 'goats';
+  defaultCategory?: 'Cattle' | 'Sheep' | 'Goats';
 }
 
 const breedOptions = {
-    cattle: ["Ayrshire", "Brown Swiss", "Guernsey", "Holstein", "Jersey", "Angus", "Hereford", "Shorthorn", "Simmental", "Charolais", "Brahman"].map(b => ({ value: b, label: b })),
-    sheep: ["Merino", "Rambouillet", "Dorset", "Hampshire", "Suffolk", "Shropshire"].map(b => ({ value: b, label: b })),
-    goats: ["Boer", "Nubian", "Alpine", "LaMancha", "Saanen", "Toggenburg"].map(b => ({ value: b, label: b })),
+    Cattle: ["Ayrshire", "Brown Swiss", "Guernsey", "Holstein", "Jersey", "Angus", "Hereford", "Shorthorn", "Simmental", "Charolais", "Brahman"].map(b => ({ value: b, label: b })),
+    Sheep: ["Merino", "Rambouillet", "Dorset", "Hampshire", "Suffolk", "Shropshire"].map(b => ({ value: b, label: b })),
+    Goats: ["Boer", "Nubian", "Alpine", "LaMancha", "Saanen", "Toggenburg"].map(b => ({ value: b, label: b })),
 };
 
-export default function AddAnimalSheet({ children, isOpen, onOpenChange, defaultType }: AddAnimalSheetProps) {
+export default function AddAnimalSheet({ children, isOpen, onOpenChange, defaultCategory }: AddAnimalSheetProps) {
   const { toast } = useToast();
   const [name, setName] = useState('');
   const [tagId, setTagId] = useState('');
   const [birthDate, setBirthDate] = useState(new Date().toISOString().split('T')[0]);
   const [gender, setGender] = useState<'Male' | 'Female' | ''>('');
   const [breed, setBreed] = useState('');
-  const [type, setType] = useState<'cattle' | 'sheep' | 'goats' | ''>('');
+  const [category, setCategory] = useState<'Cattle' | 'Sheep' | 'Goats' | ''>('');
   const [sireId, setSireId] = useState('unknown');
   const [damId, setDamId] = useState('unknown');
   
   useEffect(() => {
-    if (defaultType) {
-        setType(defaultType);
-        if (breedOptions[defaultType]?.length > 0) {
-          setBreed(breedOptions[defaultType][0].value);
+    if (defaultCategory) {
+        setCategory(defaultCategory);
+        if (breedOptions[defaultCategory]?.length > 0) {
+          setBreed(breedOptions[defaultCategory][0].value);
         } else {
           setBreed('');
         }
     } else {
-        setType('');
+        setCategory('');
         setBreed('');
     }
-  }, [defaultType, isOpen]); // Reset when sheet is opened/closed or type changes
+  }, [defaultCategory, isOpen]); // Reset when sheet is opened/closed or type changes
 
 
   const handleSaveAnimal = () => {
-    if (!name || !tagId || !birthDate || !gender || !breed) {
+    if (!name || !tagId || !birthDate || !gender || !breed || !category) {
       toast({
         variant: "destructive",
         title: "Missing Information",
@@ -75,6 +75,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
       birthDate,
       gender: gender as 'Male' | 'Female',
       breed,
+      category: category as 'Cattle' | 'Sheep' | 'Goats',
       sireId: sireId && sireId !== 'unknown' ? sireId : undefined,
       damId: damId && damId !== 'unknown' ? damId : undefined,
       status: 'Active' as const,
@@ -100,22 +101,22 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
     setDamId('unknown');
     
     // Don't reset type/breed if it's defaulted
-    if (!defaultType) {
-        setType('');
+    if (!defaultCategory) {
+        setCategory('');
         setBreed('');
     } else {
-        setBreed(breedOptions[defaultType]?.[0]?.value || '');
+        setBreed(breedOptions[defaultCategory]?.[0]?.value || '');
     }
     
     onOpenChange(false);
   };
   
-  const handleTypeChange = (value: 'cattle' | 'sheep' | 'goats') => {
-      setType(value);
+  const handleCategoryChange = (value: 'Cattle' | 'Sheep' | 'Goats') => {
+      setCategory(value);
       setBreed(breedOptions[value]?.[0].value || '');
   }
 
-  const currentBreedOptions = type ? breedOptions[type] : [];
+  const currentBreedOptions = category ? breedOptions[category] : [];
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -140,15 +141,15 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-                <Label htmlFor="animal-type">Animal Type</Label>
-                <Select value={type} onValueChange={handleTypeChange}>
+                <Label htmlFor="animal-type">Animal Category</Label>
+                <Select value={category} onValueChange={handleCategoryChange}>
                     <SelectTrigger id="animal-type">
-                        <SelectValue placeholder="Select type" />
+                        <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="cattle">Cattle</SelectItem>
-                        <SelectItem value="sheep">Sheep</SelectItem>
-                        <SelectItem value="goats">Goats</SelectItem>
+                        <SelectItem value="Cattle">Cattle</SelectItem>
+                        <SelectItem value="Sheep">Sheep</SelectItem>
+                        <SelectItem value="Goats">Goats</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
