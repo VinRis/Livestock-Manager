@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import AddAnimalSheet from "./add-animal-sheet";
 import AddCategorySheet from "./add-category-sheet";
+import { cn } from "@/lib/utils";
 
 type LivestockCategory = {
   name: string;
@@ -163,28 +164,22 @@ function AnimalList({ category }: { category: string }) {
             <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                     {animals.map(animal => (
-                        <Card key={animal.id} className="overflow-hidden">
+                        <Card key={animal.id} className="overflow-hidden group relative">
                             <Link href={`/livestock/${animal.id}`} className="block">
                                 <Image
                                     src={animal.imageUrl}
                                     alt={animal.name}
                                     width={400}
                                     height={250}
-                                    className="object-cover w-full h-40"
+                                    className="object-cover w-full aspect-[4/3] transition-transform duration-300 group-hover:scale-105"
                                     data-ai-hint={animal.imageHint}
                                 />
-                            </Link>
-                            <CardContent className="p-4">
-                                <Link href={`/livestock/${animal.id}`}>
-                                    <h3 className="font-semibold text-lg hover:underline">{animal.name}</h3>
-                                </Link>
-                                <p className="text-sm text-muted-foreground">Tag ID: {animal.tagId}</p>
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                    <Badge>{animal.breed}</Badge>
-                                    <Badge variant="secondary">{animal.gender}</Badge>
-                                    <Badge variant="outline">{calculateAge(animal.birthDate)}</Badge>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                                <div className="absolute bottom-0 left-0 p-4">
+                                    <h3 className="font-semibold text-lg text-white drop-shadow-md">{animal.name}</h3>
+                                    <p className="text-sm text-white/80 drop-shadow-md">Tag ID: {animal.tagId}</p>
                                 </div>
-                            </CardContent>
+                            </Link>
                         </Card>
                     ))}
                 </div>
