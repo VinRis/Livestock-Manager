@@ -12,12 +12,15 @@ import { livestockData, type Livestock } from "@/lib/data";
 import { CowIcon, GoatIcon, SheepIcon } from "@/components/icons";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import AddAnimalSheet from "./add-animal-sheet";
 
 type LivestockCategory = {
   name: string;
   count: number;
   icon: React.ComponentType<{ className?: string }>;
   animals: Livestock[];
+  type: 'cattle' | 'sheep' | 'goats';
 };
 
 function calculateAge(birthDate: string) {
@@ -33,20 +36,25 @@ function calculateAge(birthDate: string) {
 }
 
 function LivestockCategoryList() {
+  const [isSheetOpen, setSheetOpen] = useState(false);
+
   const categories = livestockData.reduce((acc, animal) => {
     let categoryName = "Cattle"; 
     let icon = CowIcon;
+    let type: 'cattle' | 'sheep' | 'goats' = 'cattle';
 
     if (['Merino'].includes(animal.breed)) {
       categoryName = 'Sheep';
       icon = SheepIcon;
+      type = 'sheep';
     } else if (['Boer'].includes(animal.breed)) {
       categoryName = 'Goats';
       icon = GoatIcon;
+      type = 'goats';
     }
     
     if (!acc[categoryName]) {
-      acc[categoryName] = { name: categoryName, count: 0, icon: icon, animals: [] };
+      acc[categoryName] = { name: categoryName, count: 0, icon: icon, animals: [], type: type };
     }
     
     acc[categoryName].count++;
@@ -60,10 +68,12 @@ function LivestockCategoryList() {
   return (
     <>
       <PageHeader title="Livestock Categories" description="Manage your herd by categories.">
-        <Button>
-          <PlusCircle />
-          Add Category
-        </Button>
+         <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen}>
+          <Button>
+            <PlusCircle />
+            Add Animal
+          </Button>
+        </AddAnimalSheet>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -125,13 +135,15 @@ function LivestockCategoryList() {
 }
 
 function AnimalList({ category }: { category: string }) {
+    const [isSheetOpen, setSheetOpen] = useState(false);
+
     const getCategoryDetails = (categoryName: string) => {
-        if (categoryName === 'sheep') return { name: 'Sheep', breeds: ['Merino'] };
-        if (categoryName === 'goats') return { name: 'Goats', breeds: ['Boer'] };
-        return { name: 'Cattle', breeds: ['Holstein', 'Angus'] };
+        if (categoryName === 'sheep') return { name: 'Sheep', breeds: ['Merino'], type: 'sheep' as const };
+        if (categoryName === 'goats') return { name: 'Goats', breeds: ['Boer'], type: 'goats' as const };
+        return { name: 'Cattle', breeds: ['Holstein', 'Angus'], type: 'cattle' as const };
     }
 
-    const { name: categoryName, breeds } = getCategoryDetails(category);
+    const { name: categoryName, breeds, type } = getCategoryDetails(category);
     const animals = livestockData.filter(animal => breeds.includes(animal.breed));
 
     return (
@@ -140,10 +152,12 @@ function AnimalList({ category }: { category: string }) {
                 <Button variant="outline" asChild>
                     <Link href="/livestock"><ArrowLeft /> Back to Categories</Link>
                 </Button>
-                <Button>
-                    <PlusCircle />
-                    Add Animal
-                </Button>
+                 <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen} defaultType={type}>
+                    <Button>
+                        <PlusCircle />
+                        Add Animal
+                    </Button>
+                </AddAnimalSheet>
             </PageHeader>
             <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
