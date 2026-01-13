@@ -1,3 +1,4 @@
+
 export type Livestock = {
   id: string;
   tagId: string;
@@ -50,6 +51,11 @@ export type FinancialRecord = {
   amount: number;
   date: string;
   description: string;
+};
+
+export type BirdType = {
+  name: string;
+  traySize: number;
 };
 
 export const livestockData: Livestock[] = [
@@ -152,5 +158,19 @@ export const financialData: FinancialRecord[] = [
   { id: 'fin9', type: 'Income', category: 'Milk Sales', amount: 1300, date: '2024-03-01', description: 'Sale of 2100L milk' },
   { id: 'fin10', type: 'Expense', category: 'Feed', amount: 400, date: '2024-03-02', description: 'Purchase of hay' },
 ];
+
+export const birdTypesData: BirdType[] = [
+    { name: 'Chicken', traySize: 30 },
+    { name: 'Dove', traySize: 50 },
+    { name: 'Duck', traySize: 30 },
+    { name: 'Goose', traySize: 15 },
+    { name: 'Guinea Fowl', traySize: 20 },
+    { name: 'Ostrich', traySize: 10 },
+    { name: 'Pheasants', traySize: 20 },
+    { name: 'Pigeon', traySize: 50 },
+    { name: 'Quail', traySize: 100 },
+    { name: 'Turkey', traySize: 30 },
+];
+
 
 export const getLivestockById = (id: string) => livestockData.find(animal => animal.id === id);

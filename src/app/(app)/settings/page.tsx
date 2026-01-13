@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Upload } from "lucide-react";
+import Link from "next/link";
 
 export default function SettingsPage() {
   return (
@@ -83,9 +84,11 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
                  <div className="space-y-2">
-                    <Label htmlFor="egg-tray-size">Default Egg Tray Size</Label>
-                    <Input id="egg-tray-size" type="number" placeholder="e.g., 30" defaultValue={30} />
+                    <Label>Egg Tray Sizes</Label>
                     <p className="text-xs text-muted-foreground">Set the default number of eggs per tray for different bird types.</p>
+                     <Button asChild variant="outline">
+                        <Link href="/settings/egg-tray-sizes">Manage Egg Tray Sizes</Link>
+                    </Button>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="currency">Currency</Label>
