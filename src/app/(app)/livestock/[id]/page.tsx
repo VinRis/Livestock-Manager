@@ -146,6 +146,11 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   };
   
   const age = calculateAge(animal.birthDate);
+  const isFemaleRuminant = (animal.gender === 'Female' && ['Holstein', 'Angus', 'Boer', 'Merino'].includes(animal.breed));
+  const statusOptions = ['Active', 'Sold', 'Deceased'];
+  if (isFemaleRuminant) {
+    statusOptions.push('Milking', 'Dry', 'Sick', 'In-Calf/Pregnant');
+  }
 
   return (
     <>
@@ -158,7 +163,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                     Edit Profile
                 </Button>
             </DialogTrigger>
-             <DialogContent>
+             <DialogContent className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Edit Profile for {animal.name}</DialogTitle>
                   <DialogDescription>
@@ -175,18 +180,46 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                       <Label htmlFor="tagId">Tag ID</Label>
                       <Input id="tagId" value={editForm.tagId} onChange={handleEditFormChange} />
                     </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="status">Status</Label>
-                        <Select value={editForm.status} onValueChange={(value) => setEditForm({ ...editForm, status: value as 'Active' | 'Sold' | 'Deceased' })}>
-                            <SelectTrigger id="status">
-                                <SelectValue placeholder="Select a status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Active">Active</SelectItem>
-                                <SelectItem value="Sold">Sold</SelectItem>
-                                <SelectItem value="Deceased">Deceased</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    <div className="space-y-2">
+                        <Label htmlFor="imageUrl">Image URL</Label>
+                        <Input id="imageUrl" value={editForm.imageUrl} onChange={handleEditFormChange} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="breed">Breed</Label>
+                            <Input id="breed" value={editForm.breed} onChange={handleEditFormChange} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="birthDate">Birth Date</Label>
+                            <Input id="birthDate" type="date" value={editForm.birthDate} onChange={handleEditFormChange} />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="gender">Gender</Label>
+                            <Select value={editForm.gender} onValueChange={(value) => setEditForm({ ...editForm, gender: value as 'Male' | 'Female' })}>
+                                <SelectTrigger id="gender">
+                                    <SelectValue placeholder="Select a gender" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Male">Male</SelectItem>
+                                    <SelectItem value="Female">Female</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="status">Status</Label>
+                            <Select value={editForm.status} onValueChange={(value) => setEditForm({ ...editForm, status: value as any })}>
+                                <SelectTrigger id="status">
+                                    <SelectValue placeholder="Select a status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {statusOptions.map(option => (
+                                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                   </div>
                 )}
@@ -371,3 +404,5 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     </>
   );
 }
+
+    

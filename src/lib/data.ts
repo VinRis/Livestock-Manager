@@ -5,7 +5,7 @@ export type Livestock = {
   name: string;
   breed: string;
   birthDate: string;
-  status: 'Active' | 'Sold' | 'Deceased';
+  status: 'Active' | 'Sold' | 'Deceased' | 'Milking' | 'Dry' | 'Sick' | 'In-Calf/Pregnant';
   gender: 'Male' | 'Female';
   imageUrl: string;
   imageHint: string;
@@ -71,7 +71,7 @@ export const livestockData: Livestock[] = [
     name: 'Daisy',
     breed: 'Holstein',
     birthDate: '2021-04-12',
-    status: 'Active',
+    status: 'Milking',
     gender: 'Female',
     imageUrl: 'https://picsum.photos/seed/1/600/400',
     imageHint: 'cow pasture',
@@ -189,3 +189,5 @@ export const currencyData: Currency[] = [
 ];
 
 export const getLivestockById = (id: string) => livestockData.find(animal => animal.id === id);
+
+    
