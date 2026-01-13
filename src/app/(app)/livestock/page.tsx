@@ -1,12 +1,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { PlusCircle, MoreVertical, Sheep, Trash2, Edit } from "lucide-react";
+import { PlusCircle, MoreVertical, Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
 import { livestockData, type Livestock } from "@/lib/data";
-import { CowIcon, GoatIcon } from "@/components/icons";
+import { CowIcon, GoatIcon, SheepIcon } from "@/components/icons";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type LivestockCategory = {
@@ -23,7 +23,7 @@ export default function LivestockPage() {
 
     if (['Merino'].includes(animal.breed)) {
       categoryName = 'Sheep';
-      icon = Sheep;
+      icon = SheepIcon;
     } else if (['Boer'].includes(animal.breed)) {
       categoryName = 'Goats';
       icon = GoatIcon;

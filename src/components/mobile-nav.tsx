@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, ClipboardList, CalendarCheck, BarChart3, DollarSign, Settings, Sheep } from "lucide-react";
-
+import { LayoutGrid, ClipboardList, CalendarCheck, BarChart3, DollarSign, Settings } from "lucide-react";
+import { SheepIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/", label: "Dashboard", icon: LayoutGrid },
-  { href: "/livestock", label: "Livestock", icon: Sheep },
+  { href: "/livestock", label: "Livestock", icon: SheepIcon },
   { href: "/activity", label: "Activity", icon: ClipboardList },
   { href: "/tasks", label: "Tasks", icon: CalendarCheck },
   { href: "/finance", label: "Finance", icon: DollarSign },
