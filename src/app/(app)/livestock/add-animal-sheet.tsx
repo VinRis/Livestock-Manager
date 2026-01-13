@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { livestockData, updateLivestock } from "@/lib/data";
+import { livestockData } from "@/lib/data";
 import { Combobox } from "@/components/ui/combobox";
 
 interface AddAnimalSheetProps {
@@ -141,7 +141,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
                 <Label htmlFor="animal-type">Animal Type</Label>
-                <Select value={type} onValueChange={handleTypeChange} disabled={!!defaultType}>
+                <Select value={type} onValueChange={handleTypeChange}>
                     <SelectTrigger id="animal-type">
                         <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -154,7 +154,13 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
             </div>
             <div className="space-y-2">
                 <Label htmlFor="breed">Breed</Label>
-                <Input id="breed" value={breed} onChange={(e) => setBreed(e.target.value)} placeholder="e.g., Holstein" />
+                <Combobox
+                    options={currentBreedOptions}
+                    value={breed}
+                    onChange={setBreed}
+                    placeholder="Select breed..."
+                    emptyMessage="No breeds found."
+                />
             </div>
           </div>
            <div className="grid grid-cols-2 gap-4">
