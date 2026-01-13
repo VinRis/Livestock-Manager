@@ -54,6 +54,8 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   const [healthDate, setHealthDate] = useState(new Date().toISOString().split('T')[0]);
   const [healthEvent, setHealthEvent] = useState('');
   const [healthDescription, setHealthDescription] = useState('');
+  const [isEditHealthDialogOpen, setEditHealthDialogOpen] = useState(false);
+  const [editingHealthRecord, setEditingHealthRecord] = useState<HealthRecord | null>(null);
 
   // Production Metric State
   const [isMetricDialogOpen, setMetricDialogOpen] = useState(false);
@@ -117,6 +119,45 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     setHealthDescription('');
     setHealthDate(new Date().toISOString().split('T')[0]);
     setHealthDialogOpen(false);
+  };
+  
+  const handleEditHealthRecord = (record: HealthRecord) => {
+    setEditingHealthRecord(record);
+    setEditHealthDialogOpen(true);
+  };
+
+  const handleUpdateHealthRecord = () => {
+    if (!editingHealthRecord || !animal) return;
+
+    const updatedHealthRecords = animal.healthRecords.map(r =>
+      r.id === editingHealthRecord.id ? editingHealthRecord : r
+    );
+    const updatedAnimal = { ...animal, healthRecords: updatedHealthRecords };
+    updateLivestock(updatedAnimal);
+    setAnimal(updatedAnimal);
+
+    toast({
+      title: "Health Record Updated",
+      description: "The health record has been successfully updated.",
+    });
+
+    setEditingHealthRecord(null);
+    setEditHealthDialogOpen(false);
+  };
+
+  const handleDeleteHealthRecord = (recordId: string) => {
+    if (!animal) return;
+
+    const updatedHealthRecords = animal.healthRecords.filter(r => r.id !== recordId);
+    const updatedAnimal = { ...animal, healthRecords: updatedHealthRecords };
+    updateLivestock(updatedAnimal);
+    setAnimal(updatedAnimal);
+
+    toast({
+      variant: "destructive",
+      title: "Health Record Deleted",
+      description: "The health record has been removed.",
+    });
   };
 
   const handleSaveProductionMetric = () => {
@@ -489,6 +530,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                           <TableHead>Date</TableHead>
                           <TableHead>Event</TableHead>
                           <TableHead>Details</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -497,11 +539,28 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                             <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
                             <TableCell>{record.event}</TableCell>
                             <TableCell>{record.description}</TableCell>
+                            <TableCell className="text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon">
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => handleEditHealthRecord(record)}>
+                                            <Edit className="mr-2 h-4 w-4"/>Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleDeleteHealthRecord(record.id)} className="text-destructive">
+                                            <Trash2 className="mr-2 h-4 w-4"/>Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
                           </TableRow>
                         ))}
                          {animal.healthRecords.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={3} className="text-center text-muted-foreground py-8">No health records found.</TableCell>
+                                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">No health records found.</TableCell>
                             </TableRow>
                         )}
                       </TableBody>
@@ -710,6 +769,50 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                 <DialogFooter>
                     <Button variant="outline" onClick={() => { setEditMetricDialogOpen(false); setEditingMetric(null); }}>Cancel</Button>
                     <Button onClick={handleUpdateProductionMetric}>Save Changes</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <Dialog open={isEditHealthDialogOpen} onOpenChange={setEditHealthDialogOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit Health Record</DialogTitle>
+                    <DialogDescription>
+                        Update the health record for {animal.name}.
+                    </DialogDescription>
+                </DialogHeader>
+                {editingHealthRecord && (
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-health-date">Date</Label>
+                            <Input
+                                id="edit-health-date"
+                                type="date"
+                                value={editingHealthRecord.date}
+                                onChange={(e) => setEditingHealthRecord({ ...editingHealthRecord, date: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-health-event">Event</Label>
+                            <Input
+                                id="edit-health-event"
+                                value={editingHealthRecord.event}
+                                onChange={(e) => setEditingHealthRecord({ ...editingHealthRecord, event: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-health-description">Description</Label>
+                            <Textarea
+                                id="edit-health-description"
+                                value={editingHealthRecord.description}
+                                onChange={(e) => setEditingHealthRecord({ ...editingHealthRecord, description: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                )}
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => { setEditHealthDialogOpen(false); setEditingHealthRecord(null); }}>Cancel</Button>
+                    <Button onClick={handleUpdateHealthRecord}>Save Changes</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
