@@ -47,7 +47,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
-  const [animal, setAnimal] = useState<Livestock | undefined>(() => getLivestockById(params.id));
+  const [animal, setAnimal] = useState<Livestock | undefined>(getLivestockById(params.id));
   
   // Health Record State
   const [isHealthDialogOpen, setHealthDialogOpen] = useState(false);
@@ -716,3 +716,5 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     </>
   );
 }
+
+    
