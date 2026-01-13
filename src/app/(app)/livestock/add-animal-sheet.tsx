@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -37,10 +37,21 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
   const [tagId, setTagId] = useState('');
   const [birthDate, setBirthDate] = useState(new Date().toISOString().split('T')[0]);
   const [gender, setGender] = useState<'Male' | 'Female' | ''>('');
-  const [breed, setBreed] = useState(defaultType ? breedOptions[defaultType][0] : '');
-  const [type, setType] = useState(defaultType || '');
-  const [sireId, setSireId] = useState('');
-  const [damId, setDamId] = useState('');
+  const [breed, setBreed] = useState('');
+  const [type, setType] = useState<'cattle' | 'sheep' | 'goats' | ''>('');
+  const [sireId, setSireId] = useState('unknown');
+  const [damId, setDamId] = useState('unknown');
+  
+  useEffect(() => {
+    if (defaultType) {
+        setType(defaultType);
+        setBreed(breedOptions[defaultType][0]);
+    } else {
+        setType('');
+        setBreed('');
+    }
+  }, [defaultType, isOpen]); // Reset when sheet is opened/closed or type changes
+
 
   const handleSaveAnimal = () => {
     if (!name || !tagId || !birthDate || !gender || !breed) {
@@ -62,7 +73,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
       sireId: sireId && sireId !== 'unknown' ? sireId : undefined,
       damId: damId && damId !== 'unknown' ? damId : undefined,
       status: 'Active' as const,
-      imageUrl: 'https://picsum.photos/seed/new/600/400',
+      imageUrl: `https://picsum.photos/seed/${Math.random()}/600/400`,
       imageHint: 'animal',
       healthRecords: [],
       productionMetrics: [],
@@ -80,10 +91,15 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
     setTagId('');
     setBirthDate(new Date().toISOString().split('T')[0]);
     setGender('');
-    setBreed('');
-    setType('');
-    setSireId('');
-    setDamId('');
+    setSireId('unknown');
+    setDamId('unknown');
+    
+    // Don't reset type/breed if it's defaulted
+    if (!defaultType) {
+        setType('');
+        setBreed('');
+    }
+    
     onOpenChange(false);
   };
   
@@ -129,7 +145,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
             </div>
             <div className="space-y-2">
                 <Label htmlFor="breed">Breed</Label>
-                <Select value={breed} onValueChange={setBreed} disabled={!type}>
+                <Select value={breed} onValueChange={setBreed} disabled={!!defaultType}>
                     <SelectTrigger id="breed">
                         <SelectValue placeholder="Select breed" />
                     </SelectTrigger>
