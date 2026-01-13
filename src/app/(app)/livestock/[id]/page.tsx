@@ -2,13 +2,12 @@
 "use client";
 
 import { useState } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, Edit, PlusCircle } from "lucide-react";
 import { getLivestockById, type HealthRecord, type ProductionMetric, type Livestock } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -43,6 +42,7 @@ function calculateAge(birthDate: string) {
 export default function LivestockDetailPage({ params }: { params: { id: string } }) {
   const initialAnimal = getLivestockById(params.id);
   const { toast } = useToast();
+  const router = useRouter();
 
   const [animal, setAnimal] = useState<Livestock | undefined>(initialAnimal);
   
@@ -57,6 +57,11 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   const [metricDate, setMetricDate] = useState(new Date().toISOString().split('T')[0]);
   const [metricType, setMetricType] = useState<'Milk' | 'Weight' | 'Breeding' | ''>('');
   const [metricValue, setMetricValue] = useState('');
+  
+  // Edit Profile State
+  const [isEditDialogOpen, setEditDialogOpen] = useState(false);
+  const [editForm, setEditForm] = useState(animal);
+
 
   if (!animal) {
     notFound();
@@ -79,7 +84,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
       description: healthDescription,
     };
 
-    setAnimal(prev => prev ? { ...prev, healthRecords: [...prev.healthRecords, newRecord] } : undefined);
+    setAnimal(prev => prev ? { ...prev, healthRecords: [newRecord, ...prev.healthRecords] } : undefined);
     
     toast({
         title: "Record Saved",
@@ -89,6 +94,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     // Reset form and close dialog
     setHealthEvent('');
     setHealthDescription('');
+    setHealthDate(new Date().toISOString().split('T')[0]);
     setHealthDialogOpen(false);
   };
 
@@ -108,7 +114,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
       value: metricValue,
     };
 
-    setAnimal(prev => prev ? { ...prev, productionMetrics: [...prev.productionMetrics, newMetric] } : undefined);
+    setAnimal(prev => prev ? { ...prev, productionMetrics: [newMetric, ...prev.productionMetrics] } : undefined);
     
     toast({
         title: "Metric Saved",
@@ -118,7 +124,25 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     // Reset form and close dialog
     setMetricType('');
     setMetricValue('');
+    setMetricDate(new Date().toISOString().split('T')[0]);
     setMetricDialogOpen(false);
+  };
+  
+  const handleSaveProfile = () => {
+    if (!editForm) return;
+
+    setAnimal(editForm);
+    toast({
+      title: "Profile Saved",
+      description: `${editForm.name}'s profile has been updated.`,
+    });
+    setEditDialogOpen(false);
+  };
+
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (!editForm) return;
+    const { id, value } = e.target;
+    setEditForm({ ...editForm, [id]: value });
   };
   
   const age = calculateAge(animal.birthDate);
@@ -126,13 +150,51 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   return (
     <>
       <PageHeader title={animal.name} description={`Tag ID: ${animal.tagId}`}>
-         <Button variant="outline" asChild>
-          <Link href="/livestock"><ArrowLeft /> Back to List</Link>
-        </Button>
-        <Button>
-          <Edit />
-          Edit Profile
-        </Button>
+         <Button variant="outline" onClick={() => router.back()}><ArrowLeft /> Back to List</Button>
+         <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
+            <DialogTrigger asChild>
+                <Button>
+                    <Edit />
+                    Edit Profile
+                </Button>
+            </DialogTrigger>
+             <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Profile for {animal.name}</DialogTitle>
+                  <DialogDescription>
+                    Update the details for this animal below.
+                  </DialogDescription>
+                </DialogHeader>
+                {editForm && (
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Name</Label>
+                      <Input id="name" value={editForm.name} onChange={handleEditFormChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tagId">Tag ID</Label>
+                      <Input id="tagId" value={editForm.tagId} onChange={handleEditFormChange} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="status">Status</Label>
+                        <Select value={editForm.status} onValueChange={(value) => setEditForm({ ...editForm, status: value as 'Active' | 'Sold' | 'Deceased' })}>
+                            <SelectTrigger id="status">
+                                <SelectValue placeholder="Select a status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Active">Active</SelectItem>
+                                <SelectItem value="Sold">Sold</SelectItem>
+                                <SelectItem value="Deceased">Deceased</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button onClick={handleSaveProfile}>Save Changes</Button>
+                </DialogFooter>
+             </DialogContent>
+        </Dialog>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <div className="grid gap-6 md:grid-cols-3">
