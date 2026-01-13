@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Edit, PlusCircle, Upload, GitMerge, User, Users, LineChart, Weight, Cake } from "lucide-react";
+import { ArrowLeft, Edit, PlusCircle, Upload, GitMerge, User, Users, LineChart, Weight, Cake, MoreVertical, Trash2 } from "lucide-react";
 import { getLivestockById, type HealthRecord, type ProductionMetric, type Livestock, livestockData, updateLivestock } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -63,6 +64,11 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   // Edit Profile State
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Livestock | undefined>(animal);
+  
+  // Edit Metric State
+  const [isEditMetricDialogOpen, setEditMetricDialogOpen] = useState(false);
+  const [editingMetric, setEditingMetric] = useState<ProductionMetric | null>(null);
+
 
   // Re-fetch animal data if params.id changes
   useEffect(() => {
@@ -144,6 +150,45 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     setMetricValue('');
     setMetricDate(new Date().toISOString().split('T')[0]);
     setMetricDialogOpen(false);
+  };
+
+  const handleEditMetric = (metric: ProductionMetric) => {
+    setEditingMetric(metric);
+    setEditMetricDialogOpen(true);
+  };
+  
+  const handleUpdateProductionMetric = () => {
+      if (!editingMetric || !animal) return;
+
+      const updatedMetrics = animal.productionMetrics.map(m =>
+          m.id === editingMetric.id ? editingMetric : m
+      );
+      const updatedAnimal = { ...animal, productionMetrics: updatedMetrics };
+      updateLivestock(updatedAnimal);
+      setAnimal(updatedAnimal);
+
+      toast({
+          title: "Metric Updated",
+          description: "The production metric has been updated.",
+      });
+
+      setEditingMetric(null);
+      setEditMetricDialogOpen(false);
+  };
+  
+  const handleDeleteMetric = (metricId: string) => {
+      if (!animal) return;
+
+      const updatedMetrics = animal.productionMetrics.filter(m => m.id !== metricId);
+      const updatedAnimal = { ...animal, productionMetrics: updatedMetrics };
+      updateLivestock(updatedAnimal);
+      setAnimal(updatedAnimal);
+
+      toast({
+          variant: "destructive",
+          title: "Metric Deleted",
+          description: "The production metric has been removed.",
+      });
   };
   
   const handleSaveProfile = () => {
@@ -513,6 +558,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                           <TableHead>Date</TableHead>
                           <TableHead>Type</TableHead>
                           <TableHead>Value</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -521,11 +567,28 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                             <TableCell>{new Date(metric.date).toLocaleDateString()}</TableCell>
                             <TableCell>{metric.type}</TableCell>
                             <TableCell>{metric.value}</TableCell>
+                            <TableCell className="text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon">
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => handleEditMetric(metric)}>
+                                            <Edit className="mr-2 h-4 w-4"/>Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleDeleteMetric(metric.id)} className="text-destructive">
+                                            <Trash2 className="mr-2 h-4 w-4"/>Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
                           </TableRow>
                         ))}
                         {animal.productionMetrics.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={3} className="text-center text-muted-foreground py-8">No production metrics found.</TableCell>
+                                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">No production metrics found.</TableCell>
                             </TableRow>
                         )}
                       </TableBody>
@@ -596,6 +659,60 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
           </div>
         </div>
       </main>
+
+        <Dialog open={isEditMetricDialogOpen} onOpenChange={setEditMetricDialogOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit Production Metric</DialogTitle>
+                    <DialogDescription>
+                        Update the production metric for {animal.name}.
+                    </DialogDescription>
+                </DialogHeader>
+                {editingMetric && (
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-metric-date">Date</Label>
+                            <Input
+                                id="edit-metric-date"
+                                type="date"
+                                value={editingMetric.date}
+                                onChange={(e) => setEditingMetric({ ...editingMetric, date: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-metric-type">Type</Label>
+                            <Select
+                                value={editingMetric.type}
+                                onValueChange={(value) =>
+                                    setEditingMetric({ ...editingMetric, type: value as 'Milk' | 'Weight' | 'Breeding' })
+                                }
+                            >
+                                <SelectTrigger id="edit-metric-type">
+                                    <SelectValue placeholder="Select a metric type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Milk">Milk</SelectItem>
+                                    <SelectItem value="Weight">Weight</SelectItem>
+                                    <SelectItem value="Breeding">Breeding</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-metric-value">Value</Label>
+                            <Input
+                                id="edit-metric-value"
+                                value={editingMetric.value}
+                                onChange={(e) => setEditingMetric({ ...editingMetric, value: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                )}
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => { setEditMetricDialogOpen(false); setEditingMetric(null); }}>Cancel</Button>
+                    <Button onClick={handleUpdateProductionMetric}>Save Changes</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </>
   );
 }
