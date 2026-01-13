@@ -1,7 +1,9 @@
+
 import type {Metadata} from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
+import { CurrencyProvider } from '@/contexts/currency-context';
 
 export const metadata: Metadata = {
   title: 'Livestock Lynx',
@@ -22,8 +24,10 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
-          <Toaster />
+          <CurrencyProvider>
+            {children}
+            <Toaster />
+          </CurrencyProvider>
         </ThemeProvider>
       </body>
     </html>

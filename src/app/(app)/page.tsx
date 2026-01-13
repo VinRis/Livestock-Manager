@@ -1,3 +1,6 @@
+
+"use client"
+
 import Link from "next/link";
 import { ArrowUpRight, CheckCircle, Clock, DollarSign, PlusCircle, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,8 +9,10 @@ import { PageHeader } from "@/components/page-header";
 import { tasksData, activityLogData, financialData } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import FinanceChart from "./finance/finance-chart";
+import { useCurrency } from "@/contexts/currency-context";
 
 export default function DashboardPage() {
+  const { currency } = useCurrency();
   const today = new Date().setHours(0, 0, 0, 0);
   const todaysTasks = tasksData.filter(task => new Date(task.dueDate).setHours(0, 0, 0, 0) === today && !task.completed);
   const recentActivities = activityLogData.slice(0, 3);
@@ -27,7 +32,7 @@ export default function DashboardPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${netProfit.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{currency}{netProfit.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">+20.1% from last month</p>
             </CardContent>
           </Card>
@@ -37,7 +42,7 @@ export default function DashboardPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalIncome.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{currency}{totalIncome.toLocaleString()}</div>
                <p className="text-xs text-muted-foreground">Total income this year</p>
             </CardContent>
           </Card>
@@ -47,7 +52,7 @@ export default function DashboardPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalExpense.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{currency}{totalExpense.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">Total expenses this year</p>
             </CardContent>
           </Card>

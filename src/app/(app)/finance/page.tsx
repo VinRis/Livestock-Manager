@@ -1,3 +1,6 @@
+
+"use client"
+
 import { DollarSign, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
@@ -6,8 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { financialData } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import FinanceChart from "./finance-chart";
+import { useCurrency } from "@/contexts/currency-context";
 
 export default function FinancePage() {
+  const { currency } = useCurrency();
   const totalIncome = financialData.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
   const totalExpense = financialData.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
   const netProfit = totalIncome - totalExpense;
@@ -29,7 +34,7 @@ export default function FinancePage() {
               <DollarSign className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalIncome.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{currency}{totalIncome.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">All-time income</p>
             </CardContent>
           </Card>
@@ -39,7 +44,7 @@ export default function FinancePage() {
               <DollarSign className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalExpense.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{currency}{totalExpense.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">All-time expenses</p>
             </CardContent>
           </Card>
@@ -50,7 +55,7 @@ export default function FinancePage() {
             </CardHeader>
             <CardContent>
               <div className={cn("text-2xl font-bold", netProfit >= 0 ? 'text-primary' : 'text-destructive')}>
-                ${netProfit.toLocaleString()}
+                {currency}{netProfit.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">All-time net profit</p>
             </CardContent>
@@ -89,7 +94,7 @@ export default function FinancePage() {
                       </TableCell>
                        <TableCell>{record.category}</TableCell>
                       <TableCell className={cn("text-right", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
-                        {record.type === 'Income' ? '+' : '-'}${record.amount.toLocaleString()}
+                        {record.type === 'Income' ? '+' : '-'}{currency}{record.amount.toLocaleString()}
                       </TableCell>
                     </TableRow>
                   ))}
