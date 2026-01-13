@@ -1,13 +1,17 @@
 
+"use client"
+
 import Link from "next/link";
 import Image from "next/image";
-import { PlusCircle, MoreVertical, Trash2, Edit } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { PlusCircle, MoreVertical, Trash2, Edit, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
 import { livestockData, type Livestock } from "@/lib/data";
 import { CowIcon, GoatIcon, SheepIcon } from "@/components/icons";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 type LivestockCategory = {
   name: string;
@@ -16,7 +20,19 @@ type LivestockCategory = {
   animals: Livestock[];
 };
 
-export default function LivestockPage() {
+function calculateAge(birthDate: string) {
+  const birth = new Date(birthDate);
+  const now = new Date();
+  let years = now.getFullYear() - birth.getFullYear();
+  let months = now.getMonth() - birth.getMonth();
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+  return `${years} years, ${months} months`;
+}
+
+function LivestockCategoryList() {
   const categories = livestockData.reduce((acc, animal) => {
     let categoryName = "Cattle"; 
     let icon = CowIcon;
@@ -106,4 +122,69 @@ export default function LivestockPage() {
       </main>
     </>
   );
+}
+
+function AnimalList({ category }: { category: string }) {
+    const getCategoryDetails = (categoryName: string) => {
+        if (categoryName === 'sheep') return { name: 'Sheep', breeds: ['Merino'] };
+        if (categoryName === 'goats') return { name: 'Goats', breeds: ['Boer'] };
+        return { name: 'Cattle', breeds: ['Holstein', 'Angus'] };
+    }
+
+    const { name: categoryName, breeds } = getCategoryDetails(category);
+    const animals = livestockData.filter(animal => breeds.includes(animal.breed));
+
+    return (
+        <>
+            <PageHeader title={`${categoryName} List`} description={`All animals in the ${categoryName} category.`}>
+                <Button variant="outline" asChild>
+                    <Link href="/livestock"><ArrowLeft /> Back to Categories</Link>
+                </Button>
+                <Button>
+                    <PlusCircle />
+                    Add Animal
+                </Button>
+            </PageHeader>
+            <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
+                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    {animals.map(animal => (
+                        <Card key={animal.id} className="overflow-hidden">
+                            <Link href={`/livestock/${animal.id}`} className="block">
+                                <Image
+                                    src={animal.imageUrl}
+                                    alt={animal.name}
+                                    width={400}
+                                    height={250}
+                                    className="object-cover w-full h-40"
+                                    data-ai-hint={animal.imageHint}
+                                />
+                            </Link>
+                            <CardContent className="p-4">
+                                <Link href={`/livestock/${animal.id}`}>
+                                    <h3 className="font-semibold text-lg hover:underline">{animal.name}</h3>
+                                </Link>
+                                <p className="text-sm text-muted-foreground">Tag ID: {animal.tagId}</p>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    <Badge>{animal.breed}</Badge>
+                                    <Badge variant="secondary">{animal.gender}</Badge>
+                                    <Badge variant="outline">{calculateAge(animal.birthDate)}</Badge>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            </main>
+        </>
+    );
+}
+
+export default function LivestockPage() {
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category");
+
+  if (category) {
+    return <AnimalList category={category} />;
+  }
+  
+  return <LivestockCategoryList />;
 }
