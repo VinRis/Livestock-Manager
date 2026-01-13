@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, Edit, PlusCircle, CheckCircle } from "lucide-react";
+import { ArrowLeft, Edit, PlusCircle, CheckCircle, Upload } from "lucide-react";
 import { getLivestockById, type HealthRecord, type ProductionMetric, type Livestock } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { cn } from "@/lib/utils";
 
 function calculateAge(birthDate: string) {
@@ -45,6 +44,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   const initialAnimal = getLivestockById(params.id);
   const { toast } = useToast();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [animal, setAnimal] = useState<Livestock | undefined>(initialAnimal);
   
@@ -147,9 +147,16 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     setEditForm({ ...editForm, [id]: value });
   };
 
-  const handleImageSelect = (imageUrl: string, imageHint: string) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editForm) return;
-    setEditForm({ ...editForm, imageUrl, imageHint });
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditForm({ ...editForm, imageUrl: reader.result as string, imageHint: file.name });
+      };
+      reader.readAsDataURL(file);
+    }
   };
   
   const age = calculateAge(animal.birthDate);
@@ -180,27 +187,24 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                 {editForm && (
                   <div className="grid gap-4 py-4">
                     <div className="space-y-2">
-                      <Label>Animal Image</Label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {PlaceHolderImages.map((image) => (
-                          <div key={image.id} className="relative cursor-pointer" onClick={() => handleImageSelect(image.imageUrl, image.imageHint)}>
-                            <Image
-                              src={image.imageUrl}
-                              alt={image.description}
-                              width={150}
-                              height={100}
-                              className={cn(
-                                "rounded-md object-cover transition-all",
-                                editForm.imageUrl === image.imageUrl ? "ring-2 ring-primary ring-offset-2" : "hover:opacity-80"
-                              )}
-                            />
-                            {editForm.imageUrl === image.imageUrl && (
-                               <div className="absolute inset-0 flex items-center justify-center bg-primary/50">
-                                <CheckCircle className="h-8 w-8 text-primary-foreground" />
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                      <Label htmlFor="animal-image">Animal Image</Label>
+                      <div className="flex items-center gap-4">
+                        <Image
+                          src={editForm.imageUrl}
+                          alt={editForm.name}
+                          width={128}
+                          height={128}
+                          className="h-32 w-32 rounded-lg border object-cover"
+                          data-ai-hint={editForm.imageHint}
+                        />
+                        <div className="flex-1">
+                          <Input id="animal-image" type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageSelect} />
+                          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Upload Image
+                          </Button>
+                          <p className="text-xs text-muted-foreground mt-2">PNG, JPG, GIF up to 10MB.</p>
+                        </div>
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -431,5 +435,3 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     </>
   );
 }
-
-    
