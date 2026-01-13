@@ -156,7 +156,7 @@ function AnimalList({ category }: { category: string }) {
                  <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen} defaultType={type}>
                     <Button>
                         <PlusCircle />
-                        Add {categoryName.slice(0, -1)}
+                        Add Animal
                     </Button>
                 </AddAnimalSheet>
             </PageHeader>
@@ -192,11 +192,11 @@ function AnimalList({ category }: { category: string }) {
                     <Card>
                         <CardContent className="flex flex-col items-center justify-center gap-4 p-12 text-center">
                             <h3 className="text-xl font-medium">No animals in this category yet.</h3>
-                            <p className="text-muted-foreground">Get started by adding a new {categoryName.toLowerCase().slice(0, -1)}.</p>
+                            <p className="text-muted-foreground">Get started by adding a new animal.</p>
                              <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen} defaultType={type}>
                                 <Button>
                                     <PlusCircle />
-                                    Add {categoryName.slice(0, -1)}
+                                    Add Animal
                                 </Button>
                             </AddAnimalSheet>
                         </CardContent>
