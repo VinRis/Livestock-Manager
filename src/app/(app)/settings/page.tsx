@@ -10,10 +10,10 @@ import { Upload, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import React from "react";
+import { useTheme } from "next-themes";
 
 export default function SettingsPage() {
-  // A simple state to manage theme for demonstration
-  const [theme, setTheme] = React.useState('light');
+  const { theme, setTheme } = useTheme();
 
   return (
     <>
