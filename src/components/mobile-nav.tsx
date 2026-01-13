@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, ClipboardList, CalendarCheck, BarChart3, DollarSign } from "lucide-react";
+import { LayoutGrid, ClipboardList, CalendarCheck, BarChart3, DollarSign, Settings } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { CowIcon } from "./icons";
@@ -14,13 +14,20 @@ const navLinks = [
   { href: "/tasks", label: "Tasks", icon: CalendarCheck },
   { href: "/finance", label: "Finance", icon: DollarSign },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
 
+  // We need to adjust grid columns based on the number of nav items.
+  const gridColsClass = `grid-cols-${navLinks.length}`;
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 grid h-16 grid-cols-6 border-t bg-background/95 backdrop-blur-sm md:hidden">
+    <nav className={cn(
+      "fixed bottom-0 left-0 right-0 z-40 grid h-16 border-t bg-background/95 backdrop-blur-sm",
+      gridColsClass
+      )}>
       {navLinks.map((link) => {
         const isActive = (pathname === "/" && link.href === "/") || (pathname !== "/" && link.href !== "/" && pathname.startsWith(link.href));
         return (
