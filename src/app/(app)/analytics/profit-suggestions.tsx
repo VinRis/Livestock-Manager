@@ -16,7 +16,11 @@ async function fetchSuggestions() {
 
   try {
     const result = await getProfitOptimizationSuggestions(input);
-    return result.suggestions.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    // Split suggestions by number, then clean up the text.
+    return result.suggestions
+      .split(/\d+\.\s+/) // Split by "1. ", "2. ", etc.
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
   } catch (error) {
     console.error("AI Error:", error);
     return ["Failed to load AI suggestions. Please try again later."];
@@ -27,15 +31,16 @@ export async function ProfitSuggestions() {
   const suggestions = await fetchSuggestions();
 
   const parsedSuggestions = suggestions.map(line => {
-    // Remove markdown list characters and bold markers
-    const cleanedLine = line.replace(/^[\s*-]+|[\*]/g, '').trim();
-    const parts = cleanedLine.split(':');
+    // The first part of the suggestion is the title, the rest is the description
+    const cleanedLine = line.replace(/[\*]/g, '').trim();
+    const parts = cleanedLine.split(/ by | to /);
     if (parts.length > 1) {
       return { 
         title: parts[0].trim(), 
-        description: parts.slice(1).join(':').trim() 
+        description: parts.slice(1).join(' to ').trim() 
       };
     }
+    // Fallback for suggestions that don't fit the pattern
     return { title: "AI Suggestion", description: cleanedLine };
   });
 
