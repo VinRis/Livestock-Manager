@@ -394,15 +394,17 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
           </div>
 
           <div className="lg:col-span-2">
-            <Tabs defaultValue="health">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="health">Health Records</TabsTrigger>
-                <TabsTrigger value="production">Production</TabsTrigger>
-                <TabsTrigger value="lineage">Lineage</TabsTrigger>
-              </TabsList>
-              <TabsContent value="health">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
+            <Card>
+              <Tabs defaultValue="health" className="w-full">
+                <CardHeader className="p-4">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="health">Health Records</TabsTrigger>
+                    <TabsTrigger value="production">Production</TabsTrigger>
+                    <TabsTrigger value="lineage">Lineage</TabsTrigger>
+                  </TabsList>
+                </CardHeader>
+                <TabsContent value="health" className="p-0">
+                  <CardHeader className="flex flex-row items-center justify-between px-6">
                     <CardTitle>Health History</CardTitle>
                     <Dialog open={isHealthDialogOpen} onOpenChange={setHealthDialogOpen}>
                       <DialogTrigger asChild>
@@ -435,7 +437,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                       </DialogContent>
                     </Dialog>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="px-6">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -460,11 +462,9 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                       </TableBody>
                     </Table>
                   </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="production">
-                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
+                </TabsContent>
+                <TabsContent value="production" className="p-0">
+                  <CardHeader className="flex flex-row items-center justify-between px-6">
                     <CardTitle>Production Metrics</CardTitle>
                     <Dialog open={isMetricDialogOpen} onOpenChange={setMetricDialogOpen}>
                        <DialogTrigger asChild>
@@ -506,7 +506,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                        </DialogContent>
                     </Dialog>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="px-6">
                      <Table>
                       <TableHeader>
                         <TableRow>
@@ -531,15 +531,13 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                       </TableBody>
                     </Table>
                   </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="lineage">
-                 <Card>
-                  <CardHeader>
+                </TabsContent>
+                <TabsContent value="lineage" className="p-0">
+                  <CardHeader className="px-6">
                     <CardTitle>Lineage</CardTitle>
                     <CardDescription>Family tree of {animal.name}.</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-6 px-6">
                     <div>
                         <h3 className="mb-4 text-lg font-semibold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Parents</h3>
                         <div className="flex items-center justify-around relative">
@@ -592,9 +590,9 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                         </div>
                     )}
                   </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                </TabsContent>
+              </Tabs>
+            </Card>
           </div>
         </div>
       </main>
