@@ -164,8 +164,8 @@ function AnimalList({ category }: { category: string }) {
             <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                     {animals.map(animal => (
-                        <Card key={animal.id} className="overflow-hidden group relative">
-                            <Link href={`/livestock/${animal.id}`} className="block">
+                        <Card key={animal.id} className="overflow-hidden rounded-lg">
+                            <Link href={`/livestock/${animal.id}`} className="block relative group">
                                 <Image
                                     src={animal.imageUrl}
                                     alt={animal.name}
