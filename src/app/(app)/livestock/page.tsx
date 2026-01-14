@@ -12,12 +12,12 @@ import { livestockData, type Livestock } from "@/lib/data";
 import { CowIcon, GoatIcon, SheepIcon } from "@/components/icons";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import AddAnimalSheet from "./add-animal-sheet";
 import AddCategorySheet from "./add-category-sheet";
-import { cn } from "@/lib/utils";
+import AddNewCategorySheet from "./add-new-category-sheet";
 
-type LivestockCategoryName = 'Cattle' | 'Sheep' | 'Goats' | 'Pigs' | 'Chickens';
+type LivestockCategoryName = 'Cattle' | 'Sheep' | 'Goats' | 'Pigs' | 'Chickens' | string;
 
 type LivestockCategory = {
   name: LivestockCategoryName;
@@ -26,28 +26,37 @@ type LivestockCategory = {
   animals: Livestock[];
 };
 
-const allCategories: { name: LivestockCategoryName; icon: React.ComponentType<{ className?: string }> }[] = [
+const initialCategories: { name: LivestockCategoryName; icon: React.ComponentType<{ className?: string }> }[] = [
     { name: 'Cattle', icon: CowIcon },
     { name: 'Sheep', icon: SheepIcon },
     { name: 'Goats', icon: GoatIcon },
-    // { name: 'Pigs', icon: PigIcon },
-    // { name: 'Chickens', icon: ChickenIcon },
 ];
 
 function LivestockCategoryList() {
   const [addAnimalSheetOpen, setAddAnimalSheetOpen] = useState(false);
   const [addCategorySheetOpen, setAddCategorySheetOpen] = useState(false);
+  const [addNewCategorySheetOpen, setAddNewCategorySheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<LivestockCategoryName>('Cattle');
+  
+  const [allCategories, setAllCategories] = useState(initialCategories);
 
-  const categories = allCategories.map(cat => {
-    const animals = livestockData.filter(animal => animal.category === cat.name);
-    return {
-      name: cat.name,
-      icon: cat.icon,
-      animals: animals,
-      count: animals.length,
+  const handleAddCategory = (newCategoryName: string) => {
+    if (newCategoryName && !allCategories.some(c => c.name.toLowerCase() === newCategoryName.toLowerCase())) {
+      setAllCategories(prev => [...prev, { name: newCategoryName, icon: CowIcon }]); // Using CowIcon as default for new categories
     }
-  });
+  };
+  
+  const categories: LivestockCategory[] = useMemo(() => {
+    return allCategories.map(cat => {
+        const animals = livestockData.filter(animal => animal.category === cat.name);
+        return {
+          name: cat.name,
+          icon: cat.icon,
+          animals: animals,
+          count: animals.length,
+        }
+    });
+  }, [allCategories]);
 
   const handleAddClick = (category: LivestockCategory) => {
     setSelectedCategory(category.name);
@@ -61,12 +70,12 @@ function LivestockCategoryList() {
   return (
     <>
       <PageHeader title="Livestock Categories" description="Manage your herd by categories.">
-         <AddAnimalSheet isOpen={addAnimalSheetOpen} onOpenChange={setAddAnimalSheetOpen} defaultCategory={selectedCategory}>
+         <AddNewCategorySheet isOpen={addNewCategorySheetOpen} onOpenChange={setAddNewCategorySheetOpen} onAddCategory={handleAddCategory}>
             <Button>
                 <PlusCircle />
-                Add Animal
+                Add Category
             </Button>
-         </AddAnimalSheet>
+         </AddNewCategorySheet>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -137,10 +146,13 @@ function LivestockCategoryList() {
           ))}
         </div>
       </main>
+      <AddAnimalSheet isOpen={addAnimalSheetOpen} onOpenChange={setAddAnimalSheetOpen} defaultCategory={selectedCategory as 'Cattle' | 'Sheep' | 'Goats'} >
+        <div />
+      </AddAnimalSheet>
       <AddCategorySheet
         isOpen={addCategorySheetOpen}
         onOpenChange={setAddCategorySheetOpen}
-        category={selectedCategory}
+        category={selectedCategory as 'Cattle' | 'Sheep' | 'Goats' | 'Pigs' | 'Chickens'}
       >
         <div/>
       </AddCategorySheet>
@@ -160,7 +172,7 @@ function AnimalList({ category }: { category: string }) {
                 <Button variant="outline" asChild>
                     <Link href="/livestock"><ArrowLeft /> Back to Categories</Link>
                 </Button>
-                 <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen} defaultCategory={categoryName}>
+                 <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen} defaultCategory={categoryName as 'Cattle' | 'Sheep' | 'Goats'}>
                     <Button>
                         <PlusCircle />
                         Add Animal
@@ -169,9 +181,9 @@ function AnimalList({ category }: { category: string }) {
             </PageHeader>
             <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                    {animals.map(animal => (
-                        <Card key={animal.id} className="overflow-hidden rounded-lg group">
-                            <Link href={`/livestock/${animal.id}`} className="block relative">
+                     {animals.map(animal => (
+                        <Card key={animal.id} className="overflow-hidden rounded-lg">
+                           <Link href={`/livestock/${animal.id}`} className="block relative group">
                                 <Image
                                     src={animal.imageUrl}
                                     alt={animal.name}
@@ -194,7 +206,7 @@ function AnimalList({ category }: { category: string }) {
                         <CardContent className="flex flex-col items-center justify-center gap-4 p-12 text-center">
                             <h3 className="text-xl font-medium">No animals in this category yet.</h3>
                             <p className="text-muted-foreground">Get started by adding a new animal.</p>
-                             <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen} defaultCategory={categoryName}>
+                             <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen} defaultCategory={categoryName as 'Cattle' | 'Sheep' | 'Goats'}>
                                 <Button>
                                     <PlusCircle />
                                     Add Animal
