@@ -48,6 +48,10 @@ function LivestockCategoryList() {
       setAllCategories(prev => [...prev, { name: newCategoryName, icon: CowIcon, managementStyle: managementStyle }]); // Using CowIcon as default for new categories
     }
   };
+
+  const handleDeleteCategory = (categoryName: LivestockCategoryName) => {
+    setAllCategories(prev => prev.filter(c => c.name !== categoryName));
+  };
   
   const categories: LivestockCategory[] = useMemo(() => {
     return allCategories.map(cat => {
@@ -117,7 +121,7 @@ function LivestockCategoryList() {
                             <PlusCircle className="mr-2 h-4 w-4"/>Add {category.managementStyle === 'batch' ? 'Batch' : 'Animal'}
                         </DropdownMenuItem>
                         <DropdownMenuItem><Edit className="mr-2 h-4 w-4"/>Edit Category</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Delete Category</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteCategory(category.name)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Delete Category</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
               </CardHeader>
