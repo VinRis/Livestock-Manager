@@ -113,8 +113,10 @@ export default function ActivityLogPage() {
   };
   
   const handleEditClick = (activity: Activity) => {
-    setSelectedActivity(activity);
-    setEditDialogOpen(true);
+    setTimeout(() => {
+        setSelectedActivity(activity);
+        setEditDialogOpen(true);
+    }, 0);
   };
 
   const handleUpdateActivity = () => {
@@ -134,8 +136,10 @@ export default function ActivityLogPage() {
   };
   
   const handleDeleteClick = (activity: Activity) => {
-    setSelectedActivity(activity);
-    setDeleteDialogOpen(true);
+    setTimeout(() => {
+        setSelectedActivity(activity);
+        setDeleteDialogOpen(true);
+    }, 0);
   };
 
   const handleConfirmDelete = () => {
@@ -286,10 +290,10 @@ export default function ActivityLogPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditClick(activity)}>
+                            <DropdownMenuItem onSelect={() => handleEditClick(activity)}>
                                 <Edit className="mr-2 h-4 w-4"/>Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteClick(activity)} className="text-destructive">
+                            <DropdownMenuItem onSelect={() => handleDeleteClick(activity)} className="text-destructive">
                                 <Trash2 className="mr-2 h-4 w-4"/>Delete
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -384,5 +388,3 @@ export default function ActivityLogPage() {
     </>
   );
 }
-
-    
