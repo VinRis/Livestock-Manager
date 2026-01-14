@@ -20,7 +20,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState, useMemo } from "react";
 import AddAnimalSheet from "./add-animal-sheet";
@@ -58,8 +57,10 @@ function LivestockCategoryList() {
   const [addCategorySheetOpen, setAddCategorySheetOpen] = useState(false);
   const [addNewCategorySheetOpen, setAddNewCategorySheetOpen] = useState(false);
   const [editCategorySheetOpen, setEditCategorySheetOpen] = useState(false);
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<LivestockCategoryName>('Cattle');
   const [editingCategory, setEditingCategory] = useState<CategoryDefinition | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<LivestockCategoryName | null>(null);
 
   
   const [allCategories, setAllCategories] = useState<CategoryDefinition[]>(initialCategories);
@@ -70,8 +71,16 @@ function LivestockCategoryList() {
     }
   };
 
-  const handleDeleteCategory = (categoryName: LivestockCategoryName) => {
-    setAllCategories(prev => prev.filter(c => c.name !== categoryName));
+  const handleDeleteRequest = (categoryName: LivestockCategoryName) => {
+    setDeletingCategory(categoryName);
+    setDeleteConfirmationOpen(true);
+  };
+  
+  const handleDeleteCategory = () => {
+    if(!deletingCategory) return;
+    setAllCategories(prev => prev.filter(c => c.name !== deletingCategory));
+    setDeleteConfirmationOpen(false);
+    setDeletingCategory(null);
   };
 
   const handleEditClick = (category: CategoryDefinition) => {
@@ -143,7 +152,6 @@ function LivestockCategoryList() {
                      </div>
                   </div>
                 </div>
-                <AlertDialog>
                   <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">
@@ -151,33 +159,15 @@ function LivestockCategoryList() {
                           </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleAddClick(category)}>
+                          <DropdownMenuItem onSelect={() => handleAddClick(category)}>
                               <PlusCircle className="mr-2 h-4 w-4"/>Add {category.managementStyle === 'batch' ? 'Batch' : 'Animal'}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditClick(categoryDefinition)}><Edit className="mr-2 h-4 w-4"/>Edit Category</DropdownMenuItem>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
-                              <Trash2 className="mr-2 h-4 w-4"/>Delete Category
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
+                          <DropdownMenuItem onSelect={() => handleEditClick(categoryDefinition)}><Edit className="mr-2 h-4 w-4"/>Edit Category</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleDeleteRequest(category.name)} className="text-destructive">
+                            <Trash2 className="mr-2 h-4 w-4"/>Delete Category
+                          </DropdownMenuItem>
                       </DropdownMenuContent>
                   </DropdownMenu>
-                   <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the 
-                          <strong> {category.name}</strong> category. Any animals in this category will not be deleted but will need to be re-categorized.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteCategory(category.name)}>
-                          Continue
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
               </CardHeader>
               <CardContent>
                 {category.count > 0 ? (
@@ -217,6 +207,25 @@ function LivestockCategoryList() {
           )})}
         </div>
       </main>
+
+       <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the 
+                        <strong> {deletingCategory}</strong> category. Any animals in this category will not be deleted but will need to be re-categorized.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteCategory}>
+                        Continue
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
       <AddAnimalSheet isOpen={addAnimalSheetOpen} onOpenChange={setAddAnimalSheetOpen} defaultCategory={selectedCategory as 'Cattle' | 'Sheep' | 'Goats'} >
         <div />
       </AddAnimalSheet>
@@ -309,3 +318,5 @@ export default function LivestockPage() {
   
   return <LivestockCategoryList />;
 }
+
+    
