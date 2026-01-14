@@ -2,7 +2,7 @@
 "use client"
 
 import { DollarSign, PlusCircle, TrendingDown, TrendingUp } from "lucide-react";
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 
 export default function FinancePage() {
   const { currency } = useCurrency();
@@ -33,6 +34,27 @@ export default function FinancePage() {
   const recentIncome = recentFinancials.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
   const recentExpense = recentFinancials.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
   const recentNet = recentIncome - recentExpense;
+
+  const topExpenses = useMemo(() => {
+    const expenseByCategory = recentFinancials
+      .filter(t => t.type === 'Expense')
+      .reduce((acc, t) => {
+        if (!acc[t.category]) {
+          acc[t.category] = 0;
+        }
+        acc[t.category] += t.amount;
+        return acc;
+      }, {} as Record<string, number>);
+
+    return Object.entries(expenseByCategory)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([category, amount]) => ({
+        category,
+        amount,
+        percentage: recentExpense > 0 ? (amount / recentExpense) * 100 : 0,
+      }));
+  }, [recentFinancials, recentExpense]);
 
   const handleTypeSelect = (type: 'Income' | 'Expense') => {
     setTransactionType(type);
@@ -169,10 +191,10 @@ export default function FinancePage() {
                     <CardTitle>Income vs. Expenses</CardTitle>
                     <CardDescription>View your monthly financial performance.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-primary mb-4">Click to view graph</p>
+                    <CardContent className="space-y-6">
+                        <p className="text-sm text-primary">Click to view graph</p>
                         <div className="space-y-2 text-sm">
-                            <h4 className="font-semibold text-muted-foreground">Last 30 Days</h4>
+                            <h4 className="font-semibold text-muted-foreground">Last 30 Days Summary</h4>
                             <div className="flex items-center justify-between">
                                 <span className="flex items-center gap-2"><TrendingUp className="text-primary"/>Income</span>
                                 <span className="font-semibold">{currency}{recentIncome.toLocaleString()}</span>
@@ -186,6 +208,23 @@ export default function FinancePage() {
                                 <span className={cn("font-bold", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
                             </div>
                         </div>
+
+                         {topExpenses.length > 0 && (
+                          <div className="space-y-4 text-sm">
+                            <h4 className="font-semibold text-muted-foreground">Top Expenses (Last 30 Days)</h4>
+                            <div className="space-y-3">
+                              {topExpenses.map((expense) => (
+                                <div key={expense.category} className="space-y-1">
+                                  <div className="flex justify-between text-xs">
+                                    <span className="font-medium">{expense.category}</span>
+                                    <span>{currency}{expense.amount.toLocaleString()}</span>
+                                  </div>
+                                  <Progress value={expense.percentage} className="h-2" />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                     </CardContent>
                 </Card>
             </DialogTrigger>
