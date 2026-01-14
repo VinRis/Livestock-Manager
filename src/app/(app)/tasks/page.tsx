@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
@@ -24,13 +24,28 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
+const ClientFormattedDate = ({ date }: { date: string }) => {
+  const [formattedDate, setFormattedDate] = useState('');
+
+  useEffect(() => {
+    setFormattedDate(new Date(date).toLocaleDateString());
+  }, [date]);
+
+  // Render a placeholder on the server and during the initial client render
+  if (!formattedDate) {
+    return <span className="text-sm text-muted-foreground">Loading date...</span>;
+  }
+
+  return <p className="text-sm text-muted-foreground">{formattedDate}</p>;
+};
+
 const TaskItem = ({ task, onToggle }: { task: Task; onToggle: (id: string, completed: boolean) => void }) => (
   <div className="flex items-center gap-3 rounded-lg p-3 hover:bg-accent">
     <Checkbox id={`task-${task.id}`} checked={task.completed} onCheckedChange={(checked) => onToggle(task.id, !!checked)} />
     <label htmlFor={`task-${task.id}`} className="flex-1 cursor-pointer">
       <p className="font-medium">{task.title}</p>
       <div className="flex items-center gap-2">
-        <p className="text-sm text-muted-foreground">{new Date(task.dueDate).toLocaleDateString()}</p>
+        <ClientFormattedDate date={task.dueDate} />
         <Badge variant="secondary">{task.category}</Badge>
       </div>
     </label>
