@@ -198,38 +198,41 @@ export default function ActivityLogPage() {
                   <Input id="activity-date" type="date" value={newActivity.date} onChange={(e) => setNewActivity(prev => ({...prev, date: e.target.value}))} />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="livestock" className={cn(!!newActivity.livestockCategory && 'text-muted-foreground')}>
-                  Affected Livestock (Optional)
-                </Label>
-                <Combobox
-                    options={livestockOptions}
-                    value={newActivity.livestockId}
-                    onChange={(value) => setNewActivity(prev => ({...prev, livestockId: value}))}
-                    placeholder="Select an animal..."
-                    emptyMessage="No animals found."
-                    disabled={!!newActivity.livestockCategory}
-                />
+
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="livestock" className={cn(!!newActivity.livestockCategory && 'text-muted-foreground')}>
+                        Affected Livestock
+                    </Label>
+                    <Combobox
+                        options={livestockOptions}
+                        value={newActivity.livestockId}
+                        onChange={(value) => setNewActivity(prev => ({...prev, livestockId: value}))}
+                        placeholder="Select an animal..."
+                        emptyMessage="No animals found."
+                        disabled={!!newActivity.livestockCategory}
+                    />
+                </div>
+                <div className="relative text-center self-end pb-2">
+                    <span className="bg-background px-2 text-sm text-muted-foreground">OR</span>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="livestock-category" className={cn(!!newActivity.livestockId && 'text-muted-foreground')}>
+                        Affected Category
+                    </Label>
+                    <Select value={newActivity.livestockCategory} onValueChange={(value) => setNewActivity(prev => ({...prev, livestockCategory: value}))} disabled={!!newActivity.livestockId}>
+                        <SelectTrigger id="livestock-category">
+                            <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {categoryOptions.map(cat => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
               </div>
-              <div className="relative text-center my-2">
-                <span className="bg-background px-2 text-sm text-muted-foreground">OR</span>
-                <div className="absolute left-0 top-1/2 w-full -translate-y-1/2 border-t -z-10"></div>
-              </div>
-               <div className="space-y-2">
-                  <Label htmlFor="livestock-category" className={cn(!!newActivity.livestockId && 'text-muted-foreground')}>
-                    Affected Category (Optional)
-                  </Label>
-                  <Select value={newActivity.livestockCategory} onValueChange={(value) => setNewActivity(prev => ({...prev, livestockCategory: value}))} disabled={!!newActivity.livestockId}>
-                      <SelectTrigger id="livestock-category">
-                          <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          {categoryOptions.map(cat => (
-                              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                          ))}
-                      </SelectContent>
-                  </Select>
-              </div>
+             
               <div className="space-y-2 mt-4">
                 <Label htmlFor="activity-description">Description (Optional)</Label>
                 <Textarea
@@ -388,5 +391,3 @@ export default function ActivityLogPage() {
     </>
   );
 }
-
-    
