@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { PlusCircle, Link as LinkIcon } from "lucide-react";
+import { PlusCircle, Link as LinkIcon, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +20,17 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,11 +53,11 @@ const ClientFormattedDate = ({ date }: { date: string }) => {
   return <p className="text-sm text-muted-foreground">{formattedDate}</p>;
 };
 
-const TaskItem = ({ task, onToggle }: { task: Task; onToggle: (id: string, completed: boolean) => void }) => (
-  <div className="flex items-start gap-3 rounded-lg p-3 hover:bg-accent">
+const TaskItem = ({ task, onToggle, onEdit, onDelete }: { task: Task; onToggle: (id: string, completed: boolean) => void; onEdit: (task: Task) => void; onDelete: (task: Task) => void; }) => (
+  <div className={cn("flex items-start gap-3 rounded-lg p-3 hover:bg-accent", task.completed && "opacity-60")}>
     <Checkbox id={`task-${task.id}`} checked={task.completed} onCheckedChange={(checked) => onToggle(task.id, !!checked)} className="mt-1" />
     <label htmlFor={`task-${task.id}`} className="flex-1 cursor-pointer">
-      <p className="font-medium">{task.title}</p>
+      <p className={cn("font-medium", task.completed && "line-through")}>{task.title}</p>
       <div className="flex items-center gap-2 flex-wrap">
         <ClientFormattedDate date={task.dueDate} />
         <Badge variant="secondary">{task.category}</Badge>
@@ -68,13 +79,34 @@ const TaskItem = ({ task, onToggle }: { task: Task; onToggle: (id: string, compl
         )}
       </div>
     </label>
+    <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreVertical className="h-4 w-4" />
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={() => onEdit(task)}>
+                <Edit className="mr-2 h-4 w-4"/>Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onDelete(task)} className="text-destructive">
+                <Trash2 className="mr-2 h-4 w-4"/>Delete
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+    </DropdownMenu>
   </div>
 );
 
 export default function TasksPage() {
   const { toast } = useToast();
-  const [tasks, setTasks] = useState<Task[]>(initialTasksData);
+  const [tasks, setTasks] = useState<Task[]>(initialTasksData.sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+
+  // Dialog states
   const [isAddDialogOpen, setAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  // Form state
   const [newTask, setNewTask] = useState({
     title: '',
     dueDate: new Date().toISOString().split('T')[0],
@@ -82,12 +114,15 @@ export default function TasksPage() {
     livestockId: '',
     livestockCategory: ''
   });
+  
+  // State for editing/deleting
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handleToggleTask = (taskId: string, completed: boolean) => {
     setTasks(prevTasks =>
       prevTasks.map(task =>
         task.id === taskId ? { ...task, completed } : task
-      )
+      ).sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     );
   };
 
@@ -114,7 +149,7 @@ export default function TasksPage() {
       livestockCategory: newTask.livestockCategory,
     };
 
-    setTasks(prevTasks => [taskToAdd, ...prevTasks].sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+    setTasks(prevTasks => [taskToAdd, ...prevTasks].sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
 
     toast({
       title: "Task Added",
@@ -130,6 +165,52 @@ export default function TasksPage() {
     });
     setAddDialogOpen(false);
   };
+  
+  const handleEditClick = (task: Task) => {
+    setTimeout(() => {
+        setSelectedTask(task);
+        setEditDialogOpen(true);
+    }, 0);
+  };
+
+  const handleUpdateTask = () => {
+    if (!selectedTask) return;
+
+    setTasks(prevTasks =>
+      prevTasks.map(t => (t.id === selectedTask.id ? selectedTask : t))
+    );
+
+    toast({
+      title: "Task Updated",
+      description: "The task details have been saved.",
+    });
+
+    setEditDialogOpen(false);
+    setSelectedTask(null);
+  };
+  
+  const handleDeleteClick = (task: Task) => {
+    setTimeout(() => {
+        setSelectedTask(task);
+        setDeleteDialogOpen(true);
+    }, 0);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedTask) return;
+
+    setTasks(prevTasks => prevTasks.filter(t => t.id !== selectedTask.id));
+
+    toast({
+      variant: "destructive",
+      title: "Task Deleted",
+      description: "The task has been removed from your list.",
+    });
+
+    setDeleteDialogOpen(false);
+    setSelectedTask(null);
+  };
+
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -154,7 +235,7 @@ export default function TasksPage() {
 
   const taskCategories: Task['category'][] = ['Health', 'Feeding', 'Maintenance', 'Admin'];
   const livestockOptions = livestockData.map(animal => ({ value: animal.id, label: `${animal.name} (${animal.tagId})`}));
-  const categoryOptions = categoriesData.map(cat => cat.name);
+  const categoryOptions = categoriesData.map(cat => ({ value: cat.name, label: cat.name }));
 
   
   return (
@@ -235,7 +316,7 @@ export default function TasksPage() {
                         </SelectTrigger>
                         <SelectContent>
                             {categoryOptions.map(cat => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -260,7 +341,7 @@ export default function TasksPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                  {todaysTasks.length > 0 ? todaysTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} />) : <p className="text-muted-foreground text-center p-4">No tasks for today.</p>}
+                  {todaysTasks.length > 0 ? todaysTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick} />) : <p className="text-muted-foreground text-center p-4">No tasks for today.</p>}
                 </div>
               </CardContent>
             </Card>
@@ -269,7 +350,7 @@ export default function TasksPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                   {upcomingTasks.length > 0 ? upcomingTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} />) : <p className="text-muted-foreground text-center p-4">No upcoming tasks.</p>}
+                   {upcomingTasks.length > 0 ? upcomingTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick}/>) : <p className="text-muted-foreground text-center p-4">No upcoming tasks.</p>}
                 </div>
               </CardContent>
             </Card>
@@ -278,13 +359,88 @@ export default function TasksPage() {
             <Card>
               <CardContent className="pt-6">
                  <div className="space-y-2">
-                   {pastTasks.length > 0 ? pastTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} />) : <p className="text-muted-foreground text-center p-4">No past tasks.</p>}
+                   {pastTasks.length > 0 ? pastTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick}/>) : <p className="text-muted-foreground text-center p-4">No past tasks.</p>}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Task</DialogTitle>
+            <DialogDescription>
+              Update the details for this task.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTask && (
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-task-title">Title</Label>
+                <Input
+                  id="edit-task-title"
+                  value={selectedTask.title}
+                  onChange={(e) => setSelectedTask(prev => prev ? {...prev, title: e.target.value} : null)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-task-duedate">Due Date</Label>
+                  <Input
+                    id="edit-task-duedate"
+                    type="date"
+                    value={selectedTask.dueDate}
+                    onChange={(e) => setSelectedTask(prev => prev ? {...prev, dueDate: e.target.value} : null)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-task-category">Category</Label>
+                  <Select 
+                    value={selectedTask.category} 
+                    onValueChange={(value) => setSelectedTask(prev => prev ? {...prev, category: value as Task['category']} : null)}
+                  >
+                    <SelectTrigger id="edit-task-category">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {taskCategories.map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleUpdateTask}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this task from your list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
+
+    
