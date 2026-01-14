@@ -48,6 +48,9 @@ export type Task = {
   dueDate: string;
   completed: boolean;
   category: 'Health' | 'Feeding' | 'Maintenance' | 'Admin';
+  livestockId?: string;
+  livestockName?: string;
+  livestockCategory?: string;
 };
 
 export type FinancialRecord = {
@@ -200,11 +203,11 @@ export const activityLogData: Activity[] = [
 ];
 
 export const tasksData: Task[] = [
-  { id: 'task1', title: 'Administer vaccinations for calves', dueDate: new Date().toISOString(), completed: false, category: 'Health' },
+  { id: 'task1', title: 'Administer vaccinations for calves', dueDate: new Date().toISOString(), completed: false, category: 'Health', livestockCategory: 'Cattle' },
   { id: 'task2', title: 'Order new batch of feed', dueDate: new Date().toISOString(), completed: true, category: 'Feeding' },
   { id: 'task3', title: 'Repair water trough in Field B', dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), completed: false, category: 'Maintenance' },
-  { id: 'task4', title: 'Record milk production data', dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), completed: false, category: 'Admin' },
-  { id: 'task5', title: 'Shear Merino flock', dueDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), completed: true, category: 'Health' },
+  { id: 'task4', title: 'Record milk production data', dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), completed: false, category: 'Admin', livestockId: '1', livestockName: 'Daisy' },
+  { id: 'task5', title: 'Shear Merino flock', dueDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), completed: true, category: 'Health', livestockCategory: 'Sheep' },
   { id: 'task6', title: 'Rotate grazing pasture for cattle', dueDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), completed: true, category: 'Feeding' },
 ];
 

@@ -2,12 +2,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PlusCircle } from "lucide-react";
+import Link from "next/link";
+import { PlusCircle, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { tasksData as initialTasksData, type Task } from "@/lib/data";
+import { tasksData as initialTasksData, type Task, livestockData } from "@/lib/data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -23,6 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Combobox } from "@/components/ui/combobox";
+import { cn } from "@/lib/utils";
 
 const ClientFormattedDate = ({ date }: { date: string }) => {
   const [formattedDate, setFormattedDate] = useState('');
@@ -40,13 +43,29 @@ const ClientFormattedDate = ({ date }: { date: string }) => {
 };
 
 const TaskItem = ({ task, onToggle }: { task: Task; onToggle: (id: string, completed: boolean) => void }) => (
-  <div className="flex items-center gap-3 rounded-lg p-3 hover:bg-accent">
-    <Checkbox id={`task-${task.id}`} checked={task.completed} onCheckedChange={(checked) => onToggle(task.id, !!checked)} />
+  <div className="flex items-start gap-3 rounded-lg p-3 hover:bg-accent">
+    <Checkbox id={`task-${task.id}`} checked={task.completed} onCheckedChange={(checked) => onToggle(task.id, !!checked)} className="mt-1" />
     <label htmlFor={`task-${task.id}`} className="flex-1 cursor-pointer">
       <p className="font-medium">{task.title}</p>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <ClientFormattedDate date={task.dueDate} />
         <Badge variant="secondary">{task.category}</Badge>
+        {task.livestockId && task.livestockName && (
+            <Button variant="link" size="sm" className="h-auto p-0" asChild>
+                <Link href={`/livestock/${task.livestockId}`} className="text-xs">
+                    <LinkIcon className="mr-1 h-3 w-3"/>
+                    {task.livestockName}
+                </Link>
+            </Button>
+        )}
+        {task.livestockCategory && !task.livestockId && (
+            <Button variant="link" size="sm" className="h-auto p-0" asChild>
+                <Link href={`/livestock?category=${task.livestockCategory.toLowerCase()}`} className="text-xs">
+                    <LinkIcon className="mr-1 h-3 w-3"/>
+                    {task.livestockCategory}
+                </Link>
+            </Button>
+        )}
       </div>
     </label>
   </div>
@@ -59,7 +78,9 @@ export default function TasksPage() {
   const [newTask, setNewTask] = useState({
     title: '',
     dueDate: new Date().toISOString().split('T')[0],
-    category: '' as Task['category'] | ''
+    category: '' as Task['category'] | '',
+    livestockId: '',
+    livestockCategory: ''
   });
 
   const handleToggleTask = (taskId: string, completed: boolean) => {
@@ -80,12 +101,17 @@ export default function TasksPage() {
       return;
     }
 
+    const selectedAnimal = livestockData.find(animal => animal.id === newTask.livestockId);
+
     const taskToAdd: Task = {
       id: `task-${Date.now()}`,
       title: newTask.title,
       dueDate: newTask.dueDate,
       category: newTask.category as Task['category'],
       completed: false,
+      livestockId: selectedAnimal?.id,
+      livestockName: selectedAnimal?.name,
+      livestockCategory: newTask.livestockCategory,
     };
 
     setTasks(prevTasks => [taskToAdd, ...prevTasks].sort((a,b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
@@ -99,6 +125,8 @@ export default function TasksPage() {
       title: '',
       dueDate: new Date().toISOString().split('T')[0],
       category: '',
+      livestockId: '',
+      livestockCategory: ''
     });
     setAddDialogOpen(false);
   };
@@ -125,6 +153,9 @@ export default function TasksPage() {
   });
 
   const taskCategories: Task['category'][] = ['Health', 'Feeding', 'Maintenance', 'Admin'];
+  const livestockOptions = livestockData.map(animal => ({ value: animal.id, label: `${animal.name} (${animal.tagId})`}));
+  const categoryOptions = Array.from(new Set(livestockData.map(animal => animal.category)));
+
   
   return (
     <>
@@ -136,7 +167,7 @@ export default function TasksPage() {
               New Task
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Schedule a New Task</DialogTitle>
               <DialogDescription>
@@ -175,6 +206,39 @@ export default function TasksPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+               <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 pt-4">
+                <div className="space-y-2">
+                    <Label htmlFor="livestock" className={cn(!!newTask.livestockCategory && 'text-muted-foreground')}>
+                        Affected Livestock (Optional)
+                    </Label>
+                    <Combobox
+                        options={livestockOptions}
+                        value={newTask.livestockId}
+                        onChange={(value) => setNewTask(prev => ({...prev, livestockId: value}))}
+                        placeholder="Select an animal..."
+                        emptyMessage="No animals found."
+                        disabled={!!newTask.livestockCategory}
+                    />
+                </div>
+                <div className="relative text-center self-end pb-2">
+                    <span className="bg-background px-2 text-sm text-muted-foreground">OR</span>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="livestock-category" className={cn(!!newTask.livestockId && 'text-muted-foreground')}>
+                        Affected Category (Optional)
+                    </Label>
+                    <Select value={newTask.livestockCategory} onValueChange={(value) => setNewTask(prev => ({...prev, livestockCategory: value}))} disabled={!!newTask.livestockId}>
+                        <SelectTrigger id="livestock-category">
+                            <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {categoryOptions.map(cat => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
               </div>
             </div>
