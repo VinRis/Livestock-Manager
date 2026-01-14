@@ -100,7 +100,9 @@ function LivestockCategoryList() {
                      </div>
                      <div>
                         <CardTitle>{category.name}</CardTitle>
-                        <CardDescription>{category.count} Animals</CardDescription>
+                        <CardDescription>
+                          {category.count} {category.managementStyle === 'batch' ? (category.count === 1 ? 'Batch' : 'Batches') : (category.count === 1 ? 'Animal' : 'Animals')}
+                        </CardDescription>
                      </div>
                   </div>
                 </div>
@@ -112,7 +114,7 @@ function LivestockCategoryList() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleAddClick(category)}>
-                            <PlusCircle className="mr-2 h-4 w-4"/>Add Animal
+                            <PlusCircle className="mr-2 h-4 w-4"/>Add {category.managementStyle === 'batch' ? 'Batch' : 'Animal'}
                         </DropdownMenuItem>
                         <DropdownMenuItem><Edit className="mr-2 h-4 w-4"/>Edit Category</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Delete Category</DropdownMenuItem>
@@ -146,9 +148,9 @@ function LivestockCategoryList() {
                     </>
                 ) : (
                     <div className="text-center text-muted-foreground py-4">
-                        <p>No animals in this category.</p>
+                        <p>No {category.managementStyle === 'batch' ? 'batches' : 'animals'} in this category.</p>
                         <Button variant="secondary" className="mt-2" onClick={() => handleAddClick(category)}>
-                            Add First Animal
+                             {category.managementStyle === 'batch' ? 'Add First Batch' : 'Add First Animal'}
                         </Button>
                     </div>
                 )}
