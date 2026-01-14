@@ -47,7 +47,8 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
-  const initialAnimal = getLivestockById(params.id);
+  const id = params.id;
+  const initialAnimal = getLivestockById(id);
   const [animal, setAnimal] = useState<Livestock | undefined>(initialAnimal);
   
   // Health Record State
@@ -75,10 +76,10 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
 
   // Re-fetch animal data if params.id changes
   useEffect(() => {
-    const currentAnimal = getLivestockById(params.id);
+    const currentAnimal = getLivestockById(id);
     setAnimal(currentAnimal);
     setEditForm(currentAnimal);
-  }, [params.id]);
+  }, [id]);
 
   const sire = useMemo(() => animal?.sireId ? getLivestockById(animal.sireId) : undefined, [animal]);
   const dam = useMemo(() => animal?.damId ? getLivestockById(animal.damId) : undefined, [animal]);
