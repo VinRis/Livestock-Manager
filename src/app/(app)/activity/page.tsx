@@ -41,15 +41,18 @@ const formatRelativeDate = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffTime = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+  const diffSeconds = Math.floor(diffTime / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
 
-  if (diffDays === 0) {
-    if (diffHours < 1) return "Just now";
-    return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
-  }
+  if (diffDays > 1) return `${diffDays} days ago`;
   if (diffDays === 1) return "Yesterday";
-  return `${diffDays} days ago`;
+  if (diffHours > 1) return `${diffHours} hours ago`;
+  if (diffHours === 1) return "1 hour ago";
+  if (diffMinutes > 1) return `${diffMinutes} minutes ago`;
+  if (diffMinutes === 1) return "1 minute ago";
+  return "Just now";
 };
 
 export default function ActivityLogPage() {
