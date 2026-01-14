@@ -72,8 +72,11 @@ function LivestockCategoryList() {
   };
 
   const handleDeleteRequest = (categoryName: LivestockCategoryName) => {
-    setDeletingCategory(categoryName);
-    setDeleteConfirmationOpen(true);
+    // Use setTimeout to allow dropdown to close before opening dialog
+    setTimeout(() => {
+        setDeletingCategory(categoryName);
+        setDeleteConfirmationOpen(true);
+    }, 0);
   };
   
   const handleConfirmDelete = () => {
@@ -84,8 +87,11 @@ function LivestockCategoryList() {
   };
 
   const handleEditClick = (category: CategoryDefinition) => {
-    setEditingCategory(category);
-    setEditCategorySheetOpen(true);
+     // Use setTimeout to allow dropdown to close before opening sheet
+    setTimeout(() => {
+        setEditingCategory(category);
+        setEditCategorySheetOpen(true);
+    }, 0);
   }
 
   const handleUpdateCategory = (updatedCategory: CategoryDefinition) => {
@@ -318,3 +324,5 @@ export default function LivestockPage() {
   
   return <LivestockCategoryList />;
 }
+
+    
