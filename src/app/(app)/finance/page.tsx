@@ -62,15 +62,17 @@ export default function FinancePage() {
         return acc;
       }, {} as Record<string, number>);
 
+    const totalRecentExpense = Object.values(expenseByCategory).reduce((sum, amount) => sum + amount, 0);
+
     return Object.entries(expenseByCategory)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 3)
       .map(([category, amount]) => ({
         category,
         amount,
-        percentage: recentExpense > 0 ? (amount / recentExpense) * 100 : 0,
+        percentage: totalRecentExpense > 0 ? (amount / totalRecentExpense) * 100 : 0,
       }));
-  }, [recentFinancials, recentExpense]);
+  }, [recentFinancials]);
 
   const handleTypeSelect = (type: 'Income' | 'Expense') => {
     setTransactionType(type);
