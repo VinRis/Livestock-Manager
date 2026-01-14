@@ -26,6 +26,8 @@ import { useState, useMemo } from "react";
 import AddAnimalSheet from "./add-animal-sheet";
 import AddCategorySheet from "./add-category-sheet";
 import AddNewCategorySheet from "./add-new-category-sheet";
+import EditCategorySheet from "./edit-category-sheet";
+
 
 export type LivestockCategoryName = 'Cattle' | 'Sheep' | 'Goats' | 'Pigs' | 'Chickens' | string;
 
@@ -39,7 +41,13 @@ export type LivestockCategory = {
   managementStyle: ManagementStyle;
 };
 
-const initialCategories: { name: LivestockCategoryName; icon: React.ComponentType<{ className?: string }>; managementStyle: ManagementStyle }[] = [
+export type CategoryDefinition = {
+    name: LivestockCategoryName;
+    icon: React.ComponentType<{ className?: string }>;
+    managementStyle: ManagementStyle;
+}
+
+const initialCategories: CategoryDefinition[] = [
     { name: 'Cattle', icon: CowIcon, managementStyle: 'animal' },
     { name: 'Sheep', icon: SheepIcon, managementStyle: 'animal' },
     { name: 'Goats', icon: GoatIcon, managementStyle: 'animal' },
@@ -49,9 +57,12 @@ function LivestockCategoryList() {
   const [addAnimalSheetOpen, setAddAnimalSheetOpen] = useState(false);
   const [addCategorySheetOpen, setAddCategorySheetOpen] = useState(false);
   const [addNewCategorySheetOpen, setAddNewCategorySheetOpen] = useState(false);
+  const [editCategorySheetOpen, setEditCategorySheetOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<LivestockCategoryName>('Cattle');
+  const [editingCategory, setEditingCategory] = useState<CategoryDefinition | null>(null);
+
   
-  const [allCategories, setAllCategories] = useState(initialCategories);
+  const [allCategories, setAllCategories] = useState<CategoryDefinition[]>(initialCategories);
 
   const handleAddCategory = (newCategoryName: string, managementStyle: ManagementStyle) => {
     if (newCategoryName && !allCategories.some(c => c.name.toLowerCase() === newCategoryName.toLowerCase())) {
@@ -62,6 +73,16 @@ function LivestockCategoryList() {
   const handleDeleteCategory = (categoryName: LivestockCategoryName) => {
     setAllCategories(prev => prev.filter(c => c.name !== categoryName));
   };
+
+  const handleEditClick = (category: CategoryDefinition) => {
+    setEditingCategory(category);
+    setEditCategorySheetOpen(true);
+  }
+
+  const handleUpdateCategory = (updatedCategory: CategoryDefinition) => {
+    setAllCategories(prev => prev.map(c => c.name === updatedCategory.name ? updatedCategory : c));
+    setEditingCategory(null);
+  }
   
   const categories: LivestockCategory[] = useMemo(() => {
     return allCategories.map(cat => {
@@ -85,7 +106,7 @@ function LivestockCategoryList() {
     }
   }
   
-  const existingCategoryNames = useMemo(() => categories.map(c => c.name), [categories]);
+  const existingCategoryNames = useMemo(() => allCategories.map(c => c.name), [allCategories]);
 
   return (
     <>
@@ -104,7 +125,9 @@ function LivestockCategoryList() {
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category) => (
+          {categories.map((category) => {
+            const categoryDefinition = allCategories.find(c => c.name === category.name)!;
+            return (
             <Card key={category.name}>
               <CardHeader className="flex flex-row items-start justify-between">
                 <div>
@@ -131,7 +154,7 @@ function LivestockCategoryList() {
                           <DropdownMenuItem onClick={() => handleAddClick(category)}>
                               <PlusCircle className="mr-2 h-4 w-4"/>Add {category.managementStyle === 'batch' ? 'Batch' : 'Animal'}
                           </DropdownMenuItem>
-                          <DropdownMenuItem><Edit className="mr-2 h-4 w-4"/>Edit Category</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditClick(categoryDefinition)}><Edit className="mr-2 h-4 w-4"/>Edit Category</DropdownMenuItem>
                           <AlertDialogTrigger asChild>
                             <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>
                               <Trash2 className="mr-2 h-4 w-4"/>Delete Category
@@ -191,7 +214,7 @@ function LivestockCategoryList() {
                 )}
               </CardContent>
             </Card>
-          ))}
+          )})}
         </div>
       </main>
       <AddAnimalSheet isOpen={addAnimalSheetOpen} onOpenChange={setAddAnimalSheetOpen} defaultCategory={selectedCategory as 'Cattle' | 'Sheep' | 'Goats'} >
@@ -204,6 +227,14 @@ function LivestockCategoryList() {
       >
         <div/>
       </AddCategorySheet>
+       {editingCategory && (
+        <EditCategorySheet
+          isOpen={editCategorySheetOpen}
+          onOpenChange={setEditCategorySheetOpen}
+          category={editingCategory}
+          onUpdateCategory={handleUpdateCategory}
+        />
+      )}
     </>
   );
 }
