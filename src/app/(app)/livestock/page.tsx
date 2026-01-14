@@ -76,7 +76,7 @@ function LivestockCategoryList() {
     setDeleteConfirmationOpen(true);
   };
   
-  const handleDeleteCategory = () => {
+  const handleConfirmDelete = () => {
     if(!deletingCategory) return;
     setAllCategories(prev => prev.filter(c => c.name !== deletingCategory));
     setDeleteConfirmationOpen(false);
@@ -218,8 +218,8 @@ function LivestockCategoryList() {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteCategory}>
+                    <AlertDialogCancel onClick={() => setDeletingCategory(null)}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConfirmDelete}>
                         Continue
                     </AlertDialogAction>
                 </AlertDialogFooter>
@@ -318,5 +318,3 @@ export default function LivestockPage() {
   
   return <LivestockCategoryList />;
 }
-
-    
