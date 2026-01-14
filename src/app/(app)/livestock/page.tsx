@@ -8,7 +8,7 @@ import { PlusCircle, MoreVertical, Trash2, Edit, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
-import { livestockData, type Livestock, categoriesData, type CategoryDefinition } from "@/lib/data";
+import { livestockData, categoriesData, type CategoryDefinition } from "@/lib/data";
 import { CowIcon, GoatIcon, SheepIcon } from "@/components/icons";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useReducer } from "react";
 import AddAnimalSheet from "./add-animal-sheet";
 import AddCategorySheet from "./add-category-sheet";
 import AddNewCategorySheet from "./add-new-category-sheet";
@@ -42,7 +42,7 @@ export type LivestockCategory = {
   name: LivestockCategoryName;
   count: number;
   icon: React.ComponentType<{ className?: string }>;
-  animals: Livestock[];
+  animals: import("@/lib/data").Livestock[];
   managementStyle: ManagementStyle;
 };
 
@@ -57,14 +57,14 @@ function LivestockCategoryList() {
   const [editingCategory, setEditingCategory] = useState<CategoryDefinition | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<LivestockCategoryName | null>(null);
 
+  // Force a re-render when the underlying data array is mutated
+  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
   
-  const [allCategories, setAllCategories] = useState<CategoryDefinition[]>(categoriesData);
-
   const handleAddCategory = (newCategoryName: string, managementStyle: ManagementStyle) => {
-    if (newCategoryName && !allCategories.some(c => c.name.toLowerCase() === newCategoryName.toLowerCase())) {
+    if (newCategoryName && !categoriesData.some(c => c.name.toLowerCase() === newCategoryName.toLowerCase())) {
       const newCategory = { name: newCategoryName, icon: 'CowIcon', managementStyle: managementStyle };
-      categoriesData.push(newCategory); // Persist
-      setAllCategories(prev => [...prev, newCategory]);
+      categoriesData.push(newCategory); // Directly mutate the imported array
+      forceUpdate();
     }
   };
 
@@ -80,9 +80,9 @@ function LivestockCategoryList() {
     if(!deletingCategory) return;
     const index = categoriesData.findIndex(c => c.name === deletingCategory);
     if (index > -1) {
-        categoriesData.splice(index, 1); // Persist
+        categoriesData.splice(index, 1); // Directly mutate the imported array
+        forceUpdate();
     }
-    setAllCategories(prev => prev.filter(c => c.name !== deletingCategory));
     setDeleteConfirmationOpen(false);
     setDeletingCategory(null);
   };
@@ -98,14 +98,14 @@ function LivestockCategoryList() {
   const handleUpdateCategory = (updatedCategory: CategoryDefinition) => {
     const index = categoriesData.findIndex(c => c.name === updatedCategory.name);
     if (index > -1) {
-        categoriesData[index] = updatedCategory; // Persist
+        categoriesData[index] = updatedCategory; // Directly mutate the imported array
+        forceUpdate();
     }
-    setAllCategories(prev => prev.map(c => c.name === updatedCategory.name ? updatedCategory : c));
     setEditingCategory(null);
   }
   
   const categories: LivestockCategory[] = useMemo(() => {
-    return allCategories.map(cat => {
+    return categoriesData.map(cat => {
         const animals = livestockData.filter(animal => animal.category === cat.name);
         const IconComponent = iconMap[cat.icon] || CowIcon;
         return {
@@ -116,7 +116,7 @@ function LivestockCategoryList() {
           managementStyle: cat.managementStyle
         }
     });
-  }, [allCategories]);
+  }, [categoriesData, _]); // Depend on categoriesData and the reducer state
 
   const handleAddClick = (category: LivestockCategory) => {
     setSelectedCategory(category.name);
@@ -127,7 +127,7 @@ function LivestockCategoryList() {
     }
   }
   
-  const existingCategoryNames = useMemo(() => allCategories.map(c => c.name), [allCategories]);
+  const existingCategoryNames = useMemo(() => categoriesData.map(c => c.name), [categoriesData, _]);
 
   return (
     <>
@@ -147,7 +147,7 @@ function LivestockCategoryList() {
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => {
-            const categoryDefinition = allCategories.find(c => c.name === category.name)!;
+            const categoryDefinition = categoriesData.find(c => c.name === category.name)!;
             return (
             <Card key={category.name}>
               <CardHeader className="flex flex-row items-start justify-between">
@@ -330,5 +330,3 @@ export default function LivestockPage() {
   
   return <LivestockCategoryList />;
 }
-
-    
