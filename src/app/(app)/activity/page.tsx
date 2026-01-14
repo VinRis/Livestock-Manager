@@ -24,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Combobox } from "@/components/ui/combobox";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const formatRelativeDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -50,6 +51,7 @@ export default function ActivityLogPage() {
   const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
   const [activityDescription, setActivityDescription] = useState('');
   const [livestockId, setLivestockId] = useState('');
+  const [livestockCategory, setLivestockCategory] = useState('');
 
   const handleLogActivity = () => {
     if (!activityType || !activityDate || !activityDescription) {
@@ -69,7 +71,8 @@ export default function ActivityLogPage() {
       date: new Date(activityDate).toISOString(),
       description: activityDescription,
       livestockId: selectedAnimal?.id,
-      livestockName: selectedAnimal?.name
+      livestockName: selectedAnimal?.name,
+      livestockCategory: livestockCategory,
     };
 
     setActivityLog(prevLog => [newActivity, ...prevLog]);
@@ -84,11 +87,13 @@ export default function ActivityLogPage() {
     setActivityDate(new Date().toISOString().split('T')[0]);
     setActivityDescription('');
     setLivestockId('');
+    setLivestockCategory('');
     setDialogOpen(false);
   };
   
   const activityTypes = ['Feeding', 'Health Check', 'Breeding', 'Movement', 'General'];
   const livestockOptions = livestockData.map(animal => ({ value: animal.id, label: `${animal.name} (${animal.tagId})`}));
+  const categoryOptions = Array.from(new Set(livestockData.map(animal => animal.category)));
 
   return (
     <>
@@ -128,16 +133,38 @@ export default function ActivityLogPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="livestock">Affected Livestock (Optional)</Label>
+                <Label htmlFor="livestock" className={cn(!!livestockCategory && 'text-muted-foreground')}>
+                  Affected Livestock (Optional)
+                </Label>
                 <Combobox
                     options={livestockOptions}
                     value={livestockId}
                     onChange={setLivestockId}
                     placeholder="Select an animal..."
                     emptyMessage="No animals found."
+                    disabled={!!livestockCategory}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="relative text-center my-2">
+                <span className="bg-background px-2 text-sm text-muted-foreground">OR</span>
+                <div className="absolute left-0 top-1/2 w-full -translate-y-1/2 border-t -z-10"></div>
+              </div>
+               <div className="space-y-2">
+                  <Label htmlFor="livestock-category" className={cn(!!livestockId && 'text-muted-foreground')}>
+                    Affected Category (Optional)
+                  </Label>
+                  <Select value={livestockCategory} onValueChange={setLivestockCategory} disabled={!!livestockId}>
+                      <SelectTrigger id="livestock-category">
+                          <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          {categoryOptions.map(cat => (
+                              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          ))}
+                      </SelectContent>
+                  </Select>
+              </div>
+              <div className="space-y-2 mt-4">
                 <Label htmlFor="activity-description">Description</Label>
                 <Textarea
                   id="activity-description"
@@ -178,6 +205,14 @@ export default function ActivityLogPage() {
                            <Link href={`/livestock/${activity.livestockId}`} className="text-xs">
                              <LinkIcon className="mr-1 h-3 w-3"/>
                              {activity.livestockName}
+                           </Link>
+                        </Button>
+                      )}
+                      {activity.livestockCategory && (
+                        <Button variant="link" size="sm" className="h-auto p-0 mt-1" asChild>
+                           <Link href={`/livestock?category=${activity.livestockCategory.toLowerCase()}`} className="text-xs">
+                             <LinkIcon className="mr-1 h-3 w-3"/>
+                             {activity.livestockCategory}
                            </Link>
                         </Button>
                       )}
