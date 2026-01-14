@@ -105,7 +105,7 @@ export default function ActivityLogPage() {
               Log Activity
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Log a New Activity</DialogTitle>
               <DialogDescription>
