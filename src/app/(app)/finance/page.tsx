@@ -27,7 +27,7 @@ const ClientFormattedDate = ({ date }: { date: string }) => {
 
   // Render a placeholder or null on the server and initial client render
   if (!formattedDate) {
-    return null; // or a loading skeleton
+    return null;
   }
 
   return <div className="text-sm text-muted-foreground">{formattedDate}</div>;
@@ -62,7 +62,7 @@ export default function FinancePage() {
         return acc;
       }, {} as Record<string, number>);
 
-    const totalRecentExpense = Object.values(expenseByCategory).reduce((sum, amount) => sum + amount, 0);
+    const totalRecentExpenseValue = Object.values(expenseByCategory).reduce((sum, amount) => sum + amount, 0);
 
     return Object.entries(expenseByCategory)
       .sort(([, a], [, b]) => b - a)
@@ -70,7 +70,7 @@ export default function FinancePage() {
       .map(([category, amount]) => ({
         category,
         amount,
-        percentage: totalRecentExpense > 0 ? (amount / totalRecentExpense) * 100 : 0,
+        percentage: totalRecentExpenseValue > 0 ? (amount / totalRecentExpenseValue) * 100 : 0,
       }));
   }, [recentFinancials]);
 
@@ -167,7 +167,7 @@ export default function FinancePage() {
         </Dialog>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle>Total Income</CardTitle>
@@ -202,34 +202,52 @@ export default function FinancePage() {
             </Card>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Dialog>
-            <DialogTrigger asChild>
-                <Card className="lg:col-span-4 cursor-pointer hover:bg-accent">
-                    <CardHeader>
-                    <CardTitle>Income vs. Expenses</CardTitle>
-                    <CardDescription>View your monthly financial performance.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <p className="text-sm text-primary">Click to view graph</p>
-                        <div className="space-y-2 text-sm">
-                            <h4 className="font-semibold text-muted-foreground">Last 30 Days Summary</h4>
-                            <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-2"><TrendingUp className="text-primary"/>Income</span>
-                                <span className="font-semibold">{currency}{recentIncome.toLocaleString()}</span>
-                            </div>
-                             <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-2"><TrendingDown className="text-destructive"/>Expense</span>
-                                <span className="font-semibold">{currency}{recentExpense.toLocaleString()}</span>
-                            </div>
-                            <div className="flex items-center justify-between border-t pt-2 mt-2">
-                                <span className="font-bold">Net</span>
-                                <span className={cn("font-bold", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
-                            </div>
-                        </div>
+          <div className="lg:col-span-4 space-y-4">
+            <Dialog>
+              <DialogTrigger asChild>
+                  <Card className="cursor-pointer hover:bg-accent">
+                      <CardHeader>
+                      <CardTitle>Income vs. Expenses</CardTitle>
+                      <CardDescription>View your monthly financial performance.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                          <p className="text-sm text-primary">Click to view graph</p>
+                          <div className="space-y-2 text-sm">
+                              <h4 className="font-semibold text-muted-foreground">Last 30 Days Summary</h4>
+                              <div className="flex items-center justify-between">
+                                  <span className="flex items-center gap-2"><TrendingUp className="text-primary"/>Income</span>
+                                  <span className="font-semibold">{currency}{recentIncome.toLocaleString()}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                  <span className="flex items-center gap-2"><TrendingDown className="text-destructive"/>Expense</span>
+                                  <span className="font-semibold">{currency}{recentExpense.toLocaleString()}</span>
+                              </div>
+                              <div className="flex items-center justify-between border-t pt-2 mt-2">
+                                  <span className="font-bold">Net</span>
+                                  <span className={cn("font-bold", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
+                              </div>
+                          </div>
+                      </CardContent>
+                  </Card>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl">
+                  <DialogHeader>
+                      <DialogTitle>Income vs. Expenses</DialogTitle>
+                      <DialogDescription>Monthly financial performance.</DialogDescription>
+                  </DialogHeader>
+                  <div className="h-[400px] w-full pt-4">
+                      <FinanceChart />
+                  </div>
+              </DialogContent>
+            </Dialog>
 
-                         {topExpenses.length > 0 && (
-                          <div className="space-y-4 text-sm">
-                            <h4 className="font-semibold text-muted-foreground">Top Expenses (Last 30 Days)</h4>
+            {topExpenses.length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Top Expenses (Last 30 Days)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4 text-sm">
                             <div className="space-y-3">
                               {topExpenses.map((expense) => (
                                 <div key={expense.category} className="space-y-1">
@@ -241,21 +259,13 @@ export default function FinancePage() {
                                 </div>
                               ))}
                             </div>
-                          </div>
-                        )}
+                        </div>
                     </CardContent>
                 </Card>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl">
-                <DialogHeader>
-                    <DialogTitle>Income vs. Expenses</DialogTitle>
-                    <DialogDescription>Monthly financial performance.</DialogDescription>
-                </DialogHeader>
-                <div className="h-[400px] w-full pt-4">
-                    <FinanceChart />
-                </div>
-            </DialogContent>
-          </Dialog>
+            )}
+
+          </div>
+          
 
           <Card className="lg:col-span-3">
             <CardHeader>
@@ -293,5 +303,7 @@ export default function FinancePage() {
     </>
   );
 }
+
+    
 
     
