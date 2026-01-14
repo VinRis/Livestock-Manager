@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts"
@@ -37,8 +38,8 @@ const chartConfig = {
 
 export default function FinanceChart() {
   return (
-    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-      <ResponsiveContainer width="100%" height={350}>
+    <ChartContainer config={chartConfig} className="min-h-[250px] w-full md:min-h-[350px]">
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData}>
           <CartesianGrid vertical={false} />
           <XAxis
