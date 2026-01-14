@@ -74,11 +74,11 @@ export default function ActivityLogPage() {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
   const handleLogActivity = () => {
-    if (!newActivity.type || !newActivity.date || !newActivity.description) {
+    if (!newActivity.type || !newActivity.date) {
       toast({
         variant: "destructive",
         title: "Missing Information",
-        description: "Please fill out all fields to log an activity.",
+        description: "Please select an activity type and date.",
       });
       return;
     }
@@ -231,7 +231,7 @@ export default function ActivityLogPage() {
                   </Select>
               </div>
               <div className="space-y-2 mt-4">
-                <Label htmlFor="activity-description">Description</Label>
+                <Label htmlFor="activity-description">Description (Optional)</Label>
                 <Textarea
                   id="activity-description"
                   placeholder="Describe the activity in detail..."
@@ -388,3 +388,5 @@ export default function ActivityLogPage() {
     </>
   );
 }
+
+    
