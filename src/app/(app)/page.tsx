@@ -10,6 +10,15 @@ import { tasksData, activityLogData, financialData } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import FinanceChart from "./finance/finance-chart";
 import { useCurrency } from "@/contexts/currency-context";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 
 export default function DashboardPage() {
   const { currency } = useCurrency();
@@ -78,9 +87,25 @@ export default function DashboardPage() {
           <Card className="lg:col-span-4">
             <CardHeader>
               <CardTitle>Profitability Overview</CardTitle>
+              <CardDescription>A summary of your income vs expenses.</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
-              <FinanceChart />
+               <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">View Report</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-3xl">
+                    <DialogHeader>
+                      <DialogTitle>Profitability Overview</DialogTitle>
+                      <DialogDescription>
+                        A month-by-month breakdown of your income and expenses.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="h-[400px] w-full pt-4">
+                      <FinanceChart />
+                    </div>
+                  </DialogContent>
+                </Dialog>
             </CardContent>
           </Card>
           <Card className="lg:col-span-3">
