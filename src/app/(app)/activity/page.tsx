@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { PlusCircle, Link as LinkIcon } from "lucide-react";
+import { PlusCircle, Link as LinkIcon, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,17 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,17 +55,26 @@ const formatRelativeDate = (dateString: string) => {
 export default function ActivityLogPage() {
   const { toast } = useToast();
   const [activityLog, setActivityLog] = useState<Activity[]>(initialActivityLogData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-  const [isDialogOpen, setDialogOpen] = useState(false);
   
-  // Form state
-  const [activityType, setActivityType] = useState<'Feeding' | 'Health Check' | 'Breeding' | 'Movement' | 'General' | ''>('');
-  const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
-  const [activityDescription, setActivityDescription] = useState('');
-  const [livestockId, setLivestockId] = useState('');
-  const [livestockCategory, setLivestockCategory] = useState('');
+  // Dialog states
+  const [isAddDialogOpen, setAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  // Form state for adding
+  const [newActivity, setNewActivity] = useState({
+    type: '' as Activity['type'] | '',
+    date: new Date().toISOString().split('T')[0],
+    description: '',
+    livestockId: '',
+    livestockCategory: ''
+  });
+  
+  // State for editing/deleting
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
   const handleLogActivity = () => {
-    if (!activityType || !activityDate || !activityDescription) {
+    if (!newActivity.type || !newActivity.date || !newActivity.description) {
       toast({
         variant: "destructive",
         title: "Missing Information",
@@ -63,34 +83,76 @@ export default function ActivityLogPage() {
       return;
     }
 
-    const selectedAnimal = livestockData.find(animal => animal.id === livestockId);
+    const selectedAnimal = livestockData.find(animal => animal.id === newActivity.livestockId);
 
-    const newActivity: Activity = {
+    const activityToAdd: Activity = {
       id: `act-${Date.now()}`,
-      type: activityType as 'Feeding' | 'Health Check' | 'Breeding' | 'Movement' | 'General',
-      date: new Date(activityDate).toISOString(),
-      description: activityDescription,
+      type: newActivity.type as Activity['type'],
+      date: new Date(newActivity.date).toISOString(),
+      description: newActivity.description,
       livestockId: selectedAnimal?.id,
       livestockName: selectedAnimal?.name,
-      livestockCategory: livestockCategory,
+      livestockCategory: newActivity.livestockCategory,
     };
 
-    setActivityLog(prevLog => [newActivity, ...prevLog]);
+    setActivityLog(prevLog => [activityToAdd, ...prevLog]);
 
     toast({
       title: "Activity Logged",
       description: "The new activity has been added to your log.",
     });
 
-    // Reset form and close dialog
-    setActivityType('');
-    setActivityDate(new Date().toISOString().split('T')[0]);
-    setActivityDescription('');
-    setLivestockId('');
-    setLivestockCategory('');
-    setDialogOpen(false);
+    setNewActivity({
+      type: '',
+      date: new Date().toISOString().split('T')[0],
+      description: '',
+      livestockId: '',
+      livestockCategory: ''
+    });
+    setAddDialogOpen(false);
   };
   
+  const handleEditClick = (activity: Activity) => {
+    setSelectedActivity(activity);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateActivity = () => {
+    if (!selectedActivity) return;
+
+    setActivityLog(prevLog =>
+      prevLog.map(act => (act.id === selectedActivity.id ? selectedActivity : act))
+    );
+
+    toast({
+      title: "Activity Updated",
+      description: "The activity details have been saved.",
+    });
+
+    setEditDialogOpen(false);
+    setSelectedActivity(null);
+  };
+  
+  const handleDeleteClick = (activity: Activity) => {
+    setSelectedActivity(activity);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedActivity) return;
+
+    setActivityLog(prevLog => prevLog.filter(act => act.id !== selectedActivity.id));
+
+    toast({
+      variant: "destructive",
+      title: "Activity Deleted",
+      description: "The activity has been removed from your log.",
+    });
+
+    setDeleteDialogOpen(false);
+    setSelectedActivity(null);
+  };
+
   const activityTypes = ['Feeding', 'Health Check', 'Breeding', 'Movement', 'General'];
   const livestockOptions = livestockData.map(animal => ({ value: animal.id, label: `${animal.name} (${animal.tagId})`}));
   const categoryOptions = Array.from(new Set(livestockData.map(animal => animal.category)));
@@ -98,7 +160,7 @@ export default function ActivityLogPage() {
   return (
     <>
       <PageHeader title="Farm Activity Log" description="A record of all recent activities on your farm.">
-        <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={isAddDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle />
@@ -116,7 +178,7 @@ export default function ActivityLogPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="activity-type">Activity Type</Label>
-                  <Select value={activityType} onValueChange={(value) => setActivityType(value as any)}>
+                  <Select value={newActivity.type} onValueChange={(value) => setNewActivity(prev => ({...prev, type: value as Activity['type']}))}>
                       <SelectTrigger id="activity-type">
                           <SelectValue placeholder="Select type" />
                       </SelectTrigger>
@@ -129,20 +191,20 @@ export default function ActivityLogPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="activity-date">Date</Label>
-                  <Input id="activity-date" type="date" value={activityDate} onChange={(e) => setActivityDate(e.target.value)} />
+                  <Input id="activity-date" type="date" value={newActivity.date} onChange={(e) => setNewActivity(prev => ({...prev, date: e.target.value}))} />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="livestock" className={cn(!!livestockCategory && 'text-muted-foreground')}>
+                <Label htmlFor="livestock" className={cn(!!newActivity.livestockCategory && 'text-muted-foreground')}>
                   Affected Livestock (Optional)
                 </Label>
                 <Combobox
                     options={livestockOptions}
-                    value={livestockId}
-                    onChange={setLivestockId}
+                    value={newActivity.livestockId}
+                    onChange={(value) => setNewActivity(prev => ({...prev, livestockId: value}))}
                     placeholder="Select an animal..."
                     emptyMessage="No animals found."
-                    disabled={!!livestockCategory}
+                    disabled={!!newActivity.livestockCategory}
                 />
               </div>
               <div className="relative text-center my-2">
@@ -150,10 +212,10 @@ export default function ActivityLogPage() {
                 <div className="absolute left-0 top-1/2 w-full -translate-y-1/2 border-t -z-10"></div>
               </div>
                <div className="space-y-2">
-                  <Label htmlFor="livestock-category" className={cn(!!livestockId && 'text-muted-foreground')}>
+                  <Label htmlFor="livestock-category" className={cn(!!newActivity.livestockId && 'text-muted-foreground')}>
                     Affected Category (Optional)
                   </Label>
-                  <Select value={livestockCategory} onValueChange={setLivestockCategory} disabled={!!livestockId}>
+                  <Select value={newActivity.livestockCategory} onValueChange={(value) => setNewActivity(prev => ({...prev, livestockCategory: value}))} disabled={!!newActivity.livestockId}>
                       <SelectTrigger id="livestock-category">
                           <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
@@ -169,13 +231,13 @@ export default function ActivityLogPage() {
                 <Textarea
                   id="activity-description"
                   placeholder="Describe the activity in detail..."
-                  value={activityDescription}
-                  onChange={(e) => setActivityDescription(e.target.value)}
+                  value={newActivity.description}
+                  onChange={(e) => setNewActivity(prev => ({...prev, description: e.target.value}))}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
               <Button onClick={handleLogActivity}>Save Activity</Button>
             </DialogFooter>
           </DialogContent>
@@ -194,7 +256,7 @@ export default function ActivityLogPage() {
                   <div className="absolute left-0 top-1 h-full border-l-2 border-border"></div>
                   <div className="absolute left-[-5px] top-1 h-3 w-3 rounded-full bg-primary"></div>
                   <div className="flex items-start gap-4">
-                    <div>
+                    <div className="flex-1">
                       <div className="flex items-baseline gap-2">
                         <Badge variant="outline">{activity.type}</Badge>
                         <p className="text-xs text-muted-foreground">{formatRelativeDate(activity.date)}</p>
@@ -208,7 +270,7 @@ export default function ActivityLogPage() {
                            </Link>
                         </Button>
                       )}
-                      {activity.livestockCategory && (
+                      {activity.livestockCategory && !activity.livestockId && (
                         <Button variant="link" size="sm" className="h-auto p-0 mt-1" asChild>
                            <Link href={`/livestock?category=${activity.livestockCategory.toLowerCase()}`} className="text-xs">
                              <LinkIcon className="mr-1 h-3 w-3"/>
@@ -217,6 +279,21 @@ export default function ActivityLogPage() {
                         </Button>
                       )}
                     </div>
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditClick(activity)}>
+                                <Edit className="mr-2 h-4 w-4"/>Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteClick(activity)} className="text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4"/>Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               ))}
@@ -229,6 +306,83 @@ export default function ActivityLogPage() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Activity</DialogTitle>
+            <DialogDescription>
+              Update the details for this activity.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedActivity && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-activity-type">Activity Type</Label>
+                  <Select 
+                    value={selectedActivity.type} 
+                    onValueChange={(value) => setSelectedActivity(prev => prev ? {...prev, type: value as Activity['type']} : null)}
+                  >
+                    <SelectTrigger id="edit-activity-type">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activityTypes.map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-activity-date">Date</Label>
+                  <Input 
+                    id="edit-activity-date" 
+                    type="date" 
+                    value={new Date(selectedActivity.date).toISOString().split('T')[0]} 
+                    onChange={(e) => setSelectedActivity(prev => prev ? {...prev, date: new Date(e.target.value).toISOString()} : null)} 
+                  />
+                </div>
+              </div>
+              {/* Other form fields for editing would go here */}
+              <div className="space-y-2 mt-4">
+                <Label htmlFor="edit-activity-description">Description</Label>
+                <Textarea
+                  id="edit-activity-description"
+                  placeholder="Describe the activity in detail..."
+                  value={selectedActivity.description}
+                  onChange={(e) => setSelectedActivity(prev => prev ? {...prev, description: e.target.value} : null)}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleUpdateActivity}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this activity from your log.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
+
+    
