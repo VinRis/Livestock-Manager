@@ -67,7 +67,7 @@ export default function ActivityLogPage() {
   // Form state for adding
   const [newActivity, setNewActivity] = useState({
     type: '' as Activity['type'] | '',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString(),
     description: '',
     livestockId: '',
     livestockCategory: ''
@@ -107,7 +107,7 @@ export default function ActivityLogPage() {
 
     setNewActivity({
       type: '',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString(),
       description: '',
       livestockId: '',
       livestockCategory: ''
@@ -198,7 +198,7 @@ export default function ActivityLogPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="activity-date">Date</Label>
-                  <Input id="activity-date" type="date" value={newActivity.date} onChange={(e) => setNewActivity(prev => ({...prev, date: e.target.value}))} />
+                  <Input id="activity-date" type="datetime-local" value={newActivity.date.slice(0,16)} onChange={(e) => setNewActivity(prev => ({...prev, date: e.target.value}))} />
                 </div>
               </div>
 
@@ -349,8 +349,8 @@ export default function ActivityLogPage() {
                   <Label htmlFor="edit-activity-date">Date</Label>
                   <Input 
                     id="edit-activity-date" 
-                    type="date" 
-                    value={new Date(selectedActivity.date).toISOString().split('T')[0]} 
+                    type="datetime-local" 
+                    value={new Date(selectedActivity.date).toISOString().slice(0,16)} 
                     onChange={(e) => setSelectedActivity(prev => prev ? {...prev, date: new Date(e.target.value).toISOString()} : null)} 
                   />
                 </div>
