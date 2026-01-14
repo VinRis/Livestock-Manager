@@ -1,9 +1,27 @@
+
+"use client";
+
+import { useState } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { activityLogData } from "@/lib/data";
+import { activityLogData as initialActivityLogData, type Activity } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 const formatRelativeDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -21,13 +39,99 @@ const formatRelativeDate = (dateString: string) => {
 };
 
 export default function ActivityLogPage() {
+  const { toast } = useToast();
+  const [activityLog, setActivityLog] = useState<Activity[]>(initialActivityLogData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  
+  // Form state
+  const [activityType, setActivityType] = useState<'Feeding' | 'Health Check' | 'Breeding' | 'Movement' | 'General' | ''>('');
+  const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
+  const [activityDescription, setActivityDescription] = useState('');
+
+  const handleLogActivity = () => {
+    if (!activityType || !activityDate || !activityDescription) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please fill out all fields to log an activity.",
+      });
+      return;
+    }
+
+    const newActivity: Activity = {
+      id: `act-${Date.now()}`,
+      type: activityType as 'Feeding' | 'Health Check' | 'Breeding' | 'Movement' | 'General',
+      date: new Date(activityDate).toISOString(),
+      description: activityDescription,
+    };
+
+    setActivityLog(prevLog => [newActivity, ...prevLog]);
+
+    toast({
+      title: "Activity Logged",
+      description: "The new activity has been added to your log.",
+    });
+
+    // Reset form and close dialog
+    setActivityType('');
+    setActivityDate(new Date().toISOString().split('T')[0]);
+    setActivityDescription('');
+    setDialogOpen(false);
+  };
+  
+  const activityTypes = ['Feeding', 'Health Check', 'Breeding', 'Movement', 'General'];
+
   return (
     <>
       <PageHeader title="Farm Activity Log" description="A record of all recent activities on your farm.">
-        <Button>
-          <PlusCircle />
-          Log Activity
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusCircle />
+              Log Activity
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Log a New Activity</DialogTitle>
+              <DialogDescription>
+                Record a new activity that happened on the farm.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="activity-type">Activity Type</Label>
+                <Select value={activityType} onValueChange={(value) => setActivityType(value as any)}>
+                    <SelectTrigger id="activity-type">
+                        <SelectValue placeholder="Select an activity type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {activityTypes.map(type => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="activity-date">Date</Label>
+                <Input id="activity-date" type="date" value={activityDate} onChange={(e) => setActivityDate(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="activity-description">Description</Label>
+                <Textarea
+                  id="activity-description"
+                  placeholder="Describe the activity in detail..."
+                  value={activityDescription}
+                  onChange={(e) => setActivityDescription(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleLogActivity}>Save Activity</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <Card>
@@ -37,7 +141,7 @@ export default function ActivityLogPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {activityLogData.map((activity) => (
+              {activityLog.map((activity) => (
                 <div key={activity.id} className="relative pl-8">
                   <div className="absolute left-0 top-1 h-full border-l-2 border-border"></div>
                   <div className="absolute left-[-5px] top-1 h-3 w-3 rounded-full bg-primary"></div>
@@ -52,6 +156,11 @@ export default function ActivityLogPage() {
                   </div>
                 </div>
               ))}
+              {activityLog.length === 0 && (
+                <div className="py-8 text-center text-muted-foreground">
+                  No activities logged yet.
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
