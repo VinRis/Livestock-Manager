@@ -17,19 +17,22 @@ import AddAnimalSheet from "./add-animal-sheet";
 import AddCategorySheet from "./add-category-sheet";
 import AddNewCategorySheet from "./add-new-category-sheet";
 
-type LivestockCategoryName = 'Cattle' | 'Sheep' | 'Goats' | 'Pigs' | 'Chickens' | string;
+export type LivestockCategoryName = 'Cattle' | 'Sheep' | 'Goats' | 'Pigs' | 'Chickens' | string;
 
-type LivestockCategory = {
+export type ManagementStyle = 'animal' | 'batch';
+
+export type LivestockCategory = {
   name: LivestockCategoryName;
   count: number;
   icon: React.ComponentType<{ className?: string }>;
   animals: Livestock[];
+  managementStyle: ManagementStyle;
 };
 
-const initialCategories: { name: LivestockCategoryName; icon: React.ComponentType<{ className?: string }> }[] = [
-    { name: 'Cattle', icon: CowIcon },
-    { name: 'Sheep', icon: SheepIcon },
-    { name: 'Goats', icon: GoatIcon },
+const initialCategories: { name: LivestockCategoryName; icon: React.ComponentType<{ className?: string }>; managementStyle: ManagementStyle }[] = [
+    { name: 'Cattle', icon: CowIcon, managementStyle: 'animal' },
+    { name: 'Sheep', icon: SheepIcon, managementStyle: 'animal' },
+    { name: 'Goats', icon: GoatIcon, managementStyle: 'animal' },
 ];
 
 function LivestockCategoryList() {
@@ -40,9 +43,9 @@ function LivestockCategoryList() {
   
   const [allCategories, setAllCategories] = useState(initialCategories);
 
-  const handleAddCategory = (newCategoryName: string) => {
+  const handleAddCategory = (newCategoryName: string, managementStyle: ManagementStyle) => {
     if (newCategoryName && !allCategories.some(c => c.name.toLowerCase() === newCategoryName.toLowerCase())) {
-      setAllCategories(prev => [...prev, { name: newCategoryName, icon: CowIcon }]); // Using CowIcon as default for new categories
+      setAllCategories(prev => [...prev, { name: newCategoryName, icon: CowIcon, managementStyle: managementStyle }]); // Using CowIcon as default for new categories
     }
   };
   
@@ -54,6 +57,7 @@ function LivestockCategoryList() {
           icon: cat.icon,
           animals: animals,
           count: animals.length,
+          managementStyle: cat.managementStyle
         }
     });
   }, [allCategories]);
@@ -66,12 +70,19 @@ function LivestockCategoryList() {
         setAddAnimalSheetOpen(true);
     }
   }
+  
+  const existingCategoryNames = useMemo(() => categories.map(c => c.name), [categories]);
 
   return (
     <>
       <PageHeader title="Livestock Categories" description="Manage your herd by categories.">
-         <AddNewCategorySheet isOpen={addNewCategorySheetOpen} onOpenChange={setAddNewCategorySheetOpen} onAddCategory={handleAddCategory}>
-            <Button>
+         <AddNewCategorySheet 
+            isOpen={addNewCategorySheetOpen} 
+            onOpenChange={setAddNewCategorySheetOpen} 
+            onAddCategory={handleAddCategory}
+            existingCategories={existingCategoryNames}
+          >
+            <Button onClick={() => setAddNewCategorySheetOpen(true)}>
                 <PlusCircle />
                 Add Category
             </Button>
