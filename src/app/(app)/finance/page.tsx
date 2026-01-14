@@ -2,7 +2,7 @@
 "use client"
 
 import { DollarSign, PlusCircle, TrendingDown, TrendingUp } from "lucide-react";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+
+const ClientFormattedDate = ({ date }: { date: string }) => {
+  const [formattedDate, setFormattedDate] = useState('');
+
+  useEffect(() => {
+    // This code runs only on the client, after hydration
+    setFormattedDate(new Date(date).toLocaleDateString());
+  }, [date]);
+
+  // Render a placeholder or null on the server and initial client render
+  if (!formattedDate) {
+    return null; // or a loading skeleton
+  }
+
+  return <div className="text-sm text-muted-foreground">{formattedDate}</div>;
+};
 
 export default function FinancePage() {
   const { currency } = useCurrency();
@@ -258,7 +274,7 @@ export default function FinancePage() {
                     <TableRow key={record.id}>
                       <TableCell>
                         <div className="font-medium">{record.description}</div>
-                        <div className="text-sm text-muted-foreground">{new Date(record.date).toLocaleDateString()}</div>
+                        <ClientFormattedDate date={record.date} />
                       </TableCell>
                        <TableCell>{record.category}</TableCell>
                       <TableCell className={cn("text-right", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
