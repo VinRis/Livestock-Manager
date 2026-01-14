@@ -28,11 +28,11 @@ const chartData = Object.values(monthlyData).reverse();
 const chartConfig = {
   income: {
     label: "Income",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(var(--primary))",
   },
   expense: {
     label: "Expense",
-    color: "hsl(var(--chart-5))",
+    color: "hsl(var(--destructive))",
   },
 } satisfies ChartConfig
 
@@ -49,7 +49,7 @@ export default function FinanceChart() {
             axisLine={false}
             tickFormatter={(value) => value.slice(0, 3)}
           />
-          <YAxis />
+          <YAxis tickLine={false} axisLine={false} />
           <Tooltip content={<ChartTooltipContent />} />
           <Bar dataKey="income" fill="var(--color-income)" radius={4} />
           <Bar dataKey="expense" fill="var(--color-expense)" radius={4} />
