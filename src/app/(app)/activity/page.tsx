@@ -6,7 +6,7 @@ import { PlusCircle, Link as LinkIcon, MoreVertical, Edit, Trash2 } from "lucide
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { activityLogData as initialActivityLogData, type Activity, livestockData } from "@/lib/data";
+import { activityLogData as initialActivityLogData, type Activity, livestockData, categoriesData } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -162,7 +162,7 @@ export default function ActivityLogPage() {
 
   const activityTypes = ['Feeding', 'Health Check', 'Breeding', 'Movement', 'General'];
   const livestockOptions = livestockData.map(animal => ({ value: animal.id, label: `${animal.name} (${animal.tagId})`}));
-  const categoryOptions = Array.from(new Set(livestockData.map(animal => animal.category)));
+  const categoryOptions = categoriesData.map(cat => cat.name);
 
   return (
     <>

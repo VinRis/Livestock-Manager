@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { tasksData as initialTasksData, type Task, livestockData } from "@/lib/data";
+import { tasksData as initialTasksData, type Task, livestockData, categoriesData } from "@/lib/data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -154,7 +154,7 @@ export default function TasksPage() {
 
   const taskCategories: Task['category'][] = ['Health', 'Feeding', 'Maintenance', 'Admin'];
   const livestockOptions = livestockData.map(animal => ({ value: animal.id, label: `${animal.name} (${animal.tagId})`}));
-  const categoryOptions = Array.from(new Set(livestockData.map(animal => animal.category)));
+  const categoryOptions = categoriesData.map(cat => cat.name);
 
   
   return (
