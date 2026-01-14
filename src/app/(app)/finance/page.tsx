@@ -1,7 +1,7 @@
 
 "use client"
 
-import { DollarSign, PlusCircle } from "lucide-react";
+import { DollarSign, PlusCircle, TrendingDown, TrendingUp } from "lucide-react";
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
@@ -26,6 +26,13 @@ export default function FinancePage() {
   const totalExpense = financialData.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
   const netProfit = totalIncome - totalExpense;
   const recentTransactions = financialData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+
+  const last30Days = new Date();
+  last30Days.setDate(last30Days.getDate() - 30);
+  const recentFinancials = financialData.filter(r => new Date(r.date) > last30Days);
+  const recentIncome = recentFinancials.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
+  const recentExpense = recentFinancials.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
+  const recentNet = recentIncome - recentExpense;
 
   const handleTypeSelect = (type: 'Income' | 'Expense') => {
     setTransactionType(type);
@@ -163,7 +170,22 @@ export default function FinancePage() {
                     <CardDescription>View your monthly financial performance.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-primary">Click to view graph</p>
+                        <p className="text-sm text-primary mb-4">Click to view graph</p>
+                        <div className="space-y-2 text-sm">
+                            <h4 className="font-semibold text-muted-foreground">Last 30 Days</h4>
+                            <div className="flex items-center justify-between">
+                                <span className="flex items-center gap-2"><TrendingUp className="text-primary"/>Income</span>
+                                <span className="font-semibold">{currency}{recentIncome.toLocaleString()}</span>
+                            </div>
+                             <div className="flex items-center justify-between">
+                                <span className="flex items-center gap-2"><TrendingDown className="text-destructive"/>Expense</span>
+                                <span className="font-semibold">{currency}{recentExpense.toLocaleString()}</span>
+                            </div>
+                            <div className="flex items-center justify-between border-t pt-2 mt-2">
+                                <span className="font-bold">Net</span>
+                                <span className={cn("font-bold", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
             </DialogTrigger>
