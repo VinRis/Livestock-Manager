@@ -14,7 +14,6 @@ import { useCurrency } from "@/contexts/currency-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function FinancePage() {
@@ -121,10 +120,10 @@ export default function FinancePage() {
         </Dialog>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Income</CardTitle>
+                <CardTitle>Total Income</CardTitle>
                 <DollarSign className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
@@ -134,7 +133,7 @@ export default function FinancePage() {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+                <CardTitle>Total Expenses</CardTitle>
                 <DollarSign className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
@@ -142,9 +141,9 @@ export default function FinancePage() {
                 <p className="text-xs text-muted-foreground">All-time expenses</p>
               </CardContent>
             </Card>
-            <Card className="sm:col-span-2 lg:col-span-1">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
+                <CardTitle>Net Profit</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -156,15 +155,29 @@ export default function FinancePage() {
             </Card>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Card className="lg:col-span-4">
-            <CardHeader>
-              <CardTitle>Income vs. Expenses</CardTitle>
-              <CardDescription>Monthly financial performance.</CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <FinanceChart />
-            </CardContent>
-          </Card>
+          <Dialog>
+            <DialogTrigger asChild>
+                <Card className="lg:col-span-4 cursor-pointer hover:bg-accent">
+                    <CardHeader>
+                    <CardTitle>Income vs. Expenses</CardTitle>
+                    <CardDescription>View your monthly financial performance.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-primary">Click to view graph</p>
+                    </CardContent>
+                </Card>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle>Income vs. Expenses</DialogTitle>
+                    <DialogDescription>Monthly financial performance.</DialogDescription>
+                </DialogHeader>
+                <div className="h-[400px] w-full pt-4">
+                    <FinanceChart />
+                </div>
+            </DialogContent>
+          </Dialog>
+
           <Card className="lg:col-span-3">
             <CardHeader>
               <CardTitle>Recent Transactions</CardTitle>
