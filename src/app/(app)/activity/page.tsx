@@ -2,11 +2,11 @@
 "use client";
 
 import { useState } from "react";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { activityLogData as initialActivityLogData, type Activity } from "@/lib/data";
+import { activityLogData as initialActivityLogData, type Activity, livestockData } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -22,6 +22,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Combobox } from "@/components/ui/combobox";
+import Link from "next/link";
 
 const formatRelativeDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -47,6 +49,7 @@ export default function ActivityLogPage() {
   const [activityType, setActivityType] = useState<'Feeding' | 'Health Check' | 'Breeding' | 'Movement' | 'General' | ''>('');
   const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
   const [activityDescription, setActivityDescription] = useState('');
+  const [livestockId, setLivestockId] = useState('');
 
   const handleLogActivity = () => {
     if (!activityType || !activityDate || !activityDescription) {
@@ -58,11 +61,15 @@ export default function ActivityLogPage() {
       return;
     }
 
+    const selectedAnimal = livestockData.find(animal => animal.id === livestockId);
+
     const newActivity: Activity = {
       id: `act-${Date.now()}`,
       type: activityType as 'Feeding' | 'Health Check' | 'Breeding' | 'Movement' | 'General',
       date: new Date(activityDate).toISOString(),
       description: activityDescription,
+      livestockId: selectedAnimal?.id,
+      livestockName: selectedAnimal?.name
     };
 
     setActivityLog(prevLog => [newActivity, ...prevLog]);
@@ -76,10 +83,12 @@ export default function ActivityLogPage() {
     setActivityType('');
     setActivityDate(new Date().toISOString().split('T')[0]);
     setActivityDescription('');
+    setLivestockId('');
     setDialogOpen(false);
   };
   
   const activityTypes = ['Feeding', 'Health Check', 'Breeding', 'Movement', 'General'];
+  const livestockOptions = livestockData.map(animal => ({ value: animal.id, label: `${animal.name} (${animal.tagId})`}));
 
   return (
     <>
@@ -99,22 +108,34 @@ export default function ActivityLogPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="activity-type">Activity Type</Label>
-                <Select value={activityType} onValueChange={(value) => setActivityType(value as any)}>
-                    <SelectTrigger id="activity-type">
-                        <SelectValue placeholder="Select an activity type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {activityTypes.map(type => (
-                            <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="activity-type">Activity Type</Label>
+                  <Select value={activityType} onValueChange={(value) => setActivityType(value as any)}>
+                      <SelectTrigger id="activity-type">
+                          <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          {activityTypes.map(type => (
+                              <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                      </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="activity-date">Date</Label>
+                  <Input id="activity-date" type="date" value={activityDate} onChange={(e) => setActivityDate(e.target.value)} />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="activity-date">Date</Label>
-                <Input id="activity-date" type="date" value={activityDate} onChange={(e) => setActivityDate(e.target.value)} />
+                <Label htmlFor="livestock">Affected Livestock (Optional)</Label>
+                <Combobox
+                    options={livestockOptions}
+                    value={livestockId}
+                    onChange={setLivestockId}
+                    placeholder="Select an animal..."
+                    emptyMessage="No animals found."
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="activity-description">Description</Label>
@@ -152,6 +173,14 @@ export default function ActivityLogPage() {
                         <p className="text-xs text-muted-foreground">{formatRelativeDate(activity.date)}</p>
                       </div>
                       <p className="mt-1 text-sm text-foreground">{activity.description}</p>
+                      {activity.livestockId && activity.livestockName && (
+                        <Button variant="link" size="sm" className="h-auto p-0 mt-1" asChild>
+                           <Link href={`/livestock/${activity.livestockId}`} className="text-xs">
+                             <LinkIcon className="mr-1 h-3 w-3"/>
+                             {activity.livestockName}
+                           </Link>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>

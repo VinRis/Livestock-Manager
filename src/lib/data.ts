@@ -37,6 +37,8 @@ export type Activity = {
   type: 'Feeding' | 'Health Check' | 'Breeding' | 'Movement' | 'General';
   description: string;
   date: string;
+  livestockId?: string;
+  livestockName?: string;
 };
 
 export type Task = {
@@ -190,7 +192,7 @@ export let livestockData: Livestock[] = [
 
 export const activityLogData: Activity[] = [
   { id: 'act1', type: 'Feeding', description: 'Distributed 500kg of silage to herd 1.', date: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString() },
-  { id: 'act2', type: 'Health Check', description: 'Checked Daisy (LL-001) for signs of mastitis. All clear.', date: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString() },
+  { id: 'act2', type: 'Health Check', description: 'Checked for signs of mastitis. All clear.', date: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), livestockId: '1', livestockName: 'Daisy' },
   { id: 'act3', type: 'Movement', description: 'Moved sheep flock to pasture 3.', date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() },
   { id: 'act4', type: 'Breeding', description: 'Observed breeding behavior in ewes.', date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
   { id: 'act5', type: 'General', description: 'Repaired fence in north paddock.', date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
