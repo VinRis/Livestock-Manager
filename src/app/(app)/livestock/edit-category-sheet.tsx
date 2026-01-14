@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import type { ManagementStyle, CategoryDefinition } from "./page";
+import type { ManagementStyle } from "./page";
+import type { CategoryDefinition } from "@/lib/data";
 
 interface EditCategorySheetProps {
   isOpen: boolean;

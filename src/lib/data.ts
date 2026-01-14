@@ -13,7 +13,7 @@ export type Livestock = {
   productionMetrics: ProductionMetric[];
   sireId?: string;
   damId?: string;
-  category: 'Cattle' | 'Sheep' | 'Goats';
+  category: 'Cattle' | 'Sheep' | 'Goats' | string;
 };
 
 export type HealthRecord = {
@@ -72,6 +72,20 @@ export type Currency = {
   name: string;
   symbol: string;
 };
+
+export type CategoryDefinition = {
+    name: string;
+    icon: string; // Using string to store icon name
+    managementStyle: 'animal' | 'batch';
+}
+
+
+export let categoriesData: CategoryDefinition[] = [
+    { name: 'Cattle', icon: 'CowIcon', managementStyle: 'animal' },
+    { name: 'Sheep', icon: 'SheepIcon', managementStyle: 'animal' },
+    { name: 'Goats', icon: 'GoatIcon', managementStyle: 'animal' },
+];
+
 
 export let livestockData: Livestock[] = [
   {

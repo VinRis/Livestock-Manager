@@ -8,7 +8,7 @@ import { PlusCircle, MoreVertical, Trash2, Edit, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
-import { livestockData, type Livestock } from "@/lib/data";
+import { livestockData, type Livestock, categoriesData, type CategoryDefinition } from "@/lib/data";
 import { CowIcon, GoatIcon, SheepIcon } from "@/components/icons";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
@@ -28,9 +28,15 @@ import AddNewCategorySheet from "./add-new-category-sheet";
 import EditCategorySheet from "./edit-category-sheet";
 
 
-export type LivestockCategoryName = 'Cattle' | 'Sheep' | 'Goats' | 'Pigs' | 'Chickens' | string;
+export type LivestockCategoryName = string;
 
 export type ManagementStyle = 'animal' | 'batch';
+
+const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
+  CowIcon,
+  SheepIcon,
+  GoatIcon,
+};
 
 export type LivestockCategory = {
   name: LivestockCategoryName;
@@ -40,17 +46,6 @@ export type LivestockCategory = {
   managementStyle: ManagementStyle;
 };
 
-export type CategoryDefinition = {
-    name: LivestockCategoryName;
-    icon: React.ComponentType<{ className?: string }>;
-    managementStyle: ManagementStyle;
-}
-
-const initialCategories: CategoryDefinition[] = [
-    { name: 'Cattle', icon: CowIcon, managementStyle: 'animal' },
-    { name: 'Sheep', icon: SheepIcon, managementStyle: 'animal' },
-    { name: 'Goats', icon: GoatIcon, managementStyle: 'animal' },
-];
 
 function LivestockCategoryList() {
   const [addAnimalSheetOpen, setAddAnimalSheetOpen] = useState(false);
@@ -63,11 +58,13 @@ function LivestockCategoryList() {
   const [deletingCategory, setDeletingCategory] = useState<LivestockCategoryName | null>(null);
 
   
-  const [allCategories, setAllCategories] = useState<CategoryDefinition[]>(initialCategories);
+  const [allCategories, setAllCategories] = useState<CategoryDefinition[]>(categoriesData);
 
   const handleAddCategory = (newCategoryName: string, managementStyle: ManagementStyle) => {
     if (newCategoryName && !allCategories.some(c => c.name.toLowerCase() === newCategoryName.toLowerCase())) {
-      setAllCategories(prev => [...prev, { name: newCategoryName, icon: CowIcon, managementStyle: managementStyle }]); // Using CowIcon as default for new categories
+      const newCategory = { name: newCategoryName, icon: 'CowIcon', managementStyle: managementStyle };
+      categoriesData.push(newCategory); // Persist
+      setAllCategories(prev => [...prev, newCategory]);
     }
   };
 
@@ -81,6 +78,10 @@ function LivestockCategoryList() {
   
   const handleConfirmDelete = () => {
     if(!deletingCategory) return;
+    const index = categoriesData.findIndex(c => c.name === deletingCategory);
+    if (index > -1) {
+        categoriesData.splice(index, 1); // Persist
+    }
     setAllCategories(prev => prev.filter(c => c.name !== deletingCategory));
     setDeleteConfirmationOpen(false);
     setDeletingCategory(null);
@@ -95,6 +96,10 @@ function LivestockCategoryList() {
   }
 
   const handleUpdateCategory = (updatedCategory: CategoryDefinition) => {
+    const index = categoriesData.findIndex(c => c.name === updatedCategory.name);
+    if (index > -1) {
+        categoriesData[index] = updatedCategory; // Persist
+    }
     setAllCategories(prev => prev.map(c => c.name === updatedCategory.name ? updatedCategory : c));
     setEditingCategory(null);
   }
@@ -102,9 +107,10 @@ function LivestockCategoryList() {
   const categories: LivestockCategory[] = useMemo(() => {
     return allCategories.map(cat => {
         const animals = livestockData.filter(animal => animal.category === cat.name);
+        const IconComponent = iconMap[cat.icon] || CowIcon;
         return {
           name: cat.name,
-          icon: cat.icon,
+          icon: IconComponent,
           animals: animals,
           count: animals.length,
           managementStyle: cat.managementStyle

@@ -16,20 +16,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { livestockData } from "@/lib/data";
+import { livestockData, categoriesData } from "@/lib/data";
 import { Combobox } from "@/components/ui/combobox";
 
 interface AddAnimalSheetProps {
   children: React.ReactNode;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  defaultCategory?: 'Cattle' | 'Sheep' | 'Goats';
+  defaultCategory?: 'Cattle' | 'Sheep' | 'Goats' | string;
 }
 
 const breedOptions = {
     Cattle: ["Ayrshire", "Brown Swiss", "Guernsey", "Holstein", "Jersey", "Angus", "Hereford", "Shorthorn", "Simmental", "Charolais", "Brahman"].map(b => ({ value: b, label: b })),
     Sheep: ["Merino", "Rambouillet", "Dorset", "Hampshire", "Suffolk", "Shropshire"].map(b => ({ value: b, label: b })),
     Goats: ["Boer", "Nubian", "Alpine", "LaMancha", "Saanen", "Toggenburg"].map(b => ({ value: b, label: b })),
+    Pigs: ["Duroc", "Hampshire", "Yorkshire"].map(b => ({ value: b, label: b })),
+    Chickens: ["Leghorn", "Rhode Island Red", "Plymouth Rock"].map(b => ({ value: b, label: b })),
 };
 
 export default function AddAnimalSheet({ children, isOpen, onOpenChange, defaultCategory }: AddAnimalSheetProps) {
@@ -39,15 +41,15 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
   const [birthDate, setBirthDate] = useState(new Date().toISOString().split('T')[0]);
   const [gender, setGender] = useState<'Male' | 'Female' | ''>('');
   const [breed, setBreed] = useState('');
-  const [category, setCategory] = useState<'Cattle' | 'Sheep' | 'Goats' | ''>('');
+  const [category, setCategory] = useState<'Cattle' | 'Sheep' | 'Goats' | string | ''>('');
   const [sireId, setSireId] = useState('unknown');
   const [damId, setDamId] = useState('unknown');
   
   useEffect(() => {
     if (defaultCategory) {
         setCategory(defaultCategory);
-        if (breedOptions[defaultCategory]?.length > 0) {
-          setBreed(breedOptions[defaultCategory][0].value);
+        if (breedOptions[defaultCategory as keyof typeof breedOptions]?.length > 0) {
+          setBreed(breedOptions[defaultCategory as keyof typeof breedOptions][0].value);
         } else {
           setBreed('');
         }
@@ -75,7 +77,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
       birthDate,
       gender: gender as 'Male' | 'Female',
       breed,
-      category: category as 'Cattle' | 'Sheep' | 'Goats',
+      category: category,
       sireId: sireId && sireId !== 'unknown' ? sireId : undefined,
       damId: damId && damId !== 'unknown' ? damId : undefined,
       status: 'Active' as const,
@@ -105,18 +107,18 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
         setCategory('');
         setBreed('');
     } else {
-        setBreed(breedOptions[defaultCategory]?.[0]?.value || '');
+        setBreed(breedOptions[defaultCategory as keyof typeof breedOptions]?.[0]?.value || '');
     }
     
     onOpenChange(false);
   };
   
-  const handleCategoryChange = (value: 'Cattle' | 'Sheep' | 'Goats') => {
+  const handleCategoryChange = (value: string) => {
       setCategory(value);
-      setBreed(breedOptions[value]?.[0].value || '');
+      setBreed(breedOptions[value as keyof typeof breedOptions]?.[0].value || '');
   }
 
-  const currentBreedOptions = category ? breedOptions[category] : [];
+  const currentBreedOptions = category ? breedOptions[category as keyof typeof breedOptions] || [] : [];
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -147,9 +149,9 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
                         <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="Cattle">Cattle</SelectItem>
-                        <SelectItem value="Sheep">Sheep</SelectItem>
-                        <SelectItem value="Goats">Goats</SelectItem>
+                        {categoriesData.map(cat => (
+                           <SelectItem key={cat.name} value={cat.name}>{cat.name}</SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </div>
