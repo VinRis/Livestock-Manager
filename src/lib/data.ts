@@ -262,11 +262,4 @@ export const currencyData: Currency[] = [
 ];
 
 export const getLivestockById = (id: string) => livestockData.find(animal => animal.id === id);
-
-export const updateLivestock = (updatedAnimal: Livestock) => {
-  const index = livestockData.findIndex(animal => animal.id === updatedAnimal.id);
-  if (index !== -1) {
-    livestockData[index] = updatedAnimal;
-  }
-};
     
