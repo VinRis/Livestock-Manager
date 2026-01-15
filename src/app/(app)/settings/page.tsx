@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, Moon, Sun } from "lucide-react";
+import { Upload, Moon, Sun, Download } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import React from "react";
@@ -22,7 +22,6 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Appearance</CardTitle>
-            <CardDescription>Customize the look and feel of the application.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between rounded-lg border p-4">
@@ -59,7 +58,6 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Farm Details</CardTitle>
-            <CardDescription>Update your farm's information.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -93,7 +91,6 @@ export default function SettingsPage() {
          <Card>
           <CardHeader>
             <CardTitle>Data Management</CardTitle>
-            <CardDescription>Backup and restore your local application data.</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-4">
             <Button variant="outline">Backup Data</Button>
@@ -101,10 +98,24 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+         <Card>
+          <CardHeader>
+            <CardTitle>Download Reports</CardTitle>
+            <CardDescription>Download your farm data in various formats.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/settings/reports">
+                <Download />
+                Go to Reports Page
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card>
             <CardHeader>
                 <CardTitle>App Preferences</CardTitle>
-                <CardDescription>Set default values for application features.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                  <div className="space-y-2">
