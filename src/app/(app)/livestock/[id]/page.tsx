@@ -854,9 +854,150 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
   );
 }
 
-function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate, allFinancials }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[], onFinancialUpdate: (record: any) => void, allFinancials: FinancialRecord[] }) {
-  const router = useRouter();
+const EditBatchDialogContent = ({
+  animal,
+  allFinancials,
+  onUpdate,
+  onFinancialUpdate,
+  onClose,
+}: {
+  animal: Livestock;
+  allFinancials: FinancialRecord[];
+  onUpdate: (updatedAnimal: Livestock) => void;
+  onFinancialUpdate: (updatedRecord: FinancialRecord) => void;
+  onClose: () => void;
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+  
+  const acquisitionCostRecord = useMemo(() => allFinancials.find(f => f.description === `Purchase of batch: ${animal.name.split(' (')[0]}`), [animal, allFinancials]);
+
+  const [editForm, setEditForm] = useState({
+    ...animal,
+    cost: acquisitionCostRecord?.amount || 0,
+  });
+
+  useEffect(() => {
+    setEditForm({
+      ...animal,
+      cost: acquisitionCostRecord?.amount || 0,
+    });
+  }, [animal, acquisitionCostRecord]);
+
+  const handleSaveProfile = () => {
+    const { cost, ...animalData } = editForm;
+
+    const finalForm = {
+        ...animalData,
+        name: `${animalData.name.split(' (')[0]} (${animalData.tagId.split('-')[1]} animals)`
+    };
+
+    onUpdate(finalForm);
+    
+    if (acquisitionCostRecord) {
+        const updatedRecord = { ...acquisitionCostRecord, amount: cost };
+        onFinancialUpdate(updatedRecord);
+    }
+
+    toast({
+      title: "Profile Saved",
+      description: `${finalForm.name}'s profile has been updated.`,
+    });
+    onClose();
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditForm(prev => ({...prev, imageUrl: reader.result as string, imageHint: file.name }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit Batch: {animal.name.split(' (')[0]}</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="batch-image">Batch Image</Label>
+            <div className="flex items-center gap-4">
+              <Image
+                src={editForm.imageUrl}
+                alt={editForm.name}
+                width={128}
+                height={128}
+                className="h-32 w-32 rounded-lg border object-cover"
+                data-ai-hint={editForm.imageHint}
+              />
+              <div className="flex-1">
+                <Input id="batch-image" type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageSelect} />
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Image
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2">PNG, JPG, GIF up to 10MB.</p>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="name">Batch Name</Label>
+            <Input id="name" value={editForm.name.split(' (')[0]} onChange={(e) => setEditForm(prev => ({...prev, name: e.target.value}))} />
+          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                  <Label htmlFor="breed">Breed</Label>
+                  <Input id="breed" value={editForm.breed} onChange={(e) => setEditForm(prev => ({...prev, breed: e.target.value}))} />
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="birthDate">Acquisition Date</Label>
+                  <Input id="birthDate" type="date" value={editForm.birthDate} onChange={(e) => setEditForm(prev => ({...prev, birthDate: e.target.value}))} />
+              </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="tagId">Number of Animals</Label>
+                <Input id="tagId" value={editForm.tagId.split('-')[1]} onChange={(e) => setEditForm(prev => ({...prev, tagId: `batch-${e.target.value}`}))} />
+            </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={editForm.status} onValueChange={(value) => setEditForm(prev => ({ ...prev, status: value as any }))}>
+                    <SelectTrigger id="status">
+                        <SelectValue placeholder="Select a status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {['Active', 'Sold', 'Deceased'].map(option => (
+                            <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+              <Label htmlFor="cost">Total Cost</Label>
+              <Input 
+                id="cost" 
+                type="number" 
+                value={editForm.cost}
+                onChange={(e) => setEditForm(prev => ({...prev, cost: parseFloat(e.target.value) || 0}))}
+                placeholder="e.g., 250.00"
+              />
+          </div>
+        </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSaveProfile}>Save Changes</Button>
+      </DialogFooter>
+      </DialogContent>
+  )
+}
+
+function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate, allFinancials }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[], onFinancialUpdate: (record: FinancialRecord) => void, allFinancials: FinancialRecord[] }) {
+  const router = useRouter();
   const { toast } = useToast();
   
   const [animal, setAnimal] = useState<Livestock>(initialAnimal);
@@ -877,7 +1018,6 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
   
   // Edit Profile State
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
-  const [editForm, setEditForm] = useState<Livestock>(animal);
   
   // Edit Metric State
   const [isEditMetricDialogOpen, setEditMetricDialogOpen] = useState(false);
@@ -887,8 +1027,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
 
   useEffect(() => {
     setAnimal(initialAnimal);
-    setEditForm(initialAnimal);
-  }, [initialAnimal, allFinancials]);
+  }, [initialAnimal]);
 
   if (!animal) {
     return notFound();
@@ -1033,52 +1172,8 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
           description: "The production metric has been removed.",
       });
   };
-  
-  const handleSaveProfile = () => {
-    if (!editForm) return;
-
-    const finalForm = {
-        ...editForm,
-        name: `${editForm.name.split(' (')[0]} (${editForm.tagId.split('-')[1]} animals)`
-    };
-
-    handleUpdate(finalForm);
-
-    toast({
-      title: "Profile Saved",
-      description: `${finalForm.name}'s profile has been updated.`,
-    });
-    setEditDialogOpen(false);
-  };
-
-  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (!editForm) return;
-    const { id, value } = e.target;
-    setEditForm({ ...editForm, [id]: value });
-  };
-  
-  const handleCostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newCost = parseFloat(e.target.value) || 0;
-    if (acquisitionCostRecord) {
-        const updatedRecord = { ...acquisitionCostRecord, amount: newCost };
-        onFinancialUpdate(updatedRecord);
-    }
-  }
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!editForm) return;
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditForm({ ...editForm, imageUrl: reader.result as string, imageHint: file.name });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const animalCount = animal.tagId.split('-')[1];
-  const costInputValue = acquisitionCostRecord ? acquisitionCostRecord.amount : '';
 
   return (
     <>
@@ -1091,76 +1186,13 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                     Edit Batch
                 </Button>
             </DialogTrigger>
-             <DialogContent className="max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Edit Batch: {animal.name.split(' (')[0]}</DialogTitle>
-                </DialogHeader>
-                {editForm && (
-                  <div className="grid gap-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="batch-image">Batch Image</Label>
-                      <div className="flex items-center gap-4">
-                        <Image
-                          src={editForm.imageUrl}
-                          alt={editForm.name}
-                          width={128}
-                          height={128}
-                          className="h-32 w-32 rounded-lg border object-cover"
-                          data-ai-hint={editForm.imageHint}
-                        />
-                        <div className="flex-1">
-                          <Input id="batch-image" type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageSelect} />
-                          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            Upload Image
-                          </Button>
-                          <p className="text-xs text-muted-foreground mt-2">PNG, JPG, GIF up to 10MB.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Batch Name</Label>
-                      <Input id="name" value={editForm.name.split(' (')[0]} onChange={(e) => setEditForm({...editForm, name: e.target.value})} />
-                    </div>
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="breed">Breed</Label>
-                            <Input id="breed" value={editForm.breed} onChange={(e) => setEditForm({...editForm, breed: e.target.value})} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="birthDate">Acquisition Date</Label>
-                            <Input id="birthDate" type="date" value={editForm.birthDate} onChange={(e) => setEditForm({...editForm, birthDate: e.target.value})} />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="space-y-2">
-                          <Label htmlFor="tagId">Number of Animals</Label>
-                          <Input id="tagId" value={editForm.tagId.split('-')[1]} onChange={(e) => setEditForm({...editForm, tagId: `batch-${e.target.value}`})} />
-                      </div>
-                       <div className="space-y-2">
-                          <Label htmlFor="status">Status</Label>
-                          <Select value={editForm.status} onValueChange={(value) => editForm && setEditForm({ ...editForm, status: value as any })}>
-                              <SelectTrigger id="status">
-                                  <SelectValue placeholder="Select a status" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                  {['Active', 'Sold', 'Deceased'].map(option => (
-                                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                                  ))}
-                              </SelectContent>
-                          </Select>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="cost">Total Cost</Label>
-                        <Input id="cost" type="number" value={costInputValue} onChange={handleCostChange} placeholder="e.g., 250.00"/>
-                    </div>
-                  </div>
-                )}
-                <DialogFooter>
-                  <Button onClick={handleSaveProfile}>Save Changes</Button>
-                </DialogFooter>
-             </DialogContent>
+             <EditBatchDialogContent
+                animal={animal}
+                allFinancials={allFinancials}
+                onUpdate={handleUpdate}
+                onFinancialUpdate={onFinancialUpdate}
+                onClose={() => setEditDialogOpen(false)}
+             />
         </Dialog>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
@@ -1578,3 +1610,5 @@ export default function LivestockDetailPage() {
     return <IndividualAnimalProfile initialAnimal={currentAnimal} onUpdate={handleUpdate} allLivestock={livestockList} />;
   }
 }
+
+    
