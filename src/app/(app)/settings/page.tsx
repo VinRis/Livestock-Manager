@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Upload, Moon, Sun, Download } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -26,6 +26,11 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const restoreInputRef = useRef<HTMLInputElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleBackup = () => {
     try {
@@ -142,24 +147,33 @@ export default function SettingsPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2 rounded-full bg-muted p-1">
-                <Button
-                  variant={theme === 'light' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setTheme('light')}
-                  className={cn("rounded-full", theme === 'light' && 'bg-primary text-primary-foreground')}
-                >
-                  <Sun className="h-4 w-4" />
-                  <span className="sr-only">Light mode</span>
-                </Button>
-                <Button
-                  variant={theme === 'dark' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setTheme('dark')}
-                  className={cn("rounded-full", theme === 'dark' && 'bg-primary text-primary-foreground')}
-                >
-                  <Moon className="h-4 w-4" />
-                  <span className="sr-only">Dark mode</span>
-                </Button>
+                {isMounted ? (
+                  <>
+                    <Button
+                      variant={theme === 'light' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setTheme('light')}
+                      className={cn("rounded-full", theme === 'light' && 'bg-primary text-primary-foreground')}
+                    >
+                      <Sun className="h-4 w-4" />
+                      <span className="sr-only">Light mode</span>
+                    </Button>
+                    <Button
+                      variant={theme === 'dark' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setTheme('dark')}
+                      className={cn("rounded-full", theme === 'dark' && 'bg-primary text-primary-foreground')}
+                    >
+                      <Moon className="h-4 w-4" />
+                      <span className="sr-only">Dark mode</span>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
+                    <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
+                  </>
+                )}
               </div>
             </div>
           </CardContent>
