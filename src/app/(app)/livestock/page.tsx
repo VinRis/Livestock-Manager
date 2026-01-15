@@ -269,9 +269,28 @@ function LivestockCategoryList() {
 
 function AnimalList({ category }: { category: string }) {
     const [isSheetOpen, setSheetOpen] = useState(false);
+    // Force a re-render when the underlying data array is mutated
+    const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
-    const categoryName = category.charAt(0).toUpperCase() + category.slice(1) as LivestockCategoryName;
-    const animals = livestockData.filter(animal => animal.category.toLowerCase() === category.toLowerCase());
+    const categoryDef = categoriesData.find(c => c.name.toLowerCase() === category.toLowerCase());
+
+    const onSheetOpenChange = (isOpen: boolean) => {
+        setSheetOpen(isOpen);
+        if (!isOpen) {
+            forceUpdate();
+        }
+    }
+
+    const animals = useMemo(() => {
+        return livestockData.filter(animal => animal.category.toLowerCase() === category.toLowerCase());
+    }, [category, _]);
+
+    if (!categoryDef) {
+        return <div>Category not found</div>
+    }
+
+    const categoryName = categoryDef.name as LivestockCategoryName;
+    const AddSheetComponent = categoryDef.managementStyle === 'batch' ? AddBatchSheet : AddAnimalSheet;
 
     return (
         <>
@@ -305,24 +324,24 @@ function AnimalList({ category }: { category: string }) {
                  {animals.length === 0 && (
                     <Card>
                         <CardContent className="flex flex-col items-center justify-center gap-4 p-12 text-center">
-                            <h3 className="text-xl font-medium">No animals in this category yet.</h3>
-                            <p className="text-muted-foreground">Get started by adding a new animal.</p>
-                             <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen} defaultCategory={categoryName as 'Cattle' | 'Sheep' | 'Goats'}>
+                            <h3 className="text-xl font-medium">No {categoryDef.managementStyle === 'batch' ? 'batches' : 'animals'} in this category yet.</h3>
+                            <p className="text-muted-foreground">Get started by adding a new one.</p>
+                             <AddSheetComponent isOpen={isSheetOpen} onOpenChange={onSheetOpenChange} defaultCategory={categoryName}>
                                 <Button>
                                     <PlusCircle />
-                                    Add Animal
+                                    Add {categoryDef.managementStyle === 'batch' ? 'Batch' : 'Animal'}
                                 </Button>
-                            </AddAnimalSheet>
+                            </AddSheetComponent>
                         </CardContent>
                     </Card>
                 )}
             </main>
-             <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen} defaultCategory={categoryName as 'Cattle' | 'Sheep' | 'Goats'}>
-                <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-6">
+             <AddSheetComponent isOpen={isSheetOpen} onOpenChange={onSheetOpenChange} defaultCategory={categoryName}>
+                <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
                     <PlusCircle className="h-6 w-6" />
-                    <span className="sr-only">Add Animal</span>
+                    <span className="sr-only">Add {categoryDef.managementStyle === 'batch' ? 'Batch' : 'Animal'}</span>
                 </Button>
-            </AddAnimalSheet>
+            </AddSheetComponent>
         </>
     );
 }
@@ -337,3 +356,5 @@ export default function LivestockPage() {
   
   return <LivestockCategoryList />;
 }
+
+    
