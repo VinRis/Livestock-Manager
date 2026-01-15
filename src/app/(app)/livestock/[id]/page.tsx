@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -853,7 +854,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
   );
 }
 
-function BatchProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[] }) {
+function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[], onFinancialUpdate: (record: any) => void }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -882,9 +883,14 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal
   const [isEditMetricDialogOpen, setEditMetricDialogOpen] = useState(false);
   const [editingMetric, setEditingMetric] = useState<ProductionMetric | null>(null);
 
+  const acquisitionCostRecord = useMemo(() => initialFinancialData.find(f => f.description === `Purchase of batch: ${initialAnimal.name.split(' (')[0]}`), [initialAnimal]);
+  const [cost, setCost] = useState(acquisitionCostRecord ? acquisitionCostRecord.amount.toString() : '');
+
   useEffect(() => {
     setAnimal(initialAnimal);
     setEditForm(initialAnimal);
+    const newAcquisitionCostRecord = initialFinancialData.find(f => f.description === `Purchase of batch: ${initialAnimal.name.split(' (')[0]}`);
+    setCost(newAcquisitionCostRecord ? newAcquisitionCostRecord.amount.toString() : '');
   }, [initialAnimal]);
 
   if (!animal) {
@@ -1036,10 +1042,17 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal
 
     const finalForm = {
         ...editForm,
+        name: `${editForm.name.split(' (')[0]} (${editForm.tagId.split('-')[1]} animals)`
     };
 
     handleUpdate(finalForm);
     
+    if (acquisitionCostRecord) {
+        const updatedRecord = { ...acquisitionCostRecord, amount: parseFloat(cost) || 0 };
+        onFinancialUpdate(updatedRecord);
+    }
+
+
     toast({
       title: "Profile Saved",
       description: `${finalForm.name}'s profile has been updated.`,
@@ -1065,7 +1078,6 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal
     }
   };
 
-  const acquisitionCostRecord = initialFinancialData.find(f => f.description === `Purchase of batch: ${initialAnimal.name.split(' (')[0]}`);
   const animalCount = animal.tagId.split('-')[1];
 
   return (
@@ -1081,7 +1093,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal
             </DialogTrigger>
              <DialogContent className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Edit Batch: {animal.name}</DialogTitle>
+                  <DialogTitle>Edit Batch: {animal.name.split(' (')[0]}</DialogTitle>
                 </DialogHeader>
                 {editForm && (
                   <div className="grid gap-4 py-4">
@@ -1108,16 +1120,16 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="name">Batch Name</Label>
-                      <Input id="name" value={editForm.name} onChange={handleEditFormChange} />
+                      <Input id="name" value={editForm.name.split(' (')[0]} onChange={(e) => setEditForm({...editForm, name: e.target.value})} />
                     </div>
                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="breed">Breed</Label>
-                            <Input id="breed" value={editForm.breed} onChange={handleEditFormChange} />
+                            <Input id="breed" value={editForm.breed} onChange={(e) => setEditForm({...editForm, breed: e.target.value})} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="birthDate">Acquisition Date</Label>
-                            <Input id="birthDate" type="date" value={editForm.birthDate} onChange={handleEditFormChange} />
+                            <Input id="birthDate" type="date" value={editForm.birthDate} onChange={(e) => setEditForm({...editForm, birthDate: e.target.value})} />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -1138,6 +1150,10 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal
                               </SelectContent>
                           </Select>
                       </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="cost">Total Cost</Label>
+                        <Input id="cost" type="number" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="e.g., 250.00"/>
                     </div>
                   </div>
                 )}
@@ -1487,16 +1503,20 @@ export default function LivestockDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const [livestockList, setLivestockList] = useState<Livestock[]>([]);
+  const [financialData, setFinancialData] = useState<typeof initialFinancialData>([]);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
     try {
-      const item = window.localStorage.getItem('livestockData');
-      setLivestockList(item ? JSON.parse(item) : []);
+      const livestockItem = window.localStorage.getItem('livestockData');
+      setLivestockList(livestockItem ? JSON.parse(livestockItem) : []);
+      const financialItem = window.localStorage.getItem('financialData');
+      setFinancialData(financialItem ? JSON.parse(financialItem) : []);
     } catch (error) {
       console.error(error);
       setLivestockList([]);
+      setFinancialData([]);
     }
   }, []);
 
@@ -1506,11 +1526,24 @@ export default function LivestockDetailPage() {
     }
   }, [livestockList, isClient]);
 
+   useEffect(() => {
+    if (isClient) {
+      window.localStorage.setItem('financialData', JSON.stringify(financialData));
+    }
+  }, [financialData, isClient]);
+
   const animal = useMemo(() => livestockList.find(a => a.id === id), [id, livestockList]);
 
   const handleUpdate = (updatedAnimal: Livestock) => {
     setLivestockList(prev => prev.map(a => a.id === updatedAnimal.id ? updatedAnimal : a));
   };
+  
+  const handleFinancialUpdate = (updatedRecord: any) => {
+    setFinancialData(prev => prev.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+    // Also update the in-memory export if needed elsewhere
+    const index = initialFinancialData.findIndex(r => r.id === updatedRecord.id);
+    if(index !== -1) initialFinancialData[index] = updatedRecord;
+  }
   
   if (!isClient) {
     return null; // Or a loading spinner
@@ -1523,7 +1556,7 @@ export default function LivestockDetailPage() {
   const isBatch = animal.tagId.startsWith('batch-');
 
   if (isBatch) {
-    return <BatchProfile initialAnimal={animal} onUpdate={handleUpdate} allLivestock={livestockList} />;
+    return <BatchProfile initialAnimal={animal} onUpdate={handleUpdate} allLivestock={livestockList} onFinancialUpdate={handleFinancialUpdate} />;
   } else {
     return <IndividualAnimalProfile initialAnimal={animal} onUpdate={handleUpdate} allLivestock={livestockList} />;
   }
