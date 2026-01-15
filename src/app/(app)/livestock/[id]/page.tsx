@@ -7,7 +7,7 @@ import { notFound, useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Edit, PlusCircle, Upload, GitMerge, User, Users, LineChart, Weight, Cake, MoreVertical, Trash2, Box, CalendarDays, DollarSign } from "lucide-react";
-import { type HealthRecord, type ProductionMetric, type Livestock, financialData as initialFinancialData, livestockData as initialLivestockData, CategoryDefinition } from "@/lib/data";
+import { type HealthRecord, type ProductionMetric, type Livestock, type FinancialRecord, CategoryDefinition } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -854,7 +854,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
   );
 }
 
-function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate, allFinancials }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[], onFinancialUpdate: (record: any) => void, allFinancials: import("@/lib/data").FinancialRecord[] }) {
+function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate, allFinancials }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[], onFinancialUpdate: (record: any) => void, allFinancials: FinancialRecord[] }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -884,13 +884,10 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
   const [editingMetric, setEditingMetric] = useState<ProductionMetric | null>(null);
 
   const acquisitionCostRecord = useMemo(() => allFinancials.find(f => f.description === `Purchase of batch: ${initialAnimal.name.split(' (')[0]}`), [initialAnimal, allFinancials]);
-  const [cost, setCost] = useState(acquisitionCostRecord ? acquisitionCostRecord.amount.toString() : '');
 
   useEffect(() => {
     setAnimal(initialAnimal);
     setEditForm(initialAnimal);
-    const newAcquisitionCostRecord = allFinancials.find(f => f.description === `Purchase of batch: ${initialAnimal.name.split(' (')[0]}`);
-    setCost(newAcquisitionCostRecord ? newAcquisitionCostRecord.amount.toString() : '');
   }, [initialAnimal, allFinancials]);
 
   if (!animal) {
@@ -1046,12 +1043,6 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
     };
 
     handleUpdate(finalForm);
-    
-    if (acquisitionCostRecord) {
-        const updatedRecord = { ...acquisitionCostRecord, amount: parseFloat(cost) || 0 };
-        onFinancialUpdate(updatedRecord);
-    }
-
 
     toast({
       title: "Profile Saved",
@@ -1065,6 +1056,14 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
     const { id, value } = e.target;
     setEditForm({ ...editForm, [id]: value });
   };
+  
+  const handleCostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newCost = parseFloat(e.target.value) || 0;
+    if (acquisitionCostRecord) {
+        const updatedRecord = { ...acquisitionCostRecord, amount: newCost };
+        onFinancialUpdate(updatedRecord);
+    }
+  }
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editForm) return;
@@ -1079,6 +1078,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
   };
 
   const animalCount = animal.tagId.split('-')[1];
+  const costInputValue = acquisitionCostRecord ? acquisitionCostRecord.amount : '';
 
   return (
     <>
@@ -1153,7 +1153,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="cost">Total Cost</Label>
-                        <Input id="cost" type="number" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="e.g., 250.00"/>
+                        <Input id="cost" type="number" value={costInputValue} onChange={handleCostChange} placeholder="e.g., 250.00"/>
                     </div>
                   </div>
                 )}
@@ -1503,15 +1503,19 @@ export default function LivestockDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const [livestockList, setLivestockList] = useState<Livestock[]>([]);
-  const [financialData, setFinancialData] = useState<typeof initialFinancialData>([]);
+  const [financialData, setFinancialData] = useState<FinancialRecord[]>([]);
   const [isClient, setIsClient] = useState(false);
-  const [currentAnimal, setCurrentAnimal] = useState<Livestock | null | undefined>(null);
+  const [currentAnimal, setCurrentAnimal] = useState<Livestock | null | undefined>(undefined);
 
   useEffect(() => {
     setIsClient(true);
     try {
       const livestockItem = window.localStorage.getItem('livestockData');
       const financialItem = window.localStorage.getItem('financialData');
+      
+      const initialLivestockData: Livestock[] = []; // Default empty array
+      const initialFinancialData: FinancialRecord[] = []; // Default empty array
+
       const loadedLivestock = livestockItem ? JSON.parse(livestockItem) : initialLivestockData;
       const loadedFinancials = financialItem ? JSON.parse(financialItem) : initialFinancialData;
       
@@ -1520,11 +1524,9 @@ export default function LivestockDetailPage() {
 
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
-      setLivestockList(initialLivestockData);
-      setFinancialData(initialFinancialData);
     }
   }, []);
-
+  
   useEffect(() => {
     if (livestockList.length > 0) {
         setCurrentAnimal(livestockList.find(a => a.id === id));
@@ -1549,7 +1551,7 @@ export default function LivestockDetailPage() {
     setLivestockList(updatedList);
   };
   
-  const handleFinancialUpdate = (updatedRecord: any) => {
+  const handleFinancialUpdate = (updatedRecord: FinancialRecord) => {
     const updatedList = financialData.map(r => r.id === updatedRecord.id ? updatedRecord : r);
     setFinancialData(updatedList);
   }
@@ -1559,11 +1561,14 @@ export default function LivestockDetailPage() {
   }
   
   if (currentAnimal === undefined) {
+      // Still loading or not found yet
+      return null;
+  }
+  
+  if (currentAnimal === null) {
       return notFound();
   }
-  if (currentAnimal === null) {
-      return null; // Or a loading spinner while finding the animal
-  }
+
 
   const isBatch = currentAnimal.tagId.startsWith('batch-');
 
