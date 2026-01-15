@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -69,7 +70,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
   
   // Health Record State
   const [isHealthDialogOpen, setHealthDialogOpen] = useState(false);
-  const [healthDate, setHealthDate] = useState(new Date().toISOString().split('T')[0]);
+  const [healthDate, setHealthDate] = useState(new Date().toISOString().slice(0, 16));
   const [healthEvent, setHealthEvent] = useState('');
   const [healthDescription, setHealthDescription] = useState('');
   const [isEditHealthDialogOpen, setEditHealthDialogOpen] = useState(false);
@@ -77,7 +78,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
 
   // Production Metric State
   const [isMetricDialogOpen, setMetricDialogOpen] = useState(false);
-  const [metricDate, setMetricDate] = useState(new Date().toISOString().split('T')[0]);
+  const [metricDate, setMetricDate] = useState(new Date().toISOString().slice(0, 16));
   const [metricType, setMetricType] = useState<'Milk' | 'Weight' | 'Breeding' | ''>('');
   const [metricValue, setMetricValue] = useState('');
   
@@ -121,7 +122,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
 
     const newRecord: HealthRecord = {
       id: `hr-${Date.now()}`,
-      date: healthDate,
+      date: new Date(healthDate).toISOString(),
       event: healthEvent,
       description: healthDescription,
     };
@@ -145,12 +146,12 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
 
     setHealthEvent('');
     setHealthDescription('');
-    setHealthDate(new Date().toISOString().split('T')[0]);
+    setHealthDate(new Date().toISOString().slice(0, 16));
     setHealthDialogOpen(false);
   };
   
   const handleEditHealthRecord = (record: HealthRecord) => {
-    setEditingHealthRecord(record);
+    setEditingHealthRecord({...record, date: new Date(record.date).toISOString().slice(0,16)});
     setEditHealthDialogOpen(true);
   };
 
@@ -158,7 +159,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
     if (!editingHealthRecord || !animal) return;
 
     const updatedHealthRecords = animal.healthRecords.map(r =>
-      r.id === editingHealthRecord.id ? editingHealthRecord : r
+      r.id === editingHealthRecord.id ? {...editingHealthRecord, date: new Date(editingHealthRecord.date).toISOString() } : r
     );
     const updatedAnimal = { ...animal, healthRecords: updatedHealthRecords };
     handleUpdate(updatedAnimal);
@@ -197,7 +198,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
     }
     const newMetric: ProductionMetric = {
       id: `pm-${Date.now()}`,
-      date: metricDate,
+      date: new Date(metricDate).toISOString(),
       type: metricType as 'Milk' | 'Weight' | 'Breeding',
       value: metricValue,
     };
@@ -221,12 +222,12 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
     
     setMetricType('');
     setMetricValue('');
-    setMetricDate(new Date().toISOString().split('T')[0]);
+    setMetricDate(new Date().toISOString().slice(0, 16));
     setMetricDialogOpen(false);
   };
 
   const handleEditMetric = (metric: ProductionMetric) => {
-    setEditingMetric(metric);
+    setEditingMetric({...metric, date: new Date(metric.date).toISOString().slice(0, 16)});
     setEditMetricDialogOpen(true);
   };
   
@@ -234,7 +235,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
       if (!editingMetric || !animal) return;
 
       const updatedMetrics = animal.productionMetrics.map(m =>
-          m.id === editingMetric.id ? editingMetric : m
+          m.id === editingMetric.id ? { ...editingMetric, date: new Date(editingMetric.date).toISOString() } : m
       );
       const updatedAnimal = { ...animal, productionMetrics: updatedMetrics };
       handleUpdate(updatedAnimal);
@@ -537,7 +538,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                         <div className="grid gap-4 py-4">
                           <div className="space-y-2">
                             <Label htmlFor="health-date">Date</Label>
-                            <Input id="health-date" type="date" value={healthDate} onChange={(e) => setHealthDate(e.target.value)} />
+                            <Input id="health-date" type="datetime-local" value={healthDate} onChange={(e) => setHealthDate(e.target.value)} />
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="health-event">Event</Label>
@@ -569,7 +570,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                         <TableBody>
                           {animal.healthRecords.map((record: HealthRecord) => (
                             <TableRow key={record.id}>
-                              <TableCell className="min-w-[100px]">{new Date(record.date).toLocaleDateString()}</TableCell>
+                              <TableCell className="min-w-[100px]">{new Date(record.date).toLocaleString()}</TableCell>
                               <TableCell>{record.event}</TableCell>
                               <TableCell>{record.description}</TableCell>
                               <TableCell className="text-right">
@@ -580,7 +581,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                                           </Button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
-                                          <DropdownMenuItem onClick={() => handleEditHealthRecord(record)}>
+                                          <DropdownMenuItem onSelect={() => handleEditHealthRecord(record)}>
                                               <Edit className="mr-2 h-4 w-4"/>Edit
                                           </DropdownMenuItem>
                                           <DropdownMenuItem onClick={() => handleDeleteHealthRecord(record.id)} className="text-destructive">
@@ -602,7 +603,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                                     <div className="flex-1 space-y-2">
                                         <p className="font-semibold">{record.event}</p>
                                         <p className="text-sm text-muted-foreground">{record.description}</p>
-                                        <p className="text-xs text-muted-foreground pt-1">{new Date(record.date).toLocaleDateString()}</p>
+                                        <p className="text-xs text-muted-foreground pt-1">{new Date(record.date).toLocaleString()}</p>
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -611,7 +612,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => handleEditHealthRecord(record)}>
+                                            <DropdownMenuItem onSelect={() => handleEditHealthRecord(record)}>
                                                 <Edit className="mr-2 h-4 w-4"/>Edit
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => handleDeleteHealthRecord(record.id)} className="text-destructive">
@@ -645,7 +646,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                            <div className="grid gap-4 py-4">
                             <div className="space-y-2">
                               <Label htmlFor="metric-date">Date</Label>
-                              <Input id="metric-date" type="date" value={metricDate} onChange={(e) => setMetricDate(e.target.value)} />
+                              <Input id="metric-date" type="datetime-local" value={metricDate} onChange={(e) => setMetricDate(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="metric-type">Type</Label>
@@ -686,7 +687,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                           <TableBody>
                             {animal.productionMetrics.map((metric: ProductionMetric) => (
                               <TableRow key={metric.id}>
-                                <TableCell className="min-w-[100px]">{new Date(metric.date).toLocaleDateString()}</TableCell>
+                                <TableCell className="min-w-[100px]">{new Date(metric.date).toLocaleString()}</TableCell>
                                 <TableCell>{metric.type}</TableCell>
                                 <TableCell>{metric.value}</TableCell>
                                 <TableCell className="text-right">
@@ -697,7 +698,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => handleEditMetric(metric)}>
+                                            <DropdownMenuItem onSelect={() => handleEditMetric(metric)}>
                                                 <Edit className="mr-2 h-4 w-4"/>Edit
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => handleDeleteMetric(metric.id)} className="text-destructive">
@@ -718,7 +719,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                                   <CardContent className="p-4 flex justify-between items-start">
                                       <div className="flex-1 space-y-2">
                                           <p className="font-semibold">{metric.type}: <span className="font-bold text-primary">{metric.value}</span></p>
-                                          <p className="text-xs text-muted-foreground pt-1">{new Date(metric.date).toLocaleDateString()}</p>
+                                          <p className="text-xs text-muted-foreground pt-1">{new Date(metric.date).toLocaleString()}</p>
                                       </div>
                                       <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
@@ -727,7 +728,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                                               </Button>
                                           </DropdownMenuTrigger>
                                           <DropdownMenuContent align="end">
-                                              <DropdownMenuItem onClick={() => handleEditMetric(metric)}>
+                                              <DropdownMenuItem onSelect={() => handleEditMetric(metric)}>
                                                   <Edit className="mr-2 h-4 w-4"/>Edit
                                               </DropdownMenuItem>
                                               <DropdownMenuItem onClick={() => handleDeleteMetric(metric.id)} className="text-destructive">
@@ -805,7 +806,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                             <Label htmlFor="edit-metric-date">Date</Label>
                             <Input
                                 id="edit-metric-date"
-                                type="date"
+                                type="datetime-local"
                                 value={editingMetric.date}
                                 onChange={(e) => setEditingMetric({ ...editingMetric, date: e.target.value })}
                             />
@@ -856,7 +857,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
                             <Label htmlFor="edit-health-date">Date</Label>
                             <Input
                                 id="edit-health-date"
-                                type="date"
+                                type="datetime-local"
                                 value={editingHealthRecord.date}
                                 onChange={(e) => setEditingHealthRecord({ ...editingHealthRecord, date: e.target.value })}
                             />
@@ -889,158 +890,6 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
   );
 }
 
-const EditBatchDialogContent = ({
-  animal,
-  allFinancials,
-  onUpdate,
-  onFinancialUpdate,
-  onClose,
-}: {
-  animal: Livestock;
-  allFinancials: FinancialRecord[];
-  onUpdate: (updatedAnimal: Livestock) => void;
-  onFinancialUpdate: (updatedRecord: FinancialRecord) => void;
-  onClose: () => void;
-}) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-  
-  const [editForm, setEditForm] = useState(animal);
-
-  useEffect(() => {
-    setEditForm(animal);
-  }, [animal]);
-
-  const acquisitionCostRecord = useMemo(() => allFinancials.find(f => f.description === `Purchase of batch: ${animal.name.split(' (')[0]}`), [animal, allFinancials]);
-
-  const [cost, setCost] = useState(acquisitionCostRecord?.amount || 0);
-
-   useEffect(() => {
-    const costRecord = allFinancials.find(f => f.description === `Purchase of batch: ${animal.name.split(' (')[0]}`);
-    setCost(costRecord?.amount || 0);
-  }, [animal, allFinancials]);
-
-  const handleSaveProfile = () => {
-
-    const finalForm = {
-        ...editForm,
-        name: `${editForm.name.split(' (')[0]} (${editForm.tagId.split('-')[1]} animals)`
-    };
-
-    onUpdate(finalForm);
-    
-    if (acquisitionCostRecord) {
-        const updatedRecord = { ...acquisitionCostRecord, amount: cost };
-        onFinancialUpdate(updatedRecord);
-    } else if (cost > 0) {
-        const newRecord: FinancialRecord = {
-          id: `fin-${Date.now()}`,
-          type: 'Expense',
-          category: 'Livestock Purchase',
-          amount: cost,
-          date: finalForm.birthDate, // Aquisition Date
-          description: `Purchase of batch: ${finalForm.name.split(' (')[0]}`,
-        }
-        onFinancialUpdate(newRecord);
-    }
-
-    toast({
-      title: "Profile Saved",
-      description: `${finalForm.name}'s profile has been updated.`,
-    });
-    onClose();
-  };
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditForm(prev => ({...prev, imageUrl: reader.result as string, imageHint: file.name }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  return (
-    <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Batch: {animal.name.split(' (')[0]}</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="batch-image">Batch Image</Label>
-            <div className="flex items-center gap-4">
-              <Image
-                src={editForm.imageUrl}
-                alt={editForm.name}
-                width={128}
-                height={128}
-                className="h-32 w-32 rounded-lg border object-cover"
-                data-ai-hint={editForm.imageHint}
-              />
-              <div className="flex-1">
-                <Input id="batch-image" type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageSelect} />
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Image
-                </Button>
-                <p className="text-xs text-muted-foreground mt-2">PNG, JPG, GIF up to 10MB.</p>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="name">Batch Name</Label>
-            <Input id="name" value={editForm.name.split(' (')[0]} onChange={(e) => setEditForm(prev => ({...prev, name: e.target.value}))} />
-          </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                  <Label htmlFor="breed">Breed</Label>
-                  <Input id="breed" value={editForm.breed} onChange={(e) => setEditForm(prev => ({...prev, breed: e.target.value}))} />
-              </div>
-              <div className="space-y-2">
-                  <Label htmlFor="birthDate">Acquisition Date</Label>
-                  <Input id="birthDate" type="date" value={editForm.birthDate} onChange={(e) => setEditForm(prev => ({...prev, birthDate: e.target.value}))} />
-              </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="tagId">Number of Animals</Label>
-                <Input id="tagId" value={editForm.tagId.split('-')[1]} onChange={(e) => setEditForm(prev => ({...prev, tagId: `batch-${e.target.value}`}))} />
-            </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={editForm.status} onValueChange={(value) => setEditForm(prev => ({ ...prev, status: value as any }))}>
-                    <SelectTrigger id="status">
-                        <SelectValue placeholder="Select a status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {['Active', 'Sold', 'Deceased'].map(option => (
-                            <SelectItem key={option} value={option}>{option}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-          </div>
-          <div className="space-y-2">
-              <Label htmlFor="cost">Total Cost</Label>
-              <Input 
-                id="cost" 
-                type="number" 
-                value={cost}
-                onChange={(e) => setCost(parseFloat(e.target.value) || 0)}
-                placeholder="e.g., 250.00"
-              />
-          </div>
-        </div>
-      <DialogFooter>
-        <Button variant="outline" onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSaveProfile}>Save Changes</Button>
-      </DialogFooter>
-      </DialogContent>
-  )
-}
-
 function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate, allFinancials }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[], onFinancialUpdate: (record: FinancialRecord) => void, allFinancials: FinancialRecord[] }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -1050,7 +899,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
   
   // Health Record State
   const [isHealthDialogOpen, setHealthDialogOpen] = useState(false);
-  const [healthDate, setHealthDate] = useState(new Date().toISOString().split('T')[0]);
+  const [healthDate, setHealthDate] = useState(new Date().toISOString().slice(0, 16));
   const [healthEvent, setHealthEvent] = useState('');
   const [healthDescription, setHealthDescription] = useState('');
   const [isEditHealthDialogOpen, setEditHealthDialogOpen] = useState(false);
@@ -1058,12 +907,13 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
 
   // Production Metric State
   const [isMetricDialogOpen, setMetricDialogOpen] = useState(false);
-  const [metricDate, setMetricDate] = useState(new Date().toISOString().split('T')[0]);
+  const [metricDate, setMetricDate] = useState(new Date().toISOString().slice(0, 16));
   const [metricType, setMetricType] = useState<'Milk' | 'Weight' | 'Breeding' | 'Eggs' | ''>('');
   const [metricValue, setMetricValue] = useState('');
   
   // Edit Profile State
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
+  const [editForm, setEditForm] = useState<{animal: Livestock, cost: number} | null>(null)
   
   // Edit Metric State
   const [isEditMetricDialogOpen, setEditMetricDialogOpen] = useState(false);
@@ -1096,7 +946,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
 
     const newRecord: HealthRecord = {
       id: `hr-${Date.now()}`,
-      date: healthDate,
+      date: new Date(healthDate).toISOString(),
       event: healthEvent,
       description: healthDescription,
     };
@@ -1120,12 +970,12 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
 
     setHealthEvent('');
     setHealthDescription('');
-    setHealthDate(new Date().toISOString().split('T')[0]);
+    setHealthDate(new Date().toISOString().slice(0, 16));
     setHealthDialogOpen(false);
   };
   
   const handleEditHealthRecord = (record: HealthRecord) => {
-    setEditingHealthRecord(record);
+    setEditingHealthRecord({...record, date: new Date(record.date).toISOString().slice(0,16)});
     setEditHealthDialogOpen(true);
   };
 
@@ -1133,7 +983,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
     if (!editingHealthRecord || !animal) return;
 
     const updatedHealthRecords = animal.healthRecords.map(r =>
-      r.id === editingHealthRecord.id ? editingHealthRecord : r
+      r.id === editingHealthRecord.id ? {...editingHealthRecord, date: new Date(editingHealthRecord.date).toISOString()} : r
     );
     const updatedAnimal = { ...animal, healthRecords: updatedHealthRecords };
     handleUpdate(updatedAnimal);
@@ -1172,7 +1022,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
     }
     const newMetric: ProductionMetric = {
       id: `pm-${Date.now()}`,
-      date: metricDate,
+      date: new Date(metricDate).toISOString(),
       type: metricType as any,
       value: metricValue,
     };
@@ -1196,12 +1046,12 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
     
     setMetricType('');
     setMetricValue('');
-    setMetricDate(new Date().toISOString().split('T')[0]);
+    setMetricDate(new Date().toISOString().slice(0, 16));
     setMetricDialogOpen(false);
   };
 
   const handleEditMetric = (metric: ProductionMetric) => {
-    setEditingMetric(metric);
+    setEditingMetric({...metric, date: new Date(metric.date).toISOString().slice(0,16)});
     setEditMetricDialogOpen(true);
   };
   
@@ -1209,7 +1059,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
       if (!editingMetric || !animal) return;
 
       const updatedMetrics = animal.productionMetrics.map(m =>
-          m.id === editingMetric.id ? editingMetric : m
+          m.id === editingMetric.id ? {...editingMetric, date: new Date(editingMetric.date).toISOString()} : m
       );
       const updatedAnimal = { ...animal, productionMetrics: updatedMetrics };
       handleUpdate(updatedAnimal);
@@ -1237,6 +1087,12 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
       });
   };
 
+  const handleEditClick = () => {
+    const costRecord = allFinancials.find(f => f.description === `Purchase of batch: ${animal.name.split(' (')[0]}`);
+    setEditForm({ animal: animal, cost: costRecord?.amount || 0});
+    setEditDialogOpen(true);
+  }
+
   const animalCount = animal.tagId.split('-')[1];
 
   return (
@@ -1245,14 +1101,15 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
          <Button variant="outline" onClick={() => router.back()}><ArrowLeft /> Back</Button>
          <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
             <DialogTrigger asChild>
-                <Button>
+                <Button onClick={handleEditClick}>
                     <Edit />
                     Edit Batch
                 </Button>
             </DialogTrigger>
              <EditBatchDialogContent
-                animal={animal}
-                allFinancials={allFinancials}
+                key={animal.id}
+                editForm={editForm}
+                setEditForm={setEditForm}
                 onUpdate={handleUpdate}
                 onFinancialUpdate={onFinancialUpdate}
                 onClose={() => setEditDialogOpen(false)}
@@ -1346,7 +1203,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                         <div className="grid gap-4 py-4">
                           <div className="space-y-2">
                             <Label htmlFor="health-date">Date</Label>
-                            <Input id="health-date" type="date" value={healthDate} onChange={(e) => setHealthDate(e.target.value)} />
+                            <Input id="health-date" type="datetime-local" value={healthDate} onChange={(e) => setHealthDate(e.target.value)} />
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="health-event">Event</Label>
@@ -1378,7 +1235,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                         <TableBody>
                           {animal.healthRecords.map((record: HealthRecord) => (
                             <TableRow key={record.id}>
-                              <TableCell className="min-w-[100px]">{new Date(record.date).toLocaleDateString()}</TableCell>
+                              <TableCell className="min-w-[100px]">{new Date(record.date).toLocaleString()}</TableCell>
                               <TableCell>{record.event}</TableCell>
                               <TableCell>{record.description}</TableCell>
                               <TableCell className="text-right">
@@ -1389,7 +1246,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                                           </Button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
-                                          <DropdownMenuItem onClick={() => handleEditHealthRecord(record)}>
+                                          <DropdownMenuItem onSelect={() => handleEditHealthRecord(record)}>
                                               <Edit className="mr-2 h-4 w-4"/>Edit
                                           </DropdownMenuItem>
                                           <DropdownMenuItem onClick={() => handleDeleteHealthRecord(record.id)} className="text-destructive">
@@ -1425,7 +1282,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                            <div className="grid gap-4 py-4">
                             <div className="space-y-2">
                               <Label htmlFor="metric-date">Date</Label>
-                              <Input id="metric-date" type="date" value={metricDate} onChange={(e) => setMetricDate(e.target.value)} />
+                              <Input id="metric-date" type="datetime-local" value={metricDate} onChange={(e) => setMetricDate(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="metric-type">Type</Label>
@@ -1465,7 +1322,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                           <TableBody>
                             {animal.productionMetrics.map((metric: ProductionMetric) => (
                               <TableRow key={metric.id}>
-                                <TableCell className="min-w-[100px]">{new Date(metric.date).toLocaleDateString()}</TableCell>
+                                <TableCell className="min-w-[100px]">{new Date(metric.date).toLocaleString()}</TableCell>
                                 <TableCell>{metric.type}</TableCell>
                                 <TableCell>{metric.value}</TableCell>
                                 <TableCell className="text-right">
@@ -1476,7 +1333,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => handleEditMetric(metric)}>
+                                            <DropdownMenuItem onSelect={() => handleEditMetric(metric)}>
                                                 <Edit className="mr-2 h-4 w-4"/>Edit
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => handleDeleteMetric(metric.id)} className="text-destructive">
@@ -1512,7 +1369,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                             <Label htmlFor="edit-metric-date">Date</Label>
                             <Input
                                 id="edit-metric-date"
-                                type="date"
+                                type="datetime-local"
                                 value={editingMetric.date}
                                 onChange={(e) => setEditingMetric({ ...editingMetric, date: e.target.value })}
                             />
@@ -1562,7 +1419,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                             <Label htmlFor="edit-health-date">Date</Label>
                             <Input
                                 id="edit-health-date"
-                                type="date"
+                                type="datetime-local"
                                 value={editingHealthRecord.date}
                                 onChange={(e) => setEditingHealthRecord({ ...editingHealthRecord, date: e.target.value })}
                             />
@@ -1595,6 +1452,145 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
   );
 }
 
+const EditBatchDialogContent = ({
+  editForm,
+  setEditForm,
+  onUpdate,
+  onFinancialUpdate,
+  onClose,
+}: {
+  editForm: {animal: Livestock, cost: number} | null;
+  setEditForm: (form: {animal: Livestock, cost: number} | null) => void;
+  onUpdate: (updatedAnimal: Livestock) => void;
+  onFinancialUpdate: (updatedRecord: FinancialRecord) => void;
+  onClose: () => void;
+}) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  if (!editForm) return null;
+
+  const handleSaveProfile = () => {
+    const { animal, cost } = editForm;
+    const finalForm = {
+        ...animal,
+        name: `${animal.name.split(' (')[0]} (${animal.tagId.split('-')[1]} animals)`
+    };
+
+    onUpdate(finalForm);
+    
+    const newRecord: FinancialRecord = {
+      id: `fin-${animal.id}`, // Use a predictable ID
+      type: 'Expense',
+      category: 'Livestock Purchase',
+      amount: cost,
+      date: finalForm.birthDate, // Aquisition Date
+      description: `Purchase of batch: ${finalForm.name.split(' (')[0]}`,
+    }
+    onFinancialUpdate(newRecord);
+
+
+    toast({
+      title: "Profile Saved",
+      description: `${finalForm.name}'s profile has been updated.`,
+    });
+    onClose();
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditForm(prev => prev ? {...prev, animal: {...prev.animal, imageUrl: reader.result as string, imageHint: file.name }} : null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const handleAnimalChange = (field: keyof Livestock, value: string) => {
+    setEditForm(prev => prev ? {...prev, animal: {...prev.animal, [field]: value}} : null);
+  }
+
+  return (
+    <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit Batch: {editForm.animal.name.split(' (')[0]}</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="batch-image">Batch Image</Label>
+            <div className="flex items-center gap-4">
+              <Image
+                src={editForm.animal.imageUrl}
+                alt={editForm.animal.name}
+                width={128}
+                height={128}
+                className="h-32 w-32 rounded-lg border object-cover"
+                data-ai-hint={editForm.animal.imageHint}
+              />
+              <div className="flex-1">
+                <Input id="batch-image" type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageSelect} />
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Image
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2">PNG, JPG, GIF up to 10MB.</p>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="name">Batch Name</Label>
+            <Input id="name" value={editForm.animal.name.split(' (')[0]} onChange={(e) => setEditForm(prev => prev ? {...prev, animal: {...prev.animal, name: e.target.value}} : null)} />
+          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                  <Label htmlFor="breed">Breed</Label>
+                  <Input id="breed" value={editForm.animal.breed} onChange={(e) => handleAnimalChange('breed', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="birthDate">Acquisition Date</Label>
+                  <Input id="birthDate" type="date" value={editForm.animal.birthDate} onChange={(e) => handleAnimalChange('birthDate', e.target.value)} />
+              </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="tagId">Number of Animals</Label>
+                <Input id="tagId" value={editForm.animal.tagId.split('-')[1]} onChange={(e) => handleAnimalChange('tagId', `batch-${e.target.value}`)} />
+            </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={editForm.animal.status} onValueChange={(value) => handleAnimalChange('status', value)}>
+                    <SelectTrigger id="status">
+                        <SelectValue placeholder="Select a status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {['Active', 'Sold', 'Deceased'].map(option => (
+                            <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+              <Label htmlFor="cost">Total Cost</Label>
+              <Input 
+                id="cost" 
+                type="number" 
+                value={editForm.cost}
+                onChange={(e) => setEditForm(prev => prev ? {...prev, cost: parseFloat(e.target.value) || 0} : null)}
+                placeholder="e.g., 250.00"
+              />
+          </div>
+        </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSaveProfile}>Save Changes</Button>
+      </DialogFooter>
+      </DialogContent>
+  )
+}
+
 export default function LivestockDetailPage() {
   const params = useParams();
   const id = params.id as string;
@@ -1605,13 +1601,12 @@ export default function LivestockDetailPage() {
 
   useEffect(() => {
     setIsClient(true);
-    // Load initial data from localStorage
     try {
       const storedLivestock = window.localStorage.getItem('livestockData');
       const storedFinancials = window.localStorage.getItem('financialData');
       
-      const initialLivestockData: Livestock[] = []; // Default empty array
-      const initialFinancialData: FinancialRecord[] = []; // Default empty array
+      const initialLivestockData: Livestock[] = [];
+      const initialFinancialData: FinancialRecord[] = [];
 
       const loadedLivestock = storedLivestock ? JSON.parse(storedLivestock) : initialLivestockData;
       const loadedFinancials = storedFinancials ? JSON.parse(storedFinancials) : initialFinancialData;
@@ -1630,16 +1625,14 @@ export default function LivestockDetailPage() {
     }
   }, [id, isClient, livestockList]);
 
-  // Save livestock data to localStorage whenever it changes
   useEffect(() => {
-    if (isClient && livestockList.length > 0) {
+    if (isClient) {
       window.localStorage.setItem('livestockData', JSON.stringify(livestockList));
     }
   }, [livestockList, isClient]);
 
-  // Save financial data to localStorage whenever it changes
   useEffect(() => {
-    if (isClient && financialData.length > 0) {
+    if (isClient) {
       window.localStorage.setItem('financialData', JSON.stringify(financialData));
     }
   }, [financialData, isClient]);
@@ -1665,7 +1658,7 @@ export default function LivestockDetailPage() {
   };
   
   if (!isClient || currentAnimal === undefined) {
-    return null; // Or a loading spinner
+    return null;
   }
   
   if (currentAnimal === null) {
@@ -1690,5 +1683,3 @@ export default function LivestockDetailPage() {
     />;
   }
 }
-
-    
