@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useMemo, useReducer } from "react";
+import { useState, useMemo, useEffect } from "react";
 import AddAnimalSheet from "./add-animal-sheet";
 import AddCategorySheet from "./add-category-sheet";
 import AddNewCategorySheet from "./add-new-category-sheet";
@@ -97,6 +97,7 @@ function LivestockCategoryList({
   }
   
   const categories: LivestockCategory[] = useMemo(() => {
+    if (!categoriesData) return [];
     return categoriesData.map(cat => {
         const animals = livestockData.filter(animal => animal.category === cat.name);
         const IconComponent = iconMap[cat.icon] || CowIcon;
@@ -288,6 +289,7 @@ function AnimalList({
     const [isSheetOpen, setSheetOpen] = useState(false);
 
     const animals = useMemo(() => {
+        if (!livestockData) return [];
         return livestockData.filter(animal => animal.category.toLowerCase() === category.toLowerCase());
     }, [category, livestockData]);
 
@@ -303,7 +305,15 @@ function AnimalList({
 
     const categoryName = categoryDef.name as LivestockCategoryName;
     const AddSheetComponent = categoryDef.managementStyle === 'batch' ? AddBatchSheet : AddAnimalSheet;
-    const onAdd = categoryDef.managementStyle === 'batch' ? onAddBatch : onAddAnimal;
+    
+    const handleAdd = (data: Livestock) => {
+      if (categoryDef.managementStyle === 'batch') {
+        onAddBatch(data);
+      } else {
+        onAddAnimal(data);
+      }
+    };
+
 
     return (
         <>
@@ -376,9 +386,50 @@ function AnimalList({
 export default function LivestockPage() {
   const searchParams = useSearchParams();
   const category = searchParams.get("category");
+  const [isClient, setIsClient] = useState(false);
 
-  const [livestock, setLivestock] = useState<Livestock[]>(initialLivestockData);
-  const [categories, setCategories] = useState<CategoryDefinition[]>(initialCategoriesData);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const [livestock, setLivestock] = useState<Livestock[]>(() => {
+    if (typeof window === 'undefined') {
+      return initialLivestockData;
+    }
+    try {
+      const item = window.localStorage.getItem('livestockData');
+      return item ? JSON.parse(item) : initialLivestockData;
+    } catch (error) {
+      console.error(error);
+      return initialLivestockData;
+    }
+  });
+
+  const [categories, setCategories] = useState<CategoryDefinition[]>(() => {
+    if (typeof window === 'undefined') {
+      return initialCategoriesData;
+    }
+    try {
+      const item = window.localStorage.getItem('categoriesData');
+      return item ? JSON.parse(item) : initialCategoriesData;
+    } catch (error) {
+      console.error(error);
+      return initialCategoriesData;
+    }
+  });
+
+  useEffect(() => {
+    if (isClient) {
+      window.localStorage.setItem('livestockData', JSON.stringify(livestock));
+    }
+  }, [livestock, isClient]);
+
+  useEffect(() => {
+    if (isClient) {
+      window.localStorage.setItem('categoriesData', JSON.stringify(categories));
+    }
+  }, [categories, isClient]);
+
 
   const handleAddAnimal = (animal: Livestock) => {
     setLivestock(prev => [...prev, animal]);
@@ -402,6 +453,10 @@ export default function LivestockPage() {
   const handleUpdateCategory = (updatedCategory: CategoryDefinition) => {
     setCategories(prev => prev.map(c => c.name === updatedCategory.name ? updatedCategory : c));
   };
+  
+  if (!isClient) {
+    return null; // Or a loading spinner
+  }
 
   if (category) {
     return <AnimalList 
@@ -423,5 +478,3 @@ export default function LivestockPage() {
     onAddBatch={handleAddBatch}
   />;
 }
-
-    
