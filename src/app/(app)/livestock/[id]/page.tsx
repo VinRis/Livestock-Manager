@@ -431,19 +431,19 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
         </Dialog>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
-        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
-          <div className="lg:col-span-1 space-y-6">
+        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-3">
+          <div className="lg:col-span-1 space-y-4">
             <Card className="overflow-hidden">
               <Image
                 src={animal.imageUrl}
                 alt={animal.name}
                 width={600}
                 height={400}
-                className="w-full object-cover aspect-[3/2]"
+                className="w-full object-cover aspect-[4/3]"
                 data-ai-hint={animal.imageHint}
               />
-              <CardContent className="p-4">
-                <h2 className="text-2xl font-bold font-headline">{animal.name}</h2>
+              <CardContent className="p-3">
+                <h2 className="text-xl font-bold font-headline">{animal.name}</h2>
                 <p className="text-sm text-muted-foreground">Tag ID: {animal.tagId}</p>
                 <div className="flex flex-wrap gap-2 mt-2">
                     <Badge>{animal.breed}</Badge>
@@ -457,26 +457,26 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
 
             <div className="grid grid-cols-2 gap-4">
               <Card>
-                <CardHeader className="pb-2">
+                <CardHeader className="p-3 pb-2">
                   <CardTitle className="text-sm font-medium flex items-center justify-between">
                     <span>Age</span>
                     <Cake className="h-4 w-4 text-muted-foreground" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{age.years}<span className="text-base font-normal text-muted-foreground">y</span> {age.months}<span className="text-base font-normal text-muted-foreground">m</span></div>
+                <CardContent className="p-3 pt-0">
+                  <div className="text-xl font-bold">{age.years}<span className="text-sm font-normal text-muted-foreground">y</span> {age.months}<span className="text-sm font-normal text-muted-foreground">m</span></div>
                   <p className="text-xs text-muted-foreground">Born {new Date(animal.birthDate).toLocaleDateString()}</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="pb-2">
+                <CardHeader className="p-3 pb-2">
                   <CardTitle className="text-sm font-medium flex items-center justify-between">
                     <span>Weight</span>
                     <Weight className="h-4 w-4 text-muted-foreground" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{lastWeightMetric ? lastWeightMetric.value : 'N/A'}</div>
+                <CardContent className="p-3 pt-0">
+                  <div className="text-xl font-bold">{lastWeightMetric ? lastWeightMetric.value : 'N/A'}</div>
                    <p className="text-xs text-muted-foreground">{lastWeightMetric ? `on ${new Date(lastWeightMetric.date).toLocaleDateString()}`: 'No record'}</p>
                 </CardContent>
               </Card>
@@ -486,7 +486,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
           <div className="lg:col-span-2">
             <Card>
               <Tabs defaultValue="health" className="w-full">
-                <CardHeader className="p-4">
+                <CardHeader className="p-2 sm:p-4">
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="health">Health</TabsTrigger>
                     <TabsTrigger value="production">Production</TabsTrigger>
@@ -494,8 +494,8 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                   </TabsList>
                 </CardHeader>
                 <TabsContent value="health" className="p-0">
-                  <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6">
-                    <CardTitle className="text-base sm:text-lg">Health History</CardTitle>
+                  <CardHeader className="flex flex-row items-center justify-between px-2 pb-2 sm:px-4">
+                    <CardTitle className="text-base">Health History</CardTitle>
                     <Dialog open={isHealthDialogOpen} onOpenChange={setHealthDialogOpen}>
                       <DialogTrigger asChild>
                         <Button size="sm" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Add</Button>
@@ -574,8 +574,8 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                   </CardContent>
                 </TabsContent>
                 <TabsContent value="production" className="p-0">
-                  <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6">
-                    <CardTitle className="text-base sm:text-lg">Production Metrics</CardTitle>
+                  <CardHeader className="flex flex-row items-center justify-between px-2 pb-2 sm:px-4">
+                    <CardTitle className="text-base">Production Metrics</CardTitle>
                     <Dialog open={isMetricDialogOpen} onOpenChange={setMetricDialogOpen}>
                        <DialogTrigger asChild>
                          <Button size="sm" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Add</Button>
@@ -663,59 +663,44 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                   </CardContent>
                 </TabsContent>
                 <TabsContent value="lineage" className="p-0">
-                  <CardHeader className="px-4 sm:px-6">
-                    <CardTitle className="text-base sm:text-lg">Lineage</CardTitle>
+                  <CardHeader className="px-2 pb-2 sm:px-4">
+                    <CardTitle className="text-base">Lineage</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-8 px-4 sm:px-6">
-                    <div>
-                        <h3 className="mb-4 text-base font-semibold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Parents</h3>
-                        <div className="flex flex-col sm:flex-row items-center sm:justify-around space-y-6 sm:space-y-0 relative">
-                           <div className="flex-1 flex justify-center">
-                                <LineageNode animal={sire} role="Sire" />
-                           </div>
-                           <div className="h-6 w-px sm:h-auto sm:w-px bg-border sm:hidden"></div>
-                           <div className="flex-1 flex justify-center">
-                                <LineageNode animal={dam} role="Dam" />
-                           </div>
-                           <div className="absolute top-6 left-0 w-full h-px bg-border -z-10 hidden sm:block"></div>
-                           <div className="absolute top-6 left-1/2 w-px h-8 -translate-x-1/2 -translate-y-full bg-border -z-10 hidden sm:block"></div>
+                  <CardContent className="space-y-6 px-2 sm:px-4">
+                    <div className="space-y-4">
+                        <h3 className="text-sm font-semibold flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> Parents</h3>
+                        <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:gap-8">
+                           <LineageNode animal={sire} role="Sire" />
+                           <LineageNode animal={dam} role="Dam" />
                         </div>
                     </div>
                     
-                    <div className="flex justify-center items-center my-4">
-                        <div className="relative">
-                            <div className="absolute bottom-full left-1/2 w-px h-8 -translate-x-1/2 bg-border -z-10"></div>
-                            <div className="flex items-center gap-4 rounded-lg border p-3 bg-card shadow-sm">
-                                <Image
-                                  src={animal.imageUrl}
-                                  alt={animal.name}
-                                  width={48}
-                                  height={48}
-                                  className="h-12 w-12 rounded-full object-cover"
-                                  data-ai-hint={animal.imageHint}
-                                />
-                               <div>
-                                  <p className="text-sm text-muted-foreground">Current Animal</p>
-                                  <p className="font-bold text-primary text-lg">{animal.name}</p>
-                               </div>
-                            </div>
-                           {offspring.length > 0 && <div className="absolute top-full left-1/2 w-px h-8 -translate-x-1/2 bg-border -z-10"></div>}
+                     <div className="flex flex-col items-center space-y-4">
+                        <div className="flex items-center gap-4 rounded-lg border p-2 bg-card shadow-sm">
+                            <Image
+                              src={animal.imageUrl}
+                              alt={animal.name}
+                              width={48}
+                              height={48}
+                              className="h-12 w-12 rounded-full object-cover"
+                              data-ai-hint={animal.imageHint}
+                            />
+                           <div>
+                              <p className="text-sm text-muted-foreground">Current Animal</p>
+                              <p className="font-bold text-primary text-lg">{animal.name}</p>
+                           </div>
                         </div>
                     </div>
 
                     {offspring.length > 0 && (
-                        <div>
-                            <h3 className="mb-4 text-base font-semibold flex items-center gap-2"><GitMerge className="h-5 w-5 text-primary" /> Offspring</h3>
-                             <div className="relative">
-                                {offspring.length > 1 && <div className="absolute top-8 left-1/4 w-1/2 h-px -translate-y-1/2 bg-border -z-10 hidden sm:block"></div>}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 pt-8">
-                                    {offspring.map(child => (
-                                         <div key={child.id} className="flex justify-center relative">
-                                            <div className="absolute bottom-full left-1/2 w-px h-8 -translate-x-1/2 bg-border -z-10"></div>
-                                            <LineageNode animal={child} role="Offspring" />
-                                        </div>
-                                    ))}
-                                </div>
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-semibold flex items-center gap-2"><GitMerge className="h-4 w-4 text-primary" /> Offspring</h3>
+                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-4">
+                                {offspring.map(child => (
+                                     <div key={child.id} className="flex justify-start">
+                                        <LineageNode animal={child} role="Offspring" />
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}
