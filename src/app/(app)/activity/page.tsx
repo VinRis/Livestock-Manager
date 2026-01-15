@@ -5,7 +5,7 @@ import { useState } from "react";
 import { PlusCircle, Link as LinkIcon, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { activityLogData as initialActivityLogData, type Activity, livestockData, categoriesData } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -166,20 +166,81 @@ export default function ActivityLogPage() {
 
   return (
     <>
-      <PageHeader title="Farm Activity Log">
-        <Dialog open={isAddDialogOpen} onOpenChange={setAddDialogOpen}>
+      <PageHeader title="Farm Activity Log" />
+      <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Activity Feed</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {activityLog.map((activity) => (
+                <div key={activity.id} className="relative pl-8">
+                  <div className="absolute left-0 top-1 h-full border-l-2 border-border"></div>
+                  <div className="absolute left-[-5px] top-1 h-3 w-3 rounded-full bg-primary"></div>
+                  <div className="flex items-start gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <Badge variant="outline">{activity.type}</Badge>
+                        <p className="text-xs text-muted-foreground">{formatRelativeDate(activity.date)}</p>
+                      </div>
+                      <p className="mt-1 text-sm text-foreground">{activity.description}</p>
+                      {activity.livestockId && activity.livestockName && (
+                        <Button variant="link" size="sm" className="h-auto p-0 mt-1" asChild>
+                           <Link href={`/livestock/${activity.livestockId}`} className="text-xs">
+                             <LinkIcon className="mr-1 h-3 w-3"/>
+                             {activity.livestockName}
+                           </Link>
+                        </Button>
+                      )}
+                      {activity.livestockCategory && !activity.livestockId && (
+                        <Button variant="link" size="sm" className="h-auto p-0 mt-1" asChild>
+                           <Link href={`/livestock?category=${activity.livestockCategory.toLowerCase()}`} className="text-xs">
+                             <LinkIcon className="mr-1 h-3 w-3"/>
+                             {activity.livestockCategory}
+                           </Link>
+                        </Button>
+                      )}
+                    </div>
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onSelect={() => handleEditClick(activity)}>
+                                <Edit className="mr-2 h-4 w-4"/>Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleDeleteClick(activity)} className="text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4"/>Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              ))}
+              {activityLog.length === 0 && (
+                <div className="py-8 text-center text-muted-foreground">
+                  No activities logged yet.
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+
+      {/* Add FAB */}
+       <Dialog open={isAddDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <PlusCircle />
-              Log Activity
+            <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-6">
+              <PlusCircle className="h-6 w-6" />
+              <span className="sr-only">Log Activity</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Log a New Activity</DialogTitle>
-              <DialogDescription>
-                Record a new activity that happened on the farm.
-              </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
@@ -252,70 +313,6 @@ export default function ActivityLogPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </PageHeader>
-      <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Activity Feed</CardTitle>
-            <CardDescription>Chronological list of farm activities.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {activityLog.map((activity) => (
-                <div key={activity.id} className="relative pl-8">
-                  <div className="absolute left-0 top-1 h-full border-l-2 border-border"></div>
-                  <div className="absolute left-[-5px] top-1 h-3 w-3 rounded-full bg-primary"></div>
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-baseline gap-2">
-                        <Badge variant="outline">{activity.type}</Badge>
-                        <p className="text-xs text-muted-foreground">{formatRelativeDate(activity.date)}</p>
-                      </div>
-                      <p className="mt-1 text-sm text-foreground">{activity.description}</p>
-                      {activity.livestockId && activity.livestockName && (
-                        <Button variant="link" size="sm" className="h-auto p-0 mt-1" asChild>
-                           <Link href={`/livestock/${activity.livestockId}`} className="text-xs">
-                             <LinkIcon className="mr-1 h-3 w-3"/>
-                             {activity.livestockName}
-                           </Link>
-                        </Button>
-                      )}
-                      {activity.livestockCategory && !activity.livestockId && (
-                        <Button variant="link" size="sm" className="h-auto p-0 mt-1" asChild>
-                           <Link href={`/livestock?category=${activity.livestockCategory.toLowerCase()}`} className="text-xs">
-                             <LinkIcon className="mr-1 h-3 w-3"/>
-                             {activity.livestockCategory}
-                           </Link>
-                        </Button>
-                      )}
-                    </div>
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreVertical className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => handleEditClick(activity)}>
-                                <Edit className="mr-2 h-4 w-4"/>Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleDeleteClick(activity)} className="text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4"/>Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              ))}
-              {activityLog.length === 0 && (
-                <div className="py-8 text-center text-muted-foreground">
-                  No activities logged yet.
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </main>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>

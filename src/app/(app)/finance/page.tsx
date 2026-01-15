@@ -5,7 +5,7 @@ import { DollarSign, PlusCircle, TrendingDown, TrendingUp } from "lucide-react";
 import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { financialData } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -96,12 +96,144 @@ export default function FinancePage() {
 
   return (
     <>
-      <PageHeader title="Financials">
-        <Dialog open={open} onOpenChange={onOpenChange}>
+      <PageHeader title="Financials" />
+      <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle>Total Income</CardTitle>
+                <DollarSign className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{currency}{totalIncome.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">All-time income</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle>Total Expenses</CardTitle>
+                <DollarSign className="h-4 w-4 text-destructive" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{currency}{totalExpense.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">All-time expenses</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle>Net Profit</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className={cn("text-2xl font-bold", netProfit >= 0 ? 'text-primary' : 'text-destructive')}>
+                  {currency}{netProfit.toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground">All-time net profit</p>
+              </CardContent>
+            </Card>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            <Dialog>
+              <DialogTrigger asChild>
+                  <Card className="cursor-pointer hover:bg-accent">
+                      <CardHeader>
+                        <CardTitle>Income vs. Expenses</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                          <p className="text-sm text-primary">Click to view graph</p>
+                          <div className="space-y-2 text-sm">
+                              <h4 className="font-semibold text-muted-foreground">Last 30 Days Summary</h4>
+                              <div className="flex items-center justify-between">
+                                  <span className="flex items-center gap-2"><TrendingUp className="text-primary"/>Income</span>
+                                  <span className="font-semibold">{currency}{recentIncome.toLocaleString()}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                  <span className="flex items-center gap-2"><TrendingDown className="text-destructive"/>Expense</span>
+                                  <span className="font-semibold">{currency}{recentExpense.toLocaleString()}</span>
+                              </div>
+                              <div className="flex items-center justify-between border-t pt-2 mt-2">
+                                  <span className="font-bold">Net</span>
+                                  <span className={cn("font-bold", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
+                              </div>
+                          </div>
+                      </CardContent>
+                  </Card>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl">
+                  <DialogHeader>
+                      <DialogTitle>Income vs. Expenses</DialogTitle>
+                  </DialogHeader>
+                  <div className="h-[400px] w-full pt-4 overflow-x-auto">
+                      <FinanceChart />
+                  </div>
+              </DialogContent>
+            </Dialog>
+
+            {topExpenses.length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Top Expenses (Last 30 Days)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4 text-sm">
+                            <div className="space-y-3">
+                              {topExpenses.map((expense) => (
+                                <div key={expense.category} className="space-y-1">
+                                  <div className="flex justify-between text-xs">
+                                    <span className="font-medium">{expense.category}</span>
+                                    <span>{currency}{expense.amount.toLocaleString()}</span>
+                                  </div>
+                                  <Progress value={expense.percentage} className="h-2" />
+                                </div>
+                              ))}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+          </div>
+          
+
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle>Recent Transactions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentTransactions.map(record => (
+                    <TableRow key={record.id}>
+                      <TableCell>
+                        <div className="font-medium">{record.description}</div>
+                        <ClientFormattedDate date={record.date} />
+                      </TableCell>
+                       <TableCell>{record.category}</TableCell>
+                      <TableCell className={cn("text-right", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
+                        {record.type === 'Income' ? '+' : '-'}{currency}{record.amount.toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+
+       <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
-                <Button>
-                    <PlusCircle />
-                    Add Transaction
+                <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-6">
+                    <PlusCircle className="h-6 w-6" />
+                    <span className="sr-only">Add Transaction</span>
                 </Button>
             </DialogTrigger>
             <DialogContent onInteractOutside={resetModal}>
@@ -165,141 +297,6 @@ export default function FinancePage() {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-      </PageHeader>
-      <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle>Total Income</CardTitle>
-                <DollarSign className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{currency}{totalIncome.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">All-time income</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle>Total Expenses</CardTitle>
-                <DollarSign className="h-4 w-4 text-destructive" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{currency}{totalExpense.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">All-time expenses</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle>Net Profit</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className={cn("text-2xl font-bold", netProfit >= 0 ? 'text-primary' : 'text-destructive')}>
-                  {currency}{netProfit.toLocaleString()}
-                </div>
-                <p className="text-xs text-muted-foreground">All-time net profit</p>
-              </CardContent>
-            </Card>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <div className="lg:col-span-4 space-y-4">
-            <Dialog>
-              <DialogTrigger asChild>
-                  <Card className="cursor-pointer hover:bg-accent">
-                      <CardHeader>
-                      <CardTitle>Income vs. Expenses</CardTitle>
-                      <CardDescription>View your monthly financial performance.</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                          <p className="text-sm text-primary">Click to view graph</p>
-                          <div className="space-y-2 text-sm">
-                              <h4 className="font-semibold text-muted-foreground">Last 30 Days Summary</h4>
-                              <div className="flex items-center justify-between">
-                                  <span className="flex items-center gap-2"><TrendingUp className="text-primary"/>Income</span>
-                                  <span className="font-semibold">{currency}{recentIncome.toLocaleString()}</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                  <span className="flex items-center gap-2"><TrendingDown className="text-destructive"/>Expense</span>
-                                  <span className="font-semibold">{currency}{recentExpense.toLocaleString()}</span>
-                              </div>
-                              <div className="flex items-center justify-between border-t pt-2 mt-2">
-                                  <span className="font-bold">Net</span>
-                                  <span className={cn("font-bold", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
-                              </div>
-                          </div>
-                      </CardContent>
-                  </Card>
-              </DialogTrigger>
-              <DialogContent className="max-w-3xl">
-                  <DialogHeader>
-                      <DialogTitle>Income vs. Expenses</DialogTitle>
-                      <DialogDescription>Monthly financial performance.</DialogDescription>
-                  </DialogHeader>
-                  <div className="h-[400px] w-full pt-4 overflow-x-auto">
-                      <FinanceChart />
-                  </div>
-              </DialogContent>
-            </Dialog>
-
-            {topExpenses.length > 0 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Top Expenses (Last 30 Days)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4 text-sm">
-                            <div className="space-y-3">
-                              {topExpenses.map((expense) => (
-                                <div key={expense.category} className="space-y-1">
-                                  <div className="flex justify-between text-xs">
-                                    <span className="font-medium">{expense.category}</span>
-                                    <span>{currency}{expense.amount.toLocaleString()}</span>
-                                  </div>
-                                  <Progress value={expense.percentage} className="h-2" />
-                                </div>
-                              ))}
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-          </div>
-          
-
-          <Card className="lg:col-span-3">
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>Your 5 most recent transactions.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentTransactions.map(record => (
-                    <TableRow key={record.id}>
-                      <TableCell>
-                        <div className="font-medium">{record.description}</div>
-                        <ClientFormattedDate date={record.date} />
-                      </TableCell>
-                       <TableCell>{record.category}</TableCell>
-                      <TableCell className={cn("text-right", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
-                        {record.type === 'Income' ? '+' : '-'}{currency}{record.amount.toLocaleString()}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
     </>
   );
 }

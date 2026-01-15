@@ -131,19 +131,7 @@ function LivestockCategoryList() {
 
   return (
     <>
-      <PageHeader title="Livestock Categories">
-         <AddNewCategorySheet 
-            isOpen={addNewCategorySheetOpen} 
-            onOpenChange={setAddNewCategorySheetOpen} 
-            onAddCategory={handleAddCategory}
-            existingCategories={existingCategoryNames}
-          >
-            <Button onClick={() => setAddNewCategorySheetOpen(true)}>
-                <PlusCircle />
-                Add Category
-            </Button>
-         </AddNewCategorySheet>
-      </PageHeader>
+      <PageHeader title="Livestock Categories" />
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => {
@@ -220,6 +208,18 @@ function LivestockCategoryList() {
         </div>
       </main>
 
+      <AddNewCategorySheet 
+        isOpen={addNewCategorySheetOpen} 
+        onOpenChange={setAddNewCategorySheetOpen} 
+        onAddCategory={handleAddCategory}
+        existingCategories={existingCategoryNames}
+      >
+        <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-6">
+            <PlusCircle className="h-6 w-6" />
+            <span className="sr-only">Add Category</span>
+        </Button>
+      </AddNewCategorySheet>
+
        <AlertDialog open={deleteConfirmationOpen} onOpenChange={setDeleteConfirmationOpen}>
             <AlertDialogContent>
                 <AlertDialogHeader>
@@ -272,12 +272,6 @@ function AnimalList({ category }: { category: string }) {
                 <Button variant="outline" asChild>
                     <Link href="/livestock"><ArrowLeft /> Back to Categories</Link>
                 </Button>
-                 <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen} defaultCategory={categoryName as 'Cattle' | 'Sheep' | 'Goats'}>
-                    <Button>
-                        <PlusCircle />
-                        Add Animal
-                    </Button>
-                </AddAnimalSheet>
             </PageHeader>
             <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -316,6 +310,12 @@ function AnimalList({ category }: { category: string }) {
                     </Card>
                 )}
             </main>
+             <AddAnimalSheet isOpen={isSheetOpen} onOpenChange={setSheetOpen} defaultCategory={categoryName as 'Cattle' | 'Sheep' | 'Goats'}>
+                <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-6">
+                    <PlusCircle className="h-6 w-6" />
+                    <span className="sr-only">Add Animal</span>
+                </Button>
+            </AddAnimalSheet>
         </>
     );
 }

@@ -240,20 +240,55 @@ export default function TasksPage() {
   
   return (
     <>
-      <PageHeader title="Task Scheduler">
-        <Dialog open={isAddDialogOpen} onOpenChange={setAddDialogOpen}>
+      <PageHeader title="Task Scheduler" />
+      <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
+        <Tabs defaultValue="today" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="today">Today</TabsTrigger>
+            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+            <TabsTrigger value="past">Past</TabsTrigger>
+          </TabsList>
+          <TabsContent value="today">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  {todaysTasks.length > 0 ? todaysTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick} />) : <p className="text-muted-foreground text-center p-4">No tasks for today.</p>}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="upcoming">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                   {upcomingTasks.length > 0 ? upcomingTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick}/>) : <p className="text-muted-foreground text-center p-4">No upcoming tasks.</p>}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="past">
+            <Card>
+              <CardContent className="pt-6">
+                 <div className="space-y-2">
+                   {pastTasks.length > 0 ? pastTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick}/>) : <p className="text-muted-foreground text-center p-4">No past tasks.</p>}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
+
+      {/* Add FAB */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <PlusCircle />
-              New Task
+            <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-6">
+                <PlusCircle className="h-6 w-6" />
+                <span className="sr-only">New Task</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Schedule a New Task</DialogTitle>
-              <DialogDescription>
-                Add a new task to your farm's to-do list.
-              </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
@@ -329,52 +364,12 @@ export default function TasksPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </PageHeader>
-      <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
-        <Tabs defaultValue="today" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="today">Today</TabsTrigger>
-            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-            <TabsTrigger value="past">Past</TabsTrigger>
-          </TabsList>
-          <TabsContent value="today">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-2">
-                  {todaysTasks.length > 0 ? todaysTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick} />) : <p className="text-muted-foreground text-center p-4">No tasks for today.</p>}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="upcoming">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-2">
-                   {upcomingTasks.length > 0 ? upcomingTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick}/>) : <p className="text-muted-foreground text-center p-4">No upcoming tasks.</p>}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="past">
-            <Card>
-              <CardContent className="pt-6">
-                 <div className="space-y-2">
-                   {pastTasks.length > 0 ? pastTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick}/>) : <p className="text-muted-foreground text-center p-4">No past tasks.</p>}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </main>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Task</DialogTitle>
-            <DialogDescription>
-              Update the details for this task.
-            </DialogDescription>
           </DialogHeader>
           {selectedTask && (
             <div className="grid gap-4 py-4">
