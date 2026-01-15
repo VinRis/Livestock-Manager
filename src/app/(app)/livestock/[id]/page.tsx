@@ -46,19 +46,21 @@ function calculateAge(birthDate: string) {
 
 // Function to add a new activity to localStorage
 const addActivityToLog = (activity: Omit<Activity, 'id'>) => {
-    try {
-        const storedActivities = window.localStorage.getItem('activityLogData');
-        const initialActivityLogData: Activity[] = [];
-        const currentActivities: Activity[] = storedActivities ? JSON.parse(storedActivities) : initialActivityLogData;
-        const newActivity: Activity = {
-            ...activity,
-            id: `act-${Date.now()}`,
-        };
-        const updatedActivities = [newActivity, ...currentActivities];
-        window.localStorage.setItem('activityLogData', JSON.stringify(updatedActivities));
-    } catch (error) {
-        console.error("Could not add activity to log:", error);
-    }
+    setTimeout(() => {
+        try {
+            const storedActivities = window.localStorage.getItem('activityLogData');
+            const initialActivityLogData: Activity[] = [];
+            const currentActivities: Activity[] = storedActivities ? JSON.parse(storedActivities) : initialActivityLogData;
+            const newActivity: Activity = {
+                ...activity,
+                id: `act-${Date.now()}`,
+            };
+            const updatedActivities = [newActivity, ...currentActivities];
+            window.localStorage.setItem('activityLogData', JSON.stringify(updatedActivities));
+        } catch (error) {
+            console.error("Could not add activity to log:", error);
+        }
+    }, 0);
 };
 
 function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[] }) {
@@ -913,7 +915,6 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
   
   // Edit Profile State
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
-  const [editForm, setEditForm] = useState<{animal: Livestock, cost: number} | null>(null)
   
   // Edit Metric State
   const [isEditMetricDialogOpen, setEditMetricDialogOpen] = useState(false);
@@ -1087,12 +1088,6 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
       });
   };
 
-  const handleEditClick = () => {
-    const costRecord = allFinancials.find(f => f.description === `Purchase of batch: ${animal.name.split(' (')[0]}`);
-    setEditForm({ animal: animal, cost: costRecord?.amount || 0});
-    setEditDialogOpen(true);
-  }
-
   const animalCount = animal.tagId.split('-')[1];
 
   return (
@@ -1101,15 +1096,15 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
          <Button variant="outline" onClick={() => router.back()}><ArrowLeft /> Back</Button>
          <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
             <DialogTrigger asChild>
-                <Button onClick={handleEditClick}>
+                <Button>
                     <Edit />
                     Edit Batch
                 </Button>
             </DialogTrigger>
              <EditBatchDialogContent
                 key={animal.id}
-                editForm={editForm}
-                setEditForm={setEditForm}
+                animal={animal}
+                cost={acquisitionCostRecord?.amount || 0}
                 onUpdate={handleUpdate}
                 onFinancialUpdate={onFinancialUpdate}
                 onClose={() => setEditDialogOpen(false)}
@@ -1453,14 +1448,14 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
 }
 
 const EditBatchDialogContent = ({
-  editForm,
-  setEditForm,
+  animal: initialAnimal,
+  cost: initialCost,
   onUpdate,
   onFinancialUpdate,
   onClose,
 }: {
-  editForm: {animal: Livestock, cost: number} | null;
-  setEditForm: (form: {animal: Livestock, cost: number} | null) => void;
+  animal: Livestock;
+  cost: number;
   onUpdate: (updatedAnimal: Livestock) => void;
   onFinancialUpdate: (updatedRecord: FinancialRecord) => void;
   onClose: () => void;
@@ -1468,7 +1463,7 @@ const EditBatchDialogContent = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  if (!editForm) return null;
+  const [editForm, setEditForm] = useState({ animal: initialAnimal, cost: initialCost });
 
   const handleSaveProfile = () => {
     const { animal, cost } = editForm;
@@ -1502,14 +1497,14 @@ const EditBatchDialogContent = ({
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setEditForm(prev => prev ? {...prev, animal: {...prev.animal, imageUrl: reader.result as string, imageHint: file.name }} : null);
+        setEditForm(prev => ({...prev, animal: {...prev.animal, imageUrl: reader.result as string, imageHint: file.name }}));
       };
       reader.readAsDataURL(file);
     }
   };
   
   const handleAnimalChange = (field: keyof Livestock, value: string) => {
-    setEditForm(prev => prev ? {...prev, animal: {...prev.animal, [field]: value}} : null);
+    setEditForm(prev => ({...prev, animal: {...prev.animal, [field]: value}}));
   }
 
   return (
@@ -1541,7 +1536,7 @@ const EditBatchDialogContent = ({
           </div>
           <div className="space-y-2">
             <Label htmlFor="name">Batch Name</Label>
-            <Input id="name" value={editForm.animal.name.split(' (')[0]} onChange={(e) => setEditForm(prev => prev ? {...prev, animal: {...prev.animal, name: e.target.value}} : null)} />
+            <Input id="name" value={editForm.animal.name.split(' (')[0]} onChange={(e) => setEditForm(prev => ({...prev, animal: {...prev.animal, name: e.target.value}}))} />
           </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1578,7 +1573,7 @@ const EditBatchDialogContent = ({
                 id="cost" 
                 type="number" 
                 value={editForm.cost}
-                onChange={(e) => setEditForm(prev => prev ? {...prev, cost: parseFloat(e.target.value) || 0} : null)}
+                onChange={(e) => setEditForm(prev => ({...prev, cost: parseFloat(e.target.value) || 0}))}
                 placeholder="e.g., 250.00"
               />
           </div>
