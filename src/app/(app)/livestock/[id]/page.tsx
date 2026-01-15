@@ -6,7 +6,7 @@ import { notFound, useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Edit, PlusCircle, Upload, GitMerge, User, Users, LineChart, Weight, Cake, MoreVertical, Trash2, Box, CalendarDays, DollarSign } from "lucide-react";
-import { type HealthRecord, type ProductionMetric, type Livestock, type FinancialRecord, CategoryDefinition } from "@/lib/data";
+import { type HealthRecord, type ProductionMetric, type Livestock, type FinancialRecord, CategoryDefinition, type Activity } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -42,6 +42,22 @@ function calculateAge(birthDate: string) {
   }
   return { years, months, text: `${years} years, ${months} months` };
 }
+
+// Function to add a new activity to localStorage
+const addActivityToLog = (activity: Omit<Activity, 'id'>) => {
+    try {
+        const storedActivities = window.localStorage.getItem('activityLogData');
+        const currentActivities: Activity[] = storedActivities ? JSON.parse(storedActivities) : [];
+        const newActivity: Activity = {
+            ...activity,
+            id: `act-${Date.now()}`,
+        };
+        const updatedActivities = [newActivity, ...currentActivities];
+        window.localStorage.setItem('activityLogData', JSON.stringify(updatedActivities));
+    } catch (error) {
+        console.error("Could not add activity to log:", error);
+    }
+};
 
 function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[] }) {
   const router = useRouter();
@@ -111,6 +127,15 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
     
     const updatedAnimal = { ...animal, healthRecords: [newRecord, ...animal.healthRecords] };
     handleUpdate(updatedAnimal);
+
+    // Add to activity log
+    addActivityToLog({
+        type: 'Health Check',
+        description: `${healthEvent}: ${healthDescription}`,
+        date: new Date(healthDate).toISOString(),
+        livestockId: animal.id,
+        livestockName: animal.name,
+    });
     
     toast({
         title: "Record Saved",
@@ -178,6 +203,15 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { in
 
     const updatedAnimal = { ...animal, productionMetrics: [newMetric, ...animal.productionMetrics] };
     handleUpdate(updatedAnimal);
+
+    // Add to activity log
+    addActivityToLog({
+        type: 'Production',
+        description: `${newMetric.type}: ${newMetric.value}`,
+        date: new Date(metricDate).toISOString(),
+        livestockId: animal.id,
+        livestockName: animal.name,
+    });
     
     toast({
         title: "Metric Saved",
@@ -1069,6 +1103,15 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
     
     const updatedAnimal = { ...animal, healthRecords: [newRecord, ...animal.healthRecords] };
     handleUpdate(updatedAnimal);
+
+    // Add to activity log
+    addActivityToLog({
+        type: 'Health Check',
+        description: `${healthEvent}: ${healthDescription}`,
+        date: new Date(healthDate).toISOString(),
+        livestockId: animal.id,
+        livestockName: animal.name,
+    });
     
     toast({
         title: "Record Saved",
@@ -1136,6 +1179,15 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
 
     const updatedAnimal = { ...animal, productionMetrics: [newMetric, ...animal.productionMetrics] };
     handleUpdate(updatedAnimal);
+
+    // Add to activity log
+    addActivityToLog({
+        type: 'Production',
+        description: `${newMetric.type}: ${newMetric.value}`,
+        date: new Date(metricDate).toISOString(),
+        livestockId: animal.id,
+        livestockName: animal.name,
+    });
     
     toast({
         title: "Metric Saved",
@@ -1638,3 +1690,5 @@ export default function LivestockDetailPage() {
     />;
   }
 }
+
+    

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusCircle, Link as LinkIcon, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
@@ -57,7 +57,8 @@ const formatRelativeDate = (dateString: string) => {
 
 export default function ActivityLogPage() {
   const { toast } = useToast();
-  const [activityLog, setActivityLog] = useState<Activity[]>(initialActivityLogData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  const [activityLog, setActivityLog] = useState<Activity[]>([]);
+  const [isClient, setIsClient] = useState(false);
   
   // Dialog states
   const [isAddDialogOpen, setAddDialogOpen] = useState(false);
@@ -75,6 +76,25 @@ export default function ActivityLogPage() {
   
   // State for editing/deleting
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+
+  useEffect(() => {
+    setIsClient(true);
+    try {
+      const storedActivities = window.localStorage.getItem('activityLogData');
+      const loadedActivities = storedActivities ? JSON.parse(storedActivities) : initialActivityLogData;
+      setActivityLog(loadedActivities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    } catch (error) {
+      console.error("Failed to load activity log from localStorage", error);
+      setActivityLog(initialActivityLogData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      window.localStorage.setItem('activityLogData', JSON.stringify(activityLog));
+    }
+  }, [activityLog, isClient]);
+
 
   const handleLogActivity = () => {
     if (!newActivity.type || !newActivity.date) {
@@ -98,7 +118,7 @@ export default function ActivityLogPage() {
       livestockCategory: newActivity.livestockCategory,
     };
 
-    setActivityLog(prevLog => [activityToAdd, ...prevLog]);
+    setActivityLog(prevLog => [activityToAdd, ...prevLog].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
 
     toast({
       title: "Activity Logged",
@@ -160,7 +180,7 @@ export default function ActivityLogPage() {
     setSelectedActivity(null);
   };
 
-  const activityTypes = ['Feeding', 'Health Check', 'Breeding', 'Movement', 'General'];
+  const activityTypes = ['Feeding', 'Health Check', 'Breeding', 'Movement', 'General', 'Production'];
   const livestockOptions = livestockData.map(animal => ({ value: animal.id, label: `${animal.name} (${animal.tagId})`}));
   const categoryOptions = categoriesData.map(cat => cat.name);
 
@@ -391,3 +411,5 @@ export default function ActivityLogPage() {
     </>
   );
 }
+
+    

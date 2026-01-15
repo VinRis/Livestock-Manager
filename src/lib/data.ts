@@ -4,6 +4,7 @@ export type Livestock = {
   tagId: string;
   name: string;
   breed: string;
+  category: 'Cattle' | 'Sheep' | 'Goats' | string;
   birthDate: string;
   status: 'Active' | 'Sold' | 'Deceased' | 'Milking' | 'Dry' | 'Sick' | 'In-Calf/Pregnant';
   gender: 'Male' | 'Female';
@@ -13,7 +14,6 @@ export type Livestock = {
   productionMetrics: ProductionMetric[];
   sireId?: string;
   damId?: string;
-  category: 'Cattle' | 'Sheep' | 'Goats' | string;
 };
 
 export type HealthRecord = {
@@ -27,14 +27,14 @@ export type HealthRecord = {
 export type ProductionMetric = {
   id: string;
   date: string;
-  type: 'Milk' | 'Weight' | 'Breeding';
+  type: 'Milk' | 'Weight' | 'Breeding' | 'Eggs';
   value: string;
   notes?: string;
 };
 
 export type Activity = {
   id: string;
-  type: 'Feeding' | 'Health Check' | 'Breeding' | 'Movement' | 'General';
+  type: 'Feeding' | 'Health Check' | 'Breeding' | 'Movement' | 'General' | 'Production';
   description: string;
   date: string;
   livestockId?: string;
@@ -262,4 +262,6 @@ export const currencyData: Currency[] = [
 ];
 
 export const getLivestockById = (id: string) => livestockData.find(animal => animal.id === id);
+    
+
     
