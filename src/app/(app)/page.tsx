@@ -101,7 +101,7 @@ export default function DashboardPage() {
                         A month-by-month breakdown of your income and expenses.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="h-[400px] w-full pt-4">
+                    <div className="h-[400px] w-full pt-4 overflow-x-auto">
                       <FinanceChart />
                     </div>
                   </DialogContent>

@@ -235,7 +235,7 @@ export default function FinancePage() {
                       <DialogTitle>Income vs. Expenses</DialogTitle>
                       <DialogDescription>Monthly financial performance.</DialogDescription>
                   </DialogHeader>
-                  <div className="h-[400px] w-full pt-4">
+                  <div className="h-[400px] w-full pt-4 overflow-x-auto">
                       <FinanceChart />
                   </div>
               </DialogContent>
@@ -303,9 +303,3 @@ export default function FinancePage() {
     </>
   );
 }
-
-    
-
-    
-
-    
