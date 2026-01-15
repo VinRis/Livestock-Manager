@@ -88,6 +88,28 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        <Card>
+            <CardHeader>
+                <CardTitle>App Preferences</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 <div className="space-y-2">
+                    <Label>Egg Tray Sizes</Label>
+                    <p className="text-xs text-muted-foreground">Set the default number of eggs per tray for different bird types.</p>
+                     <Button asChild variant="outline">
+                        <Link href="/settings/egg-tray-sizes">Manage Egg Tray Sizes</Link>
+                    </Button>
+                </div>
+                <div className="space-y-2">
+                    <Label>Currency</Label>
+                    <p className="text-xs text-muted-foreground">Set the currency for all financial notations.</p>
+                     <Button asChild variant="outline">
+                        <Link href="/settings/currency">Manage Currency</Link>
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+
          <Card>
           <CardHeader>
             <CardTitle>Data Management</CardTitle>
@@ -111,28 +133,6 @@ export default function SettingsPage() {
               </Link>
             </Button>
           </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <CardTitle>App Preferences</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                 <div className="space-y-2">
-                    <Label>Egg Tray Sizes</Label>
-                    <p className="text-xs text-muted-foreground">Set the default number of eggs per tray for different bird types.</p>
-                     <Button asChild variant="outline">
-                        <Link href="/settings/egg-tray-sizes">Manage Egg Tray Sizes</Link>
-                    </Button>
-                </div>
-                <div className="space-y-2">
-                    <Label>Currency</Label>
-                    <p className="text-xs text-muted-foreground">Set the currency for all financial notations.</p>
-                     <Button asChild variant="outline">
-                        <Link href="/settings/currency">Manage Currency</Link>
-                    </Button>
-                </div>
-            </CardContent>
         </Card>
 
         <div className="flex justify-end">
