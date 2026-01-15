@@ -3,7 +3,8 @@ import { generateLivestockInsights } from '@/ai/flows/livestock-production-insig
 import { livestockData } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Lightbulb, TrendingUp, DollarSign, Heart } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 async function fetchLivestockReport(livestockType: string) {
   const productionMetrics = livestockData
@@ -44,9 +45,27 @@ export async function LivestockReport({ livestockType }: { livestockType: string
       </Alert>
     );
   }
+  
+  const InsightSection = ({ title, icon: Icon, content }: { title: string, icon: React.ElementType, content: string | string[] }) => (
+    <div className="space-y-3">
+        <div className="flex items-center gap-2">
+            <Icon className="h-5 w-5 text-primary" />
+            <h4 className="font-semibold">{title}</h4>
+        </div>
+        {Array.isArray(content) ? (
+            <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
+                {content.map((item, index) => (
+                    <li key={index}>{item}</li>
+                ))}
+            </ul>
+        ) : (
+             <p className="text-sm text-muted-foreground">{content}</p>
+        )}
+    </div>
+  );
 
   return (
-    <div className="space-y-6 text-sm">
+    <div className="space-y-6">
         <Alert>
             <CheckCircle className="h-4 w-4" />
             <AlertTitle>{report.reportTitle}</AlertTitle>
@@ -55,21 +74,11 @@ export async function LivestockReport({ livestockType }: { livestockType: string
             </AlertDescription>
         </Alert>
         
-        <div className="space-y-2">
-            <h4 className="font-semibold text-primary">Trend Analysis</h4>
-            <p className="text-muted-foreground">{report.trendAnalysis}</p>
-        </div>
-        <div className="space-y-2">
-            <h4 className="font-semibold text-primary">Recommendations</h4>
-            <p className="text-muted-foreground">{report.recommendations}</p>
-        </div>
-        <div className="space-y-2">
-            <h4 className="font-semibold text-primary">Profit Opportunities</h4>
-            <p className="text-muted-foreground">{report.profitOpportunities}</p>
-        </div>
-        <div className="space-y-2">
-            <h4 className="font-semibold text-primary">Animal Wellness Suggestions</h4>
-            <p className="text-muted-foreground">{report.animalWellnessSuggestions}</p>
+        <div className="space-y-6">
+            <InsightSection title="Trend Analysis" icon={TrendingUp} content={report.trendAnalysis} />
+            <InsightSection title="Recommendations" icon={Lightbulb} content={report.recommendations} />
+            <InsightSection title="Profit Opportunities" icon={DollarSign} content={report.profitOpportunities} />
+            <InsightSection title="Animal Wellness" icon={Heart} content={report.animalWellnessSuggestions} />
         </div>
     </div>
   );

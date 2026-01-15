@@ -21,9 +21,9 @@ const LivestockProductionInsightsOutputSchema = z.object({
   reportTitle: z.string().describe('The title of the livestock production insights report.'),
   executiveSummary: z.string().describe('A brief summary of the key findings and recommendations.'),
   trendAnalysis: z.string().describe('An analysis of trends in livestock production metrics over time.'),
-  recommendations: z.string().describe('Specific recommendations for improving livestock management practices and production efficiency.'),
-  profitOpportunities: z.string().describe('Identified opportunities to increase profitability through improved livestock management.'),
-  animalWellnessSuggestions: z.string().describe('Suggestions for enhancing animal wellness and health.'),
+  recommendations: z.array(z.string()).describe('A list of specific recommendations for improving livestock management practices and production efficiency.'),
+  profitOpportunities: z.array(z.string()).describe('A list of identified opportunities to increase profitability through improved livestock management.'),
+  animalWellnessSuggestions: z.array(z.string()).describe('A list of suggestions for enhancing animal wellness and health.'),
 });
 export type LivestockProductionInsightsOutput = z.infer<typeof LivestockProductionInsightsOutputSchema>;
 
@@ -45,12 +45,12 @@ Instructions: Based on the livestock type, production metrics, and farm manageme
 
 1.  Report Title: A concise title summarizing the report's focus.
 2.  Executive Summary: A brief overview of the key findings and recommendations.
-3.  Trend Analysis: Analyze the trends in livestock production metrics over time and identify any significant patterns or anomalies.
-4.  Recommendations: Provide specific, actionable recommendations for improving livestock management practices and production efficiency.
-5.  Profit Opportunities: Identify opportunities to increase profitability through improved livestock management.
-6.  Animal Wellness Suggestions: Provide suggestions for enhancing animal wellness and health.
+3.  Trend Analysis: Analyze the trends in livestock production metrics over time and identify any significant patterns or anomalies. This should be a single paragraph.
+4.  Recommendations: Provide specific, actionable recommendations for improving livestock management practices and production efficiency. This should be an array of strings.
+5.  Profit Opportunities: Identify opportunities to increase profitability through improved livestock management. This should be an array of strings.
+6.  Animal Wellness Suggestions: Provide suggestions for enhancing animal wellness and health. This should be an array of strings.
 
-Ensure the report is clear, concise, and provides practical guidance for livestock keepers to make informed decisions.
+Ensure the report is clear, concise, and provides practical guidance for livestock keepers to make informed decisions. For any sections that are arrays of strings, make each string a distinct point.
 
 Output the result in JSON format.
 `,
