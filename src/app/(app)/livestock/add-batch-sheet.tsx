@@ -132,12 +132,11 @@ export default function AddBatchSheet({ children, isOpen, onOpenChange, defaultC
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2">
                 <Label htmlFor="breed">Breed</Label>
-                <Combobox
-                    options={currentBreedOptions}
+                <Input
+                    id="breed"
                     value={breed}
-                    onChange={setBreed}
-                    placeholder="Select or type breed..."
-                    emptyMessage="No preset breeds for this category."
+                    onChange={(e) => setBreed(e.target.value)}
+                    placeholder="e.g., Leghorn"
                 />
             </div>
              <div className="space-y-2">
