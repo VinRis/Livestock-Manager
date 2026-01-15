@@ -21,6 +21,7 @@ import {
   birdTypesData,
   currencyData
 } from "@/lib/data";
+import { InstallPWA } from "@/components/install-pwa";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -239,8 +240,8 @@ export default function SettingsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Data Management</CardTitle>
-            <CardDescription>Backup your current data or restore from a previous backup file.</CardDescription>
+            <CardTitle>Data & App Management</CardTitle>
+            <CardDescription>Backup, restore, or install the application.</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-4">
             <Button variant="outline" onClick={handleBackup}>
@@ -251,6 +252,7 @@ export default function SettingsPage() {
               <Upload />
               Restore Data
             </Button>
+            <InstallPWA />
             <input 
               type="file" 
               ref={restoreInputRef} 
