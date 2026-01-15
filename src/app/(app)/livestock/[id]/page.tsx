@@ -29,6 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useCurrency } from "@/contexts/currency-context";
 
 function calculateAge(birthDate: string) {
   const birth = new Date(birthDate);
@@ -1009,6 +1010,7 @@ const EditBatchDialogContent = ({
 function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate, allFinancials }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[], onFinancialUpdate: (record: FinancialRecord) => void, allFinancials: FinancialRecord[] }) {
   const router = useRouter();
   const { toast } = useToast();
+  const { currency } = useCurrency();
   
   const [animal, setAnimal] = useState<Livestock>(initialAnimal);
   
@@ -1260,7 +1262,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <div className="text-xl font-bold">{acquisitionCostRecord ? `$${acquisitionCostRecord.amount}` : 'N/A'}</div>
+                  <div className="text-xl font-bold">{acquisitionCostRecord ? `${currency}${acquisitionCostRecord.amount}` : 'N/A'}</div>
                 </CardContent>
               </Card>
             </div>
@@ -1600,14 +1602,12 @@ export default function LivestockDetailPage() {
     const recordExists = financialData.some(record => record.id === updatedRecord.id);
 
     if (recordExists) {
-        // If record exists, map and update it
         setFinancialData(prevData => 
             prevData.map(record => 
                 record.id === updatedRecord.id ? updatedRecord : record
             )
         );
     } else {
-        // If record does not exist, add it
         setFinancialData(prevData => [...prevData, updatedRecord]);
     }
   };
@@ -1638,5 +1638,3 @@ export default function LivestockDetailPage() {
     />;
   }
 }
-
-    
