@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, use } from "react";
 import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -47,7 +47,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
-  const id = params.id;
+  const { id } = use(Promise.resolve(params));
   const initialAnimal = getLivestockById(id);
   const [animal, setAnimal] = useState<Livestock | undefined>(initialAnimal);
   
@@ -862,5 +862,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   );
 }
 
+
+    
 
     
