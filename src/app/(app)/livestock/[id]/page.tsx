@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -878,11 +877,12 @@ const EditBatchDialogContent = ({
   });
 
   useEffect(() => {
+    const costRecord = allFinancials.find(f => f.description === `Purchase of batch: ${animal.name.split(' (')[0]}`);
     setEditForm({
       ...animal,
-      cost: acquisitionCostRecord?.amount || 0,
+      cost: costRecord?.amount || 0,
     });
-  }, [animal, acquisitionCostRecord]);
+  }, [animal, allFinancials]);
 
   const handleSaveProfile = () => {
     const { cost, ...animalData } = editForm;
@@ -897,6 +897,16 @@ const EditBatchDialogContent = ({
     if (acquisitionCostRecord) {
         const updatedRecord = { ...acquisitionCostRecord, amount: cost };
         onFinancialUpdate(updatedRecord);
+    } else if (cost > 0) {
+        const newRecord: FinancialRecord = {
+          id: `fin-${Date.now()}`,
+          type: 'Expense',
+          category: 'Livestock Purchase',
+          amount: cost,
+          date: finalForm.birthDate, // Aquisition Date
+          description: `Purchase of batch: ${finalForm.name.split(' (')[0]}`,
+        }
+        onFinancialUpdate(newRecord);
     }
 
     toast({
@@ -1541,15 +1551,16 @@ export default function LivestockDetailPage() {
 
   useEffect(() => {
     setIsClient(true);
+    // Load initial data from localStorage
     try {
-      const livestockItem = window.localStorage.getItem('livestockData');
-      const financialItem = window.localStorage.getItem('financialData');
+      const storedLivestock = window.localStorage.getItem('livestockData');
+      const storedFinancials = window.localStorage.getItem('financialData');
       
       const initialLivestockData: Livestock[] = []; // Default empty array
       const initialFinancialData: FinancialRecord[] = []; // Default empty array
 
-      const loadedLivestock = livestockItem ? JSON.parse(livestockItem) : initialLivestockData;
-      const loadedFinancials = financialItem ? JSON.parse(financialItem) : initialFinancialData;
+      const loadedLivestock = storedLivestock ? JSON.parse(storedLivestock) : initialLivestockData;
+      const loadedFinancials = storedFinancials ? JSON.parse(storedFinancials) : initialFinancialData;
       
       setLivestockList(loadedLivestock);
       setFinancialData(loadedFinancials);
@@ -1565,12 +1576,14 @@ export default function LivestockDetailPage() {
     }
   }, [id, livestockList]);
 
+  // Save livestock data to localStorage whenever it changes
   useEffect(() => {
     if (isClient && livestockList.length > 0) {
       window.localStorage.setItem('livestockData', JSON.stringify(livestockList));
     }
   }, [livestockList, isClient]);
 
+  // Save financial data to localStorage whenever it changes
   useEffect(() => {
     if (isClient && financialData.length > 0) {
       window.localStorage.setItem('financialData', JSON.stringify(financialData));
@@ -1584,30 +1597,45 @@ export default function LivestockDetailPage() {
   };
   
   const handleFinancialUpdate = (updatedRecord: FinancialRecord) => {
-    const updatedList = financialData.map(r => r.id === updatedRecord.id ? updatedRecord : r);
-    setFinancialData(updatedList);
-  }
+    const recordExists = financialData.some(record => record.id === updatedRecord.id);
+
+    if (recordExists) {
+        // If record exists, map and update it
+        setFinancialData(prevData => 
+            prevData.map(record => 
+                record.id === updatedRecord.id ? updatedRecord : record
+            )
+        );
+    } else {
+        // If record does not exist, add it
+        setFinancialData(prevData => [...prevData, updatedRecord]);
+    }
+  };
   
-  if (!isClient) {
+  if (!isClient || currentAnimal === undefined) {
     return null; // Or a loading spinner
-  }
-  
-  if (currentAnimal === undefined) {
-      // Still loading or not found yet
-      return null;
   }
   
   if (currentAnimal === null) {
       return notFound();
   }
 
-
   const isBatch = currentAnimal.tagId.startsWith('batch-');
 
   if (isBatch) {
-    return <BatchProfile initialAnimal={currentAnimal} onUpdate={handleUpdate} allLivestock={livestockList} onFinancialUpdate={handleFinancialUpdate} allFinancials={financialData} />;
+    return <BatchProfile 
+        initialAnimal={currentAnimal} 
+        onUpdate={handleUpdate} 
+        allLivestock={livestockList} 
+        onFinancialUpdate={handleFinancialUpdate} 
+        allFinancials={financialData} 
+    />;
   } else {
-    return <IndividualAnimalProfile initialAnimal={currentAnimal} onUpdate={handleUpdate} allLivestock={livestockList} />;
+    return <IndividualAnimalProfile 
+        initialAnimal={currentAnimal} 
+        onUpdate={handleUpdate} 
+        allLivestock={livestockList} 
+    />;
   }
 }
 
