@@ -218,7 +218,7 @@ function LivestockCategoryList() {
         onAddCategory={handleAddCategory}
         existingCategories={existingCategoryNames}
       >
-        <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-6">
+        <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
             <PlusCircle className="h-6 w-6" />
             <span className="sr-only">Add Category</span>
         </Button>
@@ -337,7 +337,7 @@ function AnimalList({ category }: { category: string }) {
                 )}
             </main>
              <AddSheetComponent isOpen={isSheetOpen} onOpenChange={onSheetOpenChange} defaultCategory={categoryName}>
-                <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
+                <Button className="absolute bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
                     <PlusCircle className="h-6 w-6" />
                     <span className="sr-only">Add {categoryDef.managementStyle === 'batch' ? 'Batch' : 'Animal'}</span>
                 </Button>
@@ -356,5 +356,7 @@ export default function LivestockPage() {
   
   return <LivestockCategoryList />;
 }
+
+    
 
     
