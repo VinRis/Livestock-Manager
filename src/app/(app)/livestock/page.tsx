@@ -8,7 +8,7 @@ import { PlusCircle, MoreVertical, Trash2, Edit, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
-import { livestockData as initialLivestockData, categoriesData, type CategoryDefinition, type Livestock } from "@/lib/data";
+import { livestockData as initialLivestockData, categoriesData as initialCategoriesData, type CategoryDefinition, type Livestock } from "@/lib/data";
 import { CowIcon, GoatIcon, SheepIcon } from "@/components/icons";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
@@ -48,20 +48,22 @@ export type LivestockCategory = {
 };
 
 
-function LivestockCategoryList({ 
-    livestockData, 
-    onAddCategory, 
-    onUpdateCategory, 
-    onDeleteCategory,
-    onAddAnimal,
-    onAddBatch
+function LivestockCategoryList({
+  livestockData,
+  categoriesData,
+  onAddCategory,
+  onUpdateCategory,
+  onDeleteCategory,
+  onAddAnimal,
+  onAddBatch,
 }: {
-    livestockData: Livestock[],
-    onAddCategory: (newCategoryName: string, managementStyle: ManagementStyle) => void,
-    onUpdateCategory: (updatedCategory: CategoryDefinition) => void,
-    onDeleteCategory: (categoryName: LivestockCategoryName) => void,
-    onAddAnimal: (animal: Livestock) => void,
-    onAddBatch: (batch: Livestock) => void,
+  livestockData: Livestock[];
+  categoriesData: CategoryDefinition[];
+  onAddCategory: (newCategoryName: string, managementStyle: ManagementStyle) => void;
+  onUpdateCategory: (updatedCategory: CategoryDefinition) => void;
+  onDeleteCategory: (categoryName: LivestockCategoryName) => void;
+  onAddAnimal: (animal: Livestock) => void;
+  onAddBatch: (batch: Livestock) => void;
 }) {
   const [addAnimalSheetOpen, setAddAnimalSheetOpen] = useState(false);
   const [addBatchSheetOpen, setAddBatchSheetOpen] = useState(false);
@@ -106,7 +108,7 @@ function LivestockCategoryList({
           managementStyle: cat.managementStyle
         }
     });
-  }, [livestockData]);
+  }, [livestockData, categoriesData]);
 
   const handleAddClick = (category: LivestockCategory) => {
     setSelectedCategory(category.name);
@@ -270,14 +272,20 @@ function LivestockCategoryList({
   );
 }
 
-function AnimalList({ category, livestockData, onAddAnimal, onAddBatch }: { 
+function AnimalList({ 
+    category,
+    livestockData,
+    categoriesData,
+    onAddAnimal,
+    onAddBatch,
+}: { 
     category: string, 
     livestockData: Livestock[],
+    categoriesData: CategoryDefinition[],
     onAddAnimal: (animal: Livestock) => void,
     onAddBatch: (batch: Livestock) => void,
 }) {
     const [isSheetOpen, setSheetOpen] = useState(false);
-    const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
     const animals = useMemo(() => {
         return livestockData.filter(animal => animal.category.toLowerCase() === category.toLowerCase());
@@ -291,9 +299,6 @@ function AnimalList({ category, livestockData, onAddAnimal, onAddBatch }: {
 
     const onSheetOpenChange = (isOpen: boolean) => {
         setSheetOpen(isOpen);
-        if (!isOpen) {
-            forceUpdate();
-        }
     }
 
     const categoryName = categoryDef.name as LivestockCategoryName;
@@ -373,7 +378,7 @@ export default function LivestockPage() {
   const category = searchParams.get("category");
 
   const [livestock, setLivestock] = useState<Livestock[]>(initialLivestockData);
-  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+  const [categories, setCategories] = useState<CategoryDefinition[]>(initialCategoriesData);
 
   const handleAddAnimal = (animal: Livestock) => {
     setLivestock(prev => [...prev, animal]);
@@ -384,33 +389,25 @@ export default function LivestockPage() {
   };
 
   const handleAddCategory = (newCategoryName: string, managementStyle: ManagementStyle) => {
-    if (newCategoryName && !categoriesData.some(c => c.name.toLowerCase() === newCategoryName.toLowerCase())) {
+    if (newCategoryName && !categories.some(c => c.name.toLowerCase() === newCategoryName.toLowerCase())) {
       const newCategory = { name: newCategoryName, icon: 'CowIcon', managementStyle: managementStyle };
-      categoriesData.push(newCategory); 
-      forceUpdate();
+      setCategories(prev => [...prev, newCategory]);
     }
   };
 
   const handleDeleteCategory = (categoryName: LivestockCategoryName) => {
-    const index = categoriesData.findIndex(c => c.name === categoryName);
-    if (index > -1) {
-        categoriesData.splice(index, 1);
-        forceUpdate();
-    }
+    setCategories(prev => prev.filter(c => c.name !== categoryName));
   };
 
   const handleUpdateCategory = (updatedCategory: CategoryDefinition) => {
-    const index = categoriesData.findIndex(c => c.name === updatedCategory.name);
-    if (index > -1) {
-        categoriesData[index] = updatedCategory;
-        forceUpdate();
-    }
+    setCategories(prev => prev.map(c => c.name === updatedCategory.name ? updatedCategory : c));
   };
 
   if (category) {
     return <AnimalList 
         category={category} 
         livestockData={livestock} 
+        categoriesData={categories}
         onAddAnimal={handleAddAnimal} 
         onAddBatch={handleAddBatch} 
     />;
@@ -418,6 +415,7 @@ export default function LivestockPage() {
   
   return <LivestockCategoryList 
     livestockData={livestock}
+    categoriesData={categories}
     onAddCategory={handleAddCategory}
     onUpdateCategory={handleUpdateCategory}
     onDeleteCategory={handleDeleteCategory}
@@ -425,3 +423,5 @@ export default function LivestockPage() {
     onAddBatch={handleAddBatch}
   />;
 }
+
+    
