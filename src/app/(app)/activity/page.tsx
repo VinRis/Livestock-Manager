@@ -233,7 +233,7 @@ export default function ActivityLogPage() {
       {/* Add FAB */}
        <Dialog open={isAddDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="absolute bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-6">
+            <Button className="absolute bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
               <PlusCircle className="h-6 w-6" />
               <span className="sr-only">Log Activity</span>
             </Button>
