@@ -231,7 +231,7 @@ export default function FinancePage() {
 
        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
-                <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-6">
+                <Button className="absolute bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-6">
                     <PlusCircle className="h-6 w-6" />
                     <span className="sr-only">Add Transaction</span>
                 </Button>
