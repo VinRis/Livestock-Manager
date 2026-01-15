@@ -312,7 +312,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   return (
     <>
       <PageHeader title={animal.name}>
-         <Button variant="outline" onClick={() => router.back()}><ArrowLeft /> Back to List</Button>
+         <Button variant="outline" onClick={() => router.back()}><ArrowLeft /> Back</Button>
          <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
             <DialogTrigger asChild>
                 <Button>
@@ -323,9 +323,6 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
              <DialogContent className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Edit Profile for {animal.name}</DialogTitle>
-                  <DialogDescription>
-                    Update the details for this animal below.
-                  </DialogDescription>
                 </DialogHeader>
                 {editForm && (
                   <div className="grid gap-4 py-4">
@@ -434,7 +431,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
         </Dialog>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
           <div className="lg:col-span-1 space-y-6">
             <Card className="overflow-hidden">
               <Image
@@ -460,23 +457,27 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
 
             <div className="grid grid-cols-2 gap-4">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Age</CardTitle>
-                  <Cake className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center justify-between">
+                    <span>Age</span>
+                    <Cake className="h-4 w-4 text-muted-foreground" />
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{age.years}<span className="text-base font-normal text-muted-foreground">y</span> {age.months}<span className="text-base font-normal text-muted-foreground">m</span></div>
-                  <p className="text-xs text-muted-foreground">Born on {new Date(animal.birthDate).toLocaleDateString()}</p>
+                  <p className="text-xs text-muted-foreground">Born {new Date(animal.birthDate).toLocaleDateString()}</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Weight</CardTitle>
-                  <Weight className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center justify-between">
+                    <span>Weight</span>
+                    <Weight className="h-4 w-4 text-muted-foreground" />
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{lastWeightMetric ? lastWeightMetric.value : 'N/A'}</div>
-                   <p className="text-xs text-muted-foreground">{lastWeightMetric ? `as of ${new Date(lastWeightMetric.date).toLocaleDateString()}`: 'No weight recorded'}</p>
+                   <p className="text-xs text-muted-foreground">{lastWeightMetric ? `on ${new Date(lastWeightMetric.date).toLocaleDateString()}`: 'No record'}</p>
                 </CardContent>
               </Card>
             </div>
@@ -487,17 +488,17 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
               <Tabs defaultValue="health" className="w-full">
                 <CardHeader className="p-4">
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="health">Health Records</TabsTrigger>
+                    <TabsTrigger value="health">Health</TabsTrigger>
                     <TabsTrigger value="production">Production</TabsTrigger>
                     <TabsTrigger value="lineage">Lineage</TabsTrigger>
                   </TabsList>
                 </CardHeader>
                 <TabsContent value="health" className="p-0">
-                  <CardHeader className="flex flex-row items-center justify-between px-6">
-                    <CardTitle>Health History</CardTitle>
+                  <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6">
+                    <CardTitle className="text-base sm:text-lg">Health History</CardTitle>
                     <Dialog open={isHealthDialogOpen} onOpenChange={setHealthDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button size="sm" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Add Record</Button>
+                        <Button size="sm" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Add</Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
@@ -526,56 +527,58 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                       </DialogContent>
                     </Dialog>
                   </CardHeader>
-                  <CardContent className="px-6">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Event</TableHead>
-                          <TableHead>Details</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {animal.healthRecords.map((record: HealthRecord) => (
-                          <TableRow key={record.id}>
-                            <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
-                            <TableCell>{record.event}</TableCell>
-                            <TableCell>{record.description}</TableCell>
-                            <TableCell className="text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon">
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => handleEditHealthRecord(record)}>
-                                            <Edit className="mr-2 h-4 w-4"/>Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleDeleteHealthRecord(record.id)} className="text-destructive">
-                                            <Trash2 className="mr-2 h-4 w-4"/>Delete
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </TableCell>
+                  <CardContent className="px-0 sm:px-2">
+                    <div className="w-full overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Event</TableHead>
+                            <TableHead>Details</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ))}
-                         {animal.healthRecords.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">No health records found.</TableCell>
+                        </TableHeader>
+                        <TableBody>
+                          {animal.healthRecords.map((record: HealthRecord) => (
+                            <TableRow key={record.id}>
+                              <TableCell className="min-w-[100px]">{new Date(record.date).toLocaleDateString()}</TableCell>
+                              <TableCell>{record.event}</TableCell>
+                              <TableCell>{record.description}</TableCell>
+                              <TableCell className="text-right">
+                                  <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                                              <MoreVertical className="h-4 w-4" />
+                                          </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                          <DropdownMenuItem onClick={() => handleEditHealthRecord(record)}>
+                                              <Edit className="mr-2 h-4 w-4"/>Edit
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleDeleteHealthRecord(record.id)} className="text-destructive">
+                                              <Trash2 className="mr-2 h-4 w-4"/>Delete
+                                          </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                  </DropdownMenu>
+                              </TableCell>
                             </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                          ))}
+                          {animal.healthRecords.length === 0 && (
+                              <TableRow>
+                                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">No health records found.</TableCell>
+                              </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </CardContent>
                 </TabsContent>
                 <TabsContent value="production" className="p-0">
-                  <CardHeader className="flex flex-row items-center justify-between px-6">
-                    <CardTitle>Production Metrics</CardTitle>
+                  <CardHeader className="flex flex-row items-center justify-between px-4 sm:px-6">
+                    <CardTitle className="text-base sm:text-lg">Production Metrics</CardTitle>
                     <Dialog open={isMetricDialogOpen} onOpenChange={setMetricDialogOpen}>
                        <DialogTrigger asChild>
-                         <Button size="sm" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Add Metric</Button>
+                         <Button size="sm" variant="outline"><PlusCircle className="mr-2 h-4 w-4"/>Add</Button>
                        </DialogTrigger>
                        <DialogContent>
                           <DialogHeader>
@@ -613,67 +616,69 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
                        </DialogContent>
                     </Dialog>
                   </CardHeader>
-                  <CardContent className="px-6">
-                     <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Value</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {animal.productionMetrics.map((metric: ProductionMetric) => (
-                          <TableRow key={metric.id}>
-                            <TableCell>{new Date(metric.date).toLocaleDateString()}</TableCell>
-                            <TableCell>{metric.type}</TableCell>
-                            <TableCell>{metric.value}</TableCell>
-                            <TableCell className="text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon">
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => handleEditMetric(metric)}>
-                                            <Edit className="mr-2 h-4 w-4"/>Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleDeleteMetric(metric.id)} className="text-destructive">
-                                            <Trash2 className="mr-2 h-4 w-4"/>Delete
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </TableCell>
+                  <CardContent className="px-0 sm:px-2">
+                     <div className="w-full overflow-x-auto">
+                       <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Value</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ))}
-                        {animal.productionMetrics.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">No production metrics found.</TableCell>
+                        </TableHeader>
+                        <TableBody>
+                          {animal.productionMetrics.map((metric: ProductionMetric) => (
+                            <TableRow key={metric.id}>
+                              <TableCell className="min-w-[100px]">{new Date(metric.date).toLocaleDateString()}</TableCell>
+                              <TableCell>{metric.type}</TableCell>
+                              <TableCell>{metric.value}</TableCell>
+                              <TableCell className="text-right">
+                                  <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                                              <MoreVertical className="h-4 w-4" />
+                                          </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                          <DropdownMenuItem onClick={() => handleEditMetric(metric)}>
+                                              <Edit className="mr-2 h-4 w-4"/>Edit
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => handleDeleteMetric(metric.id)} className="text-destructive">
+                                              <Trash2 className="mr-2 h-4 w-4"/>Delete
+                                          </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                  </DropdownMenu>
+                              </TableCell>
                             </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                          ))}
+                          {animal.productionMetrics.length === 0 && (
+                              <TableRow>
+                                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">No production metrics found.</TableCell>
+                              </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </CardContent>
                 </TabsContent>
                 <TabsContent value="lineage" className="p-0">
-                  <CardHeader className="px-6">
-                    <CardTitle>Lineage</CardTitle>
-                    <CardDescription>Family tree of {animal.name}.</CardDescription>
+                  <CardHeader className="px-4 sm:px-6">
+                    <CardTitle className="text-base sm:text-lg">Lineage</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-6 px-6">
+                  <CardContent className="space-y-8 px-4 sm:px-6">
                     <div>
-                        <h3 className="mb-4 text-lg font-semibold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Parents</h3>
-                        <div className="flex items-center justify-around relative">
+                        <h3 className="mb-4 text-base font-semibold flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Parents</h3>
+                        <div className="flex flex-col sm:flex-row items-center sm:justify-around space-y-6 sm:space-y-0 relative">
                            <div className="flex-1 flex justify-center">
                                 <LineageNode animal={sire} role="Sire" />
                            </div>
+                           <div className="h-6 w-px sm:h-auto sm:w-px bg-border sm:hidden"></div>
                            <div className="flex-1 flex justify-center">
                                 <LineageNode animal={dam} role="Dam" />
                            </div>
-                           <div className="absolute top-6 left-0 w-full h-px bg-border -z-10"></div>
-                           <div className="absolute top-6 left-1/2 w-px h-8 -translate-x-1/2 -translate-y-full bg-border -z-10"></div>
+                           <div className="absolute top-6 left-0 w-full h-px bg-border -z-10 hidden sm:block"></div>
+                           <div className="absolute top-6 left-1/2 w-px h-8 -translate-x-1/2 -translate-y-full bg-border -z-10 hidden sm:block"></div>
                         </div>
                     </div>
                     
@@ -700,9 +705,9 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
 
                     {offspring.length > 0 && (
                         <div>
-                            <h3 className="mb-4 text-lg font-semibold flex items-center gap-2"><GitMerge className="h-5 w-5 text-primary" /> Offspring</h3>
+                            <h3 className="mb-4 text-base font-semibold flex items-center gap-2"><GitMerge className="h-5 w-5 text-primary" /> Offspring</h3>
                              <div className="relative">
-                                {offspring.length > 1 && <div className="absolute top-8 left-1/4 w-1/2 h-px -translate-y-1/2 bg-border -z-10"></div>}
+                                {offspring.length > 1 && <div className="absolute top-8 left-1/4 w-1/2 h-px -translate-y-1/2 bg-border -z-10 hidden sm:block"></div>}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 pt-8">
                                     {offspring.map(child => (
                                          <div key={child.id} className="flex justify-center relative">
@@ -726,9 +731,6 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Edit Production Metric</DialogTitle>
-                    <DialogDescription>
-                        Update the production metric for {animal.name}.
-                    </DialogDescription>
                 </DialogHeader>
                 {editingMetric && (
                     <div className="grid gap-4 py-4">
@@ -780,9 +782,6 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Edit Health Record</DialogTitle>
-                    <DialogDescription>
-                        Update the health record for {animal.name}.
-                    </DialogDescription>
                 </DialogHeader>
                 {editingHealthRecord && (
                     <div className="grid gap-4 py-4">
