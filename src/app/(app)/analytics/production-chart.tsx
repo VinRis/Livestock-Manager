@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts"
@@ -31,7 +32,7 @@ export default function ProductionChart() {
         <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-          <YAxis />
+          <YAxis tickLine={false} axisLine={false} />
           <Tooltip content={<ChartTooltipContent />} />
           <Line type="monotone" dataKey="yield" stroke="var(--color-yield)" strokeWidth={2} dot={false} />
         </LineChart>

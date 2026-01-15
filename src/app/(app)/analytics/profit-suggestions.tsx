@@ -1,3 +1,4 @@
+
 import { getProfitOptimizationSuggestions } from '@/ai/flows/profit-optimization-suggestions';
 import { financialData, livestockData } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
