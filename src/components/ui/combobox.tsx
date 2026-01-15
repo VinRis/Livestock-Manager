@@ -40,23 +40,13 @@ export function Combobox({
   disabled = false,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
-  const [inputValue, setInputValue] = React.useState(value);
-
-  React.useEffect(() => {
-    setInputValue(value);
-  }, [value]);
 
   const handleSelect = (currentValue: string) => {
-    onChange(currentValue === value ? "" : currentValue);
+    onChange(currentValue.toLowerCase() === value.toLowerCase() ? "" : currentValue)
     setOpen(false)
   }
-
-  const handleValueChange = (newValue: string) => {
-    setInputValue(newValue);
-    onChange(newValue);
-  };
   
-  const displayLabel = options.find(option => option.value.toLowerCase() === inputValue.toLowerCase())?.label || inputValue;
+  const displayLabel = options.find(option => option.value.toLowerCase() === value.toLowerCase())?.label || value;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -76,8 +66,8 @@ export function Combobox({
         <Command>
             <CommandInput 
                 placeholder={placeholder}
-                value={inputValue}
-                onValueChange={handleValueChange}
+                value={value}
+                onValueChange={onChange}
             />
           <CommandList className="max-h-[200px] overflow-y-auto">
             <CommandEmpty>{emptyMessage}</CommandEmpty>
