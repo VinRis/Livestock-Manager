@@ -15,26 +15,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { livestockData, financialData } from "@/lib/data";
-import { Combobox } from "@/components/ui/combobox";
+import { financialData, type Livestock } from "@/lib/data";
 
 interface AddBatchSheetProps {
   children: React.ReactNode;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   defaultCategory?: string;
+  onAddBatch: (batch: Livestock) => void;
 }
 
-const breedOptions: Record<string, { value: string; label: string }[]> = {
-    Pigs: ["Duroc", "Hampshire", "Yorkshire"].map(b => ({ value: b, label: b })),
-    Chickens: ["Leghorn", "Rhode Island Red", "Plymouth Rock"].map(b => ({ value: b, label: b })),
-    Ducks: ["Pekin", "Mallard", "Rouen"].map(b => ({ value: b, label: b })),
-    Rabbits: ["New Zealand White", "Californian"].map(b => ({ value: b, label: b })),
-    Turkeys: ["Broad Breasted White", "Bourbon Red"].map(b => ({ value: b, label: b })),
-    Fish: ["Tilapia", "Catfish", "Trout"].map(b => ({ value: b, label: b })),
-};
-
-export default function AddBatchSheet({ children, isOpen, onOpenChange, defaultCategory }: AddBatchSheetProps) {
+export default function AddBatchSheet({ children, isOpen, onOpenChange, defaultCategory, onAddBatch }: AddBatchSheetProps) {
   const { toast } = useToast();
   
   // Form State
@@ -47,7 +38,7 @@ export default function AddBatchSheet({ children, isOpen, onOpenChange, defaultC
   useEffect(() => {
     if (isOpen) {
         setName(defaultCategory ? `${defaultCategory} Batch - ${new Date().toLocaleDateString()}`: '');
-        setBreed(breedOptions[defaultCategory as keyof typeof breedOptions]?.[0]?.value || '');
+        setBreed('');
         setAcquisitionDate(new Date().toISOString().split('T')[0]);
         setAnimalCount('');
         setTotalCost('');
@@ -68,10 +59,7 @@ export default function AddBatchSheet({ children, isOpen, onOpenChange, defaultC
     const count = parseInt(animalCount, 10);
     const cost = totalCost ? parseFloat(totalCost) : 0;
 
-    // We can represent a batch as a single livestock item with a plural name
-    // and store the count in the tagId or a custom field if we extend the type.
-    // For now, let's use the name and tagId.
-    const newBatch = {
+    const newBatch: Livestock = {
       id: `batch-${Date.now()}`,
       name: `${name} (${count} animals)`,
       tagId: `batch-${count}`, // Store count in tagId
@@ -86,9 +74,8 @@ export default function AddBatchSheet({ children, isOpen, onOpenChange, defaultC
       productionMetrics: [],
     };
 
-    livestockData.push(newBatch);
+    onAddBatch(newBatch);
 
-    // Add a financial record for the cost of the batch
     if (cost > 0) {
       const newExpense: import('@/lib/data').FinancialRecord = {
         id: `fin-${Date.now()}`,
@@ -108,8 +95,6 @@ export default function AddBatchSheet({ children, isOpen, onOpenChange, defaultC
     
     onOpenChange(false);
   };
-  
-  const currentBreedOptions = defaultCategory ? breedOptions[defaultCategory as keyof typeof breedOptions] || [] : [];
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>

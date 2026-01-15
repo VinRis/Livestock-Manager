@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { livestockData, categoriesData } from "@/lib/data";
+import { categoriesData, type Livestock } from "@/lib/data";
 import { Combobox } from "@/components/ui/combobox";
 
 interface AddAnimalSheetProps {
@@ -24,6 +24,8 @@ interface AddAnimalSheetProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   defaultCategory?: 'Cattle' | 'Sheep' | 'Goats' | string;
+  onAddAnimal: (animal: Livestock) => void;
+  livestockData: Livestock[];
 }
 
 const breedOptions = {
@@ -34,7 +36,7 @@ const breedOptions = {
     Chickens: ["Leghorn", "Rhode Island Red", "Plymouth Rock"].map(b => ({ value: b, label: b })),
 };
 
-export default function AddAnimalSheet({ children, isOpen, onOpenChange, defaultCategory }: AddAnimalSheetProps) {
+export default function AddAnimalSheet({ children, isOpen, onOpenChange, defaultCategory, onAddAnimal, livestockData }: AddAnimalSheetProps) {
   const { toast } = useToast();
   const [name, setName] = useState('');
   const [tagId, setTagId] = useState('');
@@ -70,7 +72,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
       return;
     }
 
-    const newAnimal = {
+    const newAnimal: Livestock = {
       id: `ll-${Date.now()}`,
       name,
       tagId,
@@ -87,7 +89,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
       productionMetrics: [],
     };
 
-    livestockData.push(newAnimal);
+    onAddAnimal(newAnimal);
 
     toast({
       title: "Animal Added",

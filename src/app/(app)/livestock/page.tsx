@@ -8,7 +8,7 @@ import { PlusCircle, MoreVertical, Trash2, Edit, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
-import { livestockData, categoriesData, type CategoryDefinition } from "@/lib/data";
+import { livestockData as initialLivestockData, categoriesData, type CategoryDefinition, type Livestock } from "@/lib/data";
 import { CowIcon, GoatIcon, SheepIcon } from "@/components/icons";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
@@ -48,7 +48,12 @@ export type LivestockCategory = {
 };
 
 
-function LivestockCategoryList() {
+function LivestockCategoryList({ livestockData, onAddCategory, onUpdateCategory, onDeleteCategory }: {
+    livestockData: Livestock[],
+    onAddCategory: (newCategoryName: string, managementStyle: ManagementStyle) => void,
+    onUpdateCategory: (updatedCategory: CategoryDefinition) => void,
+    onDeleteCategory: (categoryName: LivestockCategoryName) => void,
+}) {
   const [addAnimalSheetOpen, setAddAnimalSheetOpen] = useState(false);
   const [addBatchSheetOpen, setAddBatchSheetOpen] = useState(false);
   const [addCategorySheetOpen, setAddCategorySheetOpen] = useState(false);
@@ -58,20 +63,8 @@ function LivestockCategoryList() {
   const [selectedCategory, setSelectedCategory] = useState<LivestockCategoryName>('Cattle');
   const [editingCategory, setEditingCategory] = useState<CategoryDefinition | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<LivestockCategoryName | null>(null);
-
-  // Force a re-render when the underlying data array is mutated
-  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
   
-  const handleAddCategory = (newCategoryName: string, managementStyle: ManagementStyle) => {
-    if (newCategoryName && !categoriesData.some(c => c.name.toLowerCase() === newCategoryName.toLowerCase())) {
-      const newCategory = { name: newCategoryName, icon: 'CowIcon', managementStyle: managementStyle };
-      categoriesData.push(newCategory); // Directly mutate the imported array
-      forceUpdate();
-    }
-  };
-
   const handleDeleteRequest = (categoryName: LivestockCategoryName) => {
-    // Use setTimeout to allow dropdown to close before opening dialog
     setTimeout(() => {
         setDeletingCategory(categoryName);
         setDeleteConfirmationOpen(true);
@@ -80,30 +73,16 @@ function LivestockCategoryList() {
   
   const handleConfirmDelete = () => {
     if(!deletingCategory) return;
-    const index = categoriesData.findIndex(c => c.name === deletingCategory);
-    if (index > -1) {
-        categoriesData.splice(index, 1); // Directly mutate the imported array
-        forceUpdate();
-    }
+    onDeleteCategory(deletingCategory);
     setDeleteConfirmationOpen(false);
     setDeletingCategory(null);
   };
 
   const handleEditClick = (category: CategoryDefinition) => {
-     // Use setTimeout to allow dropdown to close before opening sheet
     setTimeout(() => {
         setEditingCategory(category);
         setEditCategorySheetOpen(true);
     }, 0);
-  }
-
-  const handleUpdateCategory = (updatedCategory: CategoryDefinition) => {
-    const index = categoriesData.findIndex(c => c.name === updatedCategory.name);
-    if (index > -1) {
-        categoriesData[index] = updatedCategory; // Directly mutate the imported array
-        forceUpdate();
-    }
-    setEditingCategory(null);
   }
   
   const categories: LivestockCategory[] = useMemo(() => {
@@ -118,7 +97,7 @@ function LivestockCategoryList() {
           managementStyle: cat.managementStyle
         }
     });
-  }, [categoriesData, _]); // Depend on categoriesData and the reducer state
+  }, [livestockData]);
 
   const handleAddClick = (category: LivestockCategory) => {
     setSelectedCategory(category.name);
@@ -131,7 +110,7 @@ function LivestockCategoryList() {
     }
   }
   
-  const existingCategoryNames = useMemo(() => categoriesData.map(c => c.name), [categoriesData, _]);
+  const existingCategoryNames = useMemo(() => categoriesData.map(c => c.name), [categoriesData]);
 
   return (
     <>
@@ -215,7 +194,7 @@ function LivestockCategoryList() {
       <AddNewCategorySheet 
         isOpen={addNewCategorySheetOpen} 
         onOpenChange={setAddNewCategorySheetOpen} 
-        onAddCategory={handleAddCategory}
+        onAddCategory={onAddCategory}
         existingCategories={existingCategoryNames}
       >
         <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
@@ -242,12 +221,6 @@ function LivestockCategoryList() {
             </AlertDialogContent>
         </AlertDialog>
 
-      <AddAnimalSheet isOpen={addAnimalSheetOpen} onOpenChange={setAddAnimalSheetOpen} defaultCategory={selectedCategory as 'Cattle' | 'Sheep' | 'Goats'} >
-        <div />
-      </AddAnimalSheet>
-      <AddBatchSheet isOpen={addBatchSheetOpen} onOpenChange={setAddBatchSheetOpen} defaultCategory={selectedCategory} >
-        <div />
-      </AddBatchSheet>
       <AddCategorySheet
         isOpen={addCategorySheetOpen}
         onOpenChange={setAddCategorySheetOpen}
@@ -260,30 +233,26 @@ function LivestockCategoryList() {
           isOpen={editCategorySheetOpen}
           onOpenChange={setEditCategorySheetOpen}
           category={editingCategory}
-          onUpdateCategory={handleUpdateCategory}
+          onUpdateCategory={onUpdateCategory}
         />
       )}
     </>
   );
 }
 
-function AnimalList({ category }: { category: string }) {
+function AnimalList({ category, livestockData, onAddAnimal, onAddBatch }: { 
+    category: string, 
+    livestockData: Livestock[],
+    onAddAnimal: (animal: Livestock) => void,
+    onAddBatch: (batch: Livestock) => void,
+}) {
     const [isSheetOpen, setSheetOpen] = useState(false);
-    // Force a re-render when the underlying data array is mutated
-    const [_, forceUpdate] = useReducer((x) => x + 1, 0);
-
-    const categoryDef = categoriesData.find(c => c.name.toLowerCase() === category.toLowerCase());
-
-    const onSheetOpenChange = (isOpen: boolean) => {
-        setSheetOpen(isOpen);
-        if (!isOpen) {
-            forceUpdate();
-        }
-    }
 
     const animals = useMemo(() => {
         return livestockData.filter(animal => animal.category.toLowerCase() === category.toLowerCase());
-    }, [category, _]);
+    }, [category, livestockData]);
+
+    const categoryDef = categoriesData.find(c => c.name.toLowerCase() === category.toLowerCase());
 
     if (!categoryDef) {
         return <div>Category not found</div>
@@ -291,6 +260,7 @@ function AnimalList({ category }: { category: string }) {
 
     const categoryName = categoryDef.name as LivestockCategoryName;
     const AddSheetComponent = categoryDef.managementStyle === 'batch' ? AddBatchSheet : AddAnimalSheet;
+    const onAdd = categoryDef.managementStyle === 'batch' ? onAddBatch : onAddAnimal;
 
     return (
         <>
@@ -326,7 +296,14 @@ function AnimalList({ category }: { category: string }) {
                         <CardContent className="flex flex-col items-center justify-center gap-4 p-12 text-center">
                             <h3 className="text-xl font-medium">No {categoryDef.managementStyle === 'batch' ? 'batches' : 'animals'} in this category yet.</h3>
                             <p className="text-muted-foreground">Get started by adding a new one.</p>
-                             <AddSheetComponent isOpen={isSheetOpen} onOpenChange={onSheetOpenChange} defaultCategory={categoryName}>
+                             <AddSheetComponent 
+                                isOpen={isSheetOpen} 
+                                onOpenChange={setSheetOpen} 
+                                defaultCategory={categoryName}
+                                onAddAnimal={onAddAnimal}
+                                onAddBatch={onAddBatch}
+                                livestockData={livestockData}
+                            >
                                 <Button>
                                     <PlusCircle />
                                     Add {categoryDef.managementStyle === 'batch' ? 'Batch' : 'Animal'}
@@ -336,7 +313,14 @@ function AnimalList({ category }: { category: string }) {
                     </Card>
                 )}
             </main>
-             <AddSheetComponent isOpen={isSheetOpen} onOpenChange={onSheetOpenChange} defaultCategory={categoryName}>
+             <AddSheetComponent 
+                isOpen={isSheetOpen} 
+                onOpenChange={setSheetOpen} 
+                defaultCategory={categoryName} 
+                onAddAnimal={onAddAnimal} 
+                onAddBatch={onAddBatch}
+                livestockData={livestockData}
+             >
                 <Button className="absolute bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
                     <PlusCircle className="h-6 w-6" />
                     <span className="sr-only">Add {categoryDef.managementStyle === 'batch' ? 'Batch' : 'Animal'}</span>
@@ -350,13 +334,54 @@ export default function LivestockPage() {
   const searchParams = useSearchParams();
   const category = searchParams.get("category");
 
+  const [livestock, setLivestock] = useState<Livestock[]>(initialLivestockData);
+  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  const handleAddAnimal = (animal: Livestock) => {
+    setLivestock(prev => [...prev, animal]);
+  };
+  
+  const handleAddBatch = (batch: Livestock) => {
+    setLivestock(prev => [...prev, batch]);
+  };
+
+  const handleAddCategory = (newCategoryName: string, managementStyle: ManagementStyle) => {
+    if (newCategoryName && !categoriesData.some(c => c.name.toLowerCase() === newCategoryName.toLowerCase())) {
+      const newCategory = { name: newCategoryName, icon: 'CowIcon', managementStyle: managementStyle };
+      categoriesData.push(newCategory); 
+      forceUpdate();
+    }
+  };
+
+  const handleDeleteCategory = (categoryName: LivestockCategoryName) => {
+    const index = categoriesData.findIndex(c => c.name === categoryName);
+    if (index > -1) {
+        categoriesData.splice(index, 1);
+        forceUpdate();
+    }
+  };
+
+  const handleUpdateCategory = (updatedCategory: CategoryDefinition) => {
+    const index = categoriesData.findIndex(c => c.name === updatedCategory.name);
+    if (index > -1) {
+        categoriesData[index] = updatedCategory;
+        forceUpdate();
+    }
+  };
+
   if (category) {
-    return <AnimalList category={category} />;
+    return <AnimalList 
+        category={category} 
+        livestockData={livestock} 
+        onAddAnimal={handleAddAnimal} 
+        onAddBatch={handleAddBatch} 
+    />;
   }
   
-  return <LivestockCategoryList />;
+  return <LivestockCategoryList 
+    livestockData={livestock}
+    onAddCategory={handleAddCategory}
+    onUpdateCategory={handleUpdateCategory}
+    onDeleteCategory={handleDeleteCategory}
+  />;
 }
-
-    
-
-    
