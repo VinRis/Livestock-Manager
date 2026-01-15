@@ -3,7 +3,7 @@
 
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, Moon, Sun, Download } from "lucide-react";
@@ -86,6 +86,9 @@ export default function SettingsPage() {
               <Input id="farm-location" placeholder="e.g., Springfield, IL" />
             </div>
           </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button>Save Settings</Button>
+          </CardFooter>
         </Card>
 
         <Card>
@@ -110,7 +113,7 @@ export default function SettingsPage() {
             </CardContent>
         </Card>
 
-         <Card>
+        <Card>
           <CardHeader>
             <CardTitle>Data Management</CardTitle>
           </CardHeader>
@@ -134,11 +137,6 @@ export default function SettingsPage() {
             </Button>
           </CardContent>
         </Card>
-
-        <div className="flex justify-end">
-            <Button>Save Settings</Button>
-        </div>
-
       </main>
     </>
   );
