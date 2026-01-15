@@ -136,8 +136,8 @@ export default function AddBatchSheet({ children, isOpen, onOpenChange, defaultC
                     options={currentBreedOptions}
                     value={breed}
                     onChange={setBreed}
-                    placeholder="Select breed..."
-                    emptyMessage="No breeds for this category."
+                    placeholder="Select or type breed..."
+                    emptyMessage="No preset breeds for this category."
                 />
             </div>
              <div className="space-y-2">

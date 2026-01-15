@@ -161,8 +161,8 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
                     options={currentBreedOptions}
                     value={breed}
                     onChange={setBreed}
-                    placeholder="Select breed..."
-                    emptyMessage="No breeds found."
+                    placeholder="Select or type breed..."
+                    emptyMessage="No preset breeds found."
                 />
             </div>
           </div>

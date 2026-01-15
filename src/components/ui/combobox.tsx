@@ -40,6 +40,30 @@ export function Combobox({
   disabled = false,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
+  const [inputValue, setInputValue] = React.useState(value);
+
+  React.useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  const handleSelect = (currentValue: string) => {
+    const newValue = currentValue.toLowerCase() === value.toLowerCase() ? "" : currentValue;
+    onChange(newValue);
+    setInputValue(newValue);
+    setOpen(false);
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+    onChange(e.target.value);
+  }
+  
+  const handleBlur = () => {
+    // On blur, the inputValue is the final value
+    onChange(inputValue);
+  };
+  
+  const displayLabel = options.find(option => option.value.toLowerCase() === inputValue.toLowerCase())?.label || inputValue;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -51,15 +75,18 @@ export function Combobox({
           className={cn("w-full justify-between", className)}
           disabled={disabled}
         >
-          {value
-            ? options.find((option) => option.value.toLowerCase() === value.toLowerCase())?.label
-            : placeholder}
+          {inputValue ? displayLabel : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>
-          <CommandInput placeholder={placeholder} />
+            <CommandInput 
+                placeholder={placeholder}
+                value={inputValue}
+                onValueChange={setInputValue}
+                onBlur={handleBlur}
+            />
           <CommandList className="max-h-[200px] overflow-y-auto">
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
@@ -67,10 +94,7 @@ export function Combobox({
                 <CommandItem
                   key={option.value}
                   value={option.value}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue.toLowerCase() === value.toLowerCase() ? "" : currentValue)
-                    setOpen(false)
-                  }}
+                  onSelect={handleSelect}
                 >
                   <Check
                     className={cn(
