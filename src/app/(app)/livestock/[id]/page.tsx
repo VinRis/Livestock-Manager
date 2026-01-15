@@ -47,7 +47,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
-  const { id } = use(Promise.resolve(params));
+  const { id } = use(params);
   const initialAnimal = getLivestockById(id);
   const [animal, setAnimal] = useState<Livestock | undefined>(initialAnimal);
   
