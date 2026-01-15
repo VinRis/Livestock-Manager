@@ -9,11 +9,121 @@ import { Label } from "@/components/ui/label";
 import { Upload, Moon, Sun, Download } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import React from "react";
+import React, { useRef } from "react";
 import { useTheme } from "next-themes";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  livestockData, 
+  categoriesData, 
+  activityLogData, 
+  tasksData, 
+  financialData,
+  birdTypesData,
+  currencyData
+} from "@/lib/data";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
+  const restoreInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBackup = () => {
+    try {
+      const backupData = {
+        livestockData,
+        categoriesData,
+        activityLogData,
+        tasksData,
+        financialData,
+        birdTypesData,
+        currencyData,
+        backupDate: new Date().toISOString(),
+      };
+      
+      const jsonString = JSON.stringify(backupData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `livestock-lynx-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Backup Successful",
+        description: "Your farm data has been downloaded.",
+      });
+
+    } catch (error) {
+      console.error("Backup failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Backup Failed",
+        description: "Could not back up your data.",
+      });
+    }
+  };
+
+  const handleRestoreClick = () => {
+    restoreInputRef.current?.click();
+  };
+
+  const handleRestore = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result;
+        if (typeof text !== 'string') throw new Error("File could not be read.");
+        
+        const restored = JSON.parse(text);
+
+        // Basic validation
+        if (!restored.livestockData || !restored.categoriesData) {
+            throw new Error("Invalid backup file format.");
+        }
+
+        // IMPORTANT: This replaces the in-memory data for the current session.
+        // It does not modify the source files.
+        livestockData.splice(0, livestockData.length, ...restored.livestockData);
+        categoriesData.splice(0, categoriesData.length, ...restored.categoriesData);
+        activityLogData.splice(0, activityLogData.length, ...restored.activityLogData);
+        tasksData.splice(0, tasksData.length, ...restored.tasksData);
+        financialData.splice(0, financialData.length, ...restored.financialData);
+        birdTypesData.splice(0, birdTypesData.length, ...restored.birdTypesData);
+        currencyData.splice(0, currencyData.length, ...restored.currencyData);
+
+        toast({
+          title: "Restore Successful",
+          description: "Your farm data has been restored from the backup. The changes will be lost on page reload.",
+        });
+        
+        // Force a re-render if needed, though state management should handle this
+        // Forcing a reload to reflect changes everywhere might be simplest here.
+        window.location.reload();
+
+
+      } catch (error) {
+        console.error("Restore failed:", error);
+        const errorMessage = error instanceof Error ? error.message : "Could not parse the backup file.";
+        toast({
+          variant: "destructive",
+          title: "Restore Failed",
+          description: errorMessage,
+        });
+      } finally {
+        // Reset file input
+        if(event.target) event.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
+
 
   return (
     <>
@@ -116,10 +226,24 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Data Management</CardTitle>
+            <CardDescription>Backup your current data or restore from a previous backup file.</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-4">
-            <Button variant="outline">Backup Data</Button>
-            <Button>Restore Data</Button>
+            <Button variant="outline" onClick={handleBackup}>
+              <Download />
+              Backup Data
+            </Button>
+            <Button onClick={handleRestoreClick}>
+              <Upload />
+              Restore Data
+            </Button>
+            <input 
+              type="file" 
+              ref={restoreInputRef} 
+              className="hidden"
+              accept="application/json"
+              onChange={handleRestore}
+            />
           </CardContent>
         </Card>
 
