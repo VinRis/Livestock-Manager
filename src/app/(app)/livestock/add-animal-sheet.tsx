@@ -195,7 +195,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="unknown">Unknown</SelectItem>
-                            {livestockData.filter(a => a.gender === 'Male').map(male => (
+                            {livestockData && livestockData.filter(a => a.gender === 'Male').map(male => (
                                 <SelectItem key={male.id} value={male.id}>{male.name} ({male.tagId})</SelectItem>
                             ))}
                         </SelectContent>
@@ -209,7 +209,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="unknown">Unknown</SelectItem>
-                            {livestockData.filter(a => a.gender === 'Female').map(female => (
+                            {livestockData && livestockData.filter(a => a.gender === 'Female').map(female => (
                                 <SelectItem key={female.id} value={female.id}>{female.name} ({female.tagId})</SelectItem>
                             ))}
                         </SelectContent>

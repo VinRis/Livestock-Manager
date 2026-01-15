@@ -48,11 +48,20 @@ export type LivestockCategory = {
 };
 
 
-function LivestockCategoryList({ livestockData, onAddCategory, onUpdateCategory, onDeleteCategory }: {
+function LivestockCategoryList({ 
+    livestockData, 
+    onAddCategory, 
+    onUpdateCategory, 
+    onDeleteCategory,
+    onAddAnimal,
+    onAddBatch
+}: {
     livestockData: Livestock[],
     onAddCategory: (newCategoryName: string, managementStyle: ManagementStyle) => void,
     onUpdateCategory: (updatedCategory: CategoryDefinition) => void,
     onDeleteCategory: (categoryName: LivestockCategoryName) => void,
+    onAddAnimal: (animal: Livestock) => void,
+    onAddBatch: (batch: Livestock) => void,
 }) {
   const [addAnimalSheetOpen, setAddAnimalSheetOpen] = useState(false);
   const [addBatchSheetOpen, setAddBatchSheetOpen] = useState(false);
@@ -190,6 +199,25 @@ function LivestockCategoryList({ livestockData, onAddCategory, onUpdateCategory,
           )})}
         </div>
       </main>
+      
+      <AddAnimalSheet 
+          isOpen={addAnimalSheetOpen} 
+          onOpenChange={setAddAnimalSheetOpen} 
+          defaultCategory={selectedCategory}
+          onAddAnimal={onAddAnimal} 
+          livestockData={livestockData}
+      >
+          <div/>
+      </AddAnimalSheet>
+      
+      <AddBatchSheet 
+          isOpen={addBatchSheetOpen} 
+          onOpenChange={setAddBatchSheetOpen}
+          defaultCategory={selectedCategory}
+          onAddBatch={onAddBatch}
+      >
+          <div/>
+      </AddBatchSheet>
 
       <AddNewCategorySheet 
         isOpen={addNewCategorySheetOpen} 
@@ -197,7 +225,7 @@ function LivestockCategoryList({ livestockData, onAddCategory, onUpdateCategory,
         onAddCategory={onAddCategory}
         existingCategories={existingCategoryNames}
       >
-        <Button className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
+        <Button className="absolute bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
             <PlusCircle className="h-6 w-6" />
             <span className="sr-only">Add Category</span>
         </Button>
@@ -225,6 +253,8 @@ function LivestockCategoryList({ livestockData, onAddCategory, onUpdateCategory,
         isOpen={addCategorySheetOpen}
         onOpenChange={setAddCategorySheetOpen}
         category={selectedCategory as 'Cattle' | 'Sheep' | 'Goats' | 'Pigs' | 'Chickens'}
+        onAddAnimal={onAddAnimal}
+        livestockData={livestockData}
       >
         <div/>
       </AddCategorySheet>
@@ -247,6 +277,7 @@ function AnimalList({ category, livestockData, onAddAnimal, onAddBatch }: {
     onAddBatch: (batch: Livestock) => void,
 }) {
     const [isSheetOpen, setSheetOpen] = useState(false);
+    const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
     const animals = useMemo(() => {
         return livestockData.filter(animal => animal.category.toLowerCase() === category.toLowerCase());
@@ -256,6 +287,13 @@ function AnimalList({ category, livestockData, onAddAnimal, onAddBatch }: {
 
     if (!categoryDef) {
         return <div>Category not found</div>
+    }
+
+    const onSheetOpenChange = (isOpen: boolean) => {
+        setSheetOpen(isOpen);
+        if (!isOpen) {
+            forceUpdate();
+        }
     }
 
     const categoryName = categoryDef.name as LivestockCategoryName;
@@ -298,13 +336,13 @@ function AnimalList({ category, livestockData, onAddAnimal, onAddBatch }: {
                             <p className="text-muted-foreground">Get started by adding a new one.</p>
                              <AddSheetComponent 
                                 isOpen={isSheetOpen} 
-                                onOpenChange={setSheetOpen} 
+                                onOpenChange={onSheetOpenChange} 
                                 defaultCategory={categoryName}
                                 onAddAnimal={onAddAnimal}
                                 onAddBatch={onAddBatch}
                                 livestockData={livestockData}
                             >
-                                <Button>
+                                <Button onClick={() => setSheetOpen(true)}>
                                     <PlusCircle />
                                     Add {categoryDef.managementStyle === 'batch' ? 'Batch' : 'Animal'}
                                 </Button>
@@ -315,7 +353,7 @@ function AnimalList({ category, livestockData, onAddAnimal, onAddBatch }: {
             </main>
              <AddSheetComponent 
                 isOpen={isSheetOpen} 
-                onOpenChange={setSheetOpen} 
+                onOpenChange={onSheetOpenChange} 
                 defaultCategory={categoryName} 
                 onAddAnimal={onAddAnimal} 
                 onAddBatch={onAddBatch}
@@ -383,5 +421,7 @@ export default function LivestockPage() {
     onAddCategory={handleAddCategory}
     onUpdateCategory={handleUpdateCategory}
     onDeleteCategory={handleDeleteCategory}
+    onAddAnimal={handleAddAnimal}
+    onAddBatch={handleAddBatch}
   />;
 }

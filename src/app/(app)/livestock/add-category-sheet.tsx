@@ -12,15 +12,18 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import AddAnimalSheet from "./add-animal-sheet";
+import { Livestock } from "@/lib/data";
 
 interface AddCategorySheetProps {
   children: React.ReactNode;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   category: 'Cattle' | 'Sheep' | 'Goats' | 'Pigs' | 'Chickens';
+  onAddAnimal: (animal: Livestock) => void;
+  livestockData: Livestock[];
 }
 
-export default function AddCategorySheet({ children, isOpen, onOpenChange, category }: AddCategorySheetProps) {
+export default function AddCategorySheet({ children, isOpen, onOpenChange, category, onAddAnimal, livestockData }: AddCategorySheetProps) {
     const [addAnimalSheetOpen, setAddAnimalSheetOpen] = useState(false);
 
     const handleOpenAddAnimal = () => {
@@ -51,6 +54,8 @@ export default function AddCategorySheet({ children, isOpen, onOpenChange, categ
             isOpen={addAnimalSheetOpen}
             onOpenChange={setAddAnimalSheetOpen}
             defaultCategory={category}
+            onAddAnimal={onAddAnimal}
+            livestockData={livestockData}
         >
             <div />
         </AddAnimalSheet>
