@@ -2,6 +2,7 @@
 import { getProfitOptimizationSuggestions } from '@/ai/flows/profit-optimization-suggestions';
 import { financialData, livestockData } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 async function fetchSuggestions() {
   const productionMetrics = livestockData.map(animal => ({

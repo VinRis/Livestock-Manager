@@ -80,7 +80,6 @@ export default function CategoryAnalyticsPage({ params }: { params: { category: 
                         <Lightbulb className="h-6 w-6 text-primary" />
                         <CardTitle>Production Insights Report</CardTitle>
                     </div>
-                    <CardDescription>AI-generated analysis of your {category.name} production.</CardDescription>
                 </CardHeader>
                 <CardContent>
                 <Suspense fallback={<LivestockReportSkeleton />}>
@@ -94,7 +93,6 @@ export default function CategoryAnalyticsPage({ params }: { params: { category: 
                         <Lightbulb className="h-6 w-6 text-primary" />
                         <CardTitle>Profit & Wellness Opportunities</CardTitle>
                     </div>
-                    <CardDescription>AI-generated suggestions based on your farm's data.</CardDescription>
                 </CardHeader>
                 <CardContent>
                 <Suspense fallback={<ProfitSuggestionsSkeleton />}>
@@ -109,7 +107,6 @@ export default function CategoryAnalyticsPage({ params }: { params: { category: 
             <Card>
               <CardHeader>
                 <CardTitle>Milk Production Trend</CardTitle>
-                <CardDescription>Monthly average milk yield per cow.</CardDescription>
               </CardHeader>
               <CardContent>
                 <ProductionChart />

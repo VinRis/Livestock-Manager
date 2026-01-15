@@ -4,7 +4,6 @@ import { livestockData } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CheckCircle, Lightbulb, TrendingUp, DollarSign, Heart } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 async function fetchLivestockReport(livestockType: string) {
   const productionMetrics = livestockData
