@@ -131,7 +131,7 @@ function LivestockCategoryList() {
 
   return (
     <>
-      <PageHeader title="Livestock Categories" description="Manage your herd by categories.">
+      <PageHeader title="Livestock Categories">
          <AddNewCategorySheet 
             isOpen={addNewCategorySheetOpen} 
             onOpenChange={setAddNewCategorySheetOpen} 
@@ -268,7 +268,7 @@ function AnimalList({ category }: { category: string }) {
 
     return (
         <>
-            <PageHeader title={`${categoryName} List`} description={`All animals in the ${categoryName} category.`}>
+            <PageHeader title={`${categoryName} List`}>
                 <Button variant="outline" asChild>
                     <Link href="/livestock"><ArrowLeft /> Back to Categories</Link>
                 </Button>

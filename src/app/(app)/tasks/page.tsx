@@ -240,7 +240,7 @@ export default function TasksPage() {
   
   return (
     <>
-      <PageHeader title="Task Scheduler" description="Manage and track your farm tasks.">
+      <PageHeader title="Task Scheduler">
         <Dialog open={isAddDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -442,5 +442,3 @@ export default function TasksPage() {
     </>
   );
 }
-
-    

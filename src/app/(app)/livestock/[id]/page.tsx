@@ -311,7 +311,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
 
   return (
     <>
-      <PageHeader title={animal.name} description={`Tag ID: ${animal.tagId}`}>
+      <PageHeader title={animal.name}>
          <Button variant="outline" onClick={() => router.back()}><ArrowLeft /> Back to List</Button>
          <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
             <DialogTrigger asChild>
@@ -447,6 +447,7 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
               />
               <CardContent className="p-4">
                 <h2 className="text-2xl font-bold font-headline">{animal.name}</h2>
+                <p className="text-sm text-muted-foreground">Tag ID: {animal.tagId}</p>
                 <div className="flex flex-wrap gap-2 mt-2">
                     <Badge>{animal.breed}</Badge>
                     <Badge variant="secondary">{animal.gender}</Badge>
@@ -821,5 +822,3 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     </>
   );
 }
-
-    

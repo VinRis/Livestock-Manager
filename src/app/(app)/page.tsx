@@ -32,7 +32,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" description="Welcome back, here's a summary of your farm.">
+      <PageHeader title="Dashboard">
         <Button asChild>
           <Link href="/analytics">
             <BarChart3 />

@@ -41,7 +41,7 @@ export default function AnalyticsPage() {
 
   return (
     <>
-      <PageHeader title="Analytics & Reports" description="Select a category to view detailed insights." />
+      <PageHeader title="Analytics & Reports" />
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => (

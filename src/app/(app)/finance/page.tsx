@@ -96,7 +96,7 @@ export default function FinancePage() {
 
   return (
     <>
-      <PageHeader title="Financials" description="Track income, expenses, and profitability.">
+      <PageHeader title="Financials">
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
                 <Button>

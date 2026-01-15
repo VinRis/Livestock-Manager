@@ -17,7 +17,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Settings" description="Manage your application settings." />
+      <PageHeader title="Settings" />
       <main className="flex-1 space-y-6 p-4 pt-2 sm:p-6 sm:pt-2">
         <Card>
           <CardHeader>

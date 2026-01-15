@@ -166,7 +166,7 @@ export default function ActivityLogPage() {
 
   return (
     <>
-      <PageHeader title="Farm Activity Log" description="A record of all recent activities on your farm.">
+      <PageHeader title="Farm Activity Log">
         <Dialog open={isAddDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>

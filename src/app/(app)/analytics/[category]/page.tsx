@@ -32,7 +32,7 @@ export default function CategoryAnalyticsPage({ params }: { params: { category: 
 
   return (
     <>
-      <PageHeader title={`${category.name} Analytics`} description={`Detailed performance insights for your ${category.name}.`}>
+      <PageHeader title={`${category.name} Analytics`}>
         <Button variant="outline" asChild>
           <Link href="/analytics"><ArrowLeft /> Back to Analytics</Link>
         </Button>
