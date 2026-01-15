@@ -47,7 +47,8 @@ function calculateAge(birthDate: string) {
 const addActivityToLog = (activity: Omit<Activity, 'id'>) => {
     try {
         const storedActivities = window.localStorage.getItem('activityLogData');
-        const currentActivities: Activity[] = storedActivities ? JSON.parse(storedActivities) : [];
+        const initialActivityLogData: Activity[] = [];
+        const currentActivities: Activity[] = storedActivities ? JSON.parse(storedActivities) : initialActivityLogData;
         const newActivity: Activity = {
             ...activity,
             id: `act-${Date.now()}`,
@@ -904,27 +905,26 @@ const EditBatchDialogContent = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
-  const acquisitionCostRecord = useMemo(() => allFinancials.find(f => f.description === `Purchase of batch: ${animal.name.split(' (')[0]}`), [animal, allFinancials]);
-
-  const [editForm, setEditForm] = useState({
-    ...animal,
-    cost: acquisitionCostRecord?.amount || 0,
-  });
+  const [editForm, setEditForm] = useState(animal);
 
   useEffect(() => {
+    setEditForm(animal);
+  }, [animal]);
+
+  const acquisitionCostRecord = useMemo(() => allFinancials.find(f => f.description === `Purchase of batch: ${animal.name.split(' (')[0]}`), [animal, allFinancials]);
+
+  const [cost, setCost] = useState(acquisitionCostRecord?.amount || 0);
+
+   useEffect(() => {
     const costRecord = allFinancials.find(f => f.description === `Purchase of batch: ${animal.name.split(' (')[0]}`);
-    setEditForm({
-      ...animal,
-      cost: costRecord?.amount || 0,
-    });
+    setCost(costRecord?.amount || 0);
   }, [animal, allFinancials]);
 
   const handleSaveProfile = () => {
-    const { cost, ...animalData } = editForm;
 
     const finalForm = {
-        ...animalData,
-        name: `${animalData.name.split(' (')[0]} (${animalData.tagId.split('-')[1]} animals)`
+        ...editForm,
+        name: `${editForm.name.split(' (')[0]} (${editForm.tagId.split('-')[1]} animals)`
     };
 
     onUpdate(finalForm);
@@ -1027,8 +1027,8 @@ const EditBatchDialogContent = ({
               <Input 
                 id="cost" 
                 type="number" 
-                value={editForm.cost}
-                onChange={(e) => setEditForm(prev => ({...prev, cost: parseFloat(e.target.value) || 0}))}
+                value={cost}
+                onChange={(e) => setCost(parseFloat(e.target.value) || 0)}
                 placeholder="e.g., 250.00"
               />
           </div>
@@ -1625,10 +1625,10 @@ export default function LivestockDetailPage() {
   }, []);
   
   useEffect(() => {
-    if (livestockList.length > 0) {
+    if (isClient && livestockList.length > 0) {
         setCurrentAnimal(livestockList.find(a => a.id === id));
     }
-  }, [id, livestockList]);
+  }, [id, isClient, livestockList]);
 
   // Save livestock data to localStorage whenever it changes
   useEffect(() => {
@@ -1653,15 +1653,15 @@ export default function LivestockDetailPage() {
   const handleFinancialUpdate = (updatedRecord: FinancialRecord) => {
     const recordExists = financialData.some(record => record.id === updatedRecord.id);
 
+    let updatedFinancialData;
     if (recordExists) {
-        setFinancialData(prevData => 
-            prevData.map(record => 
-                record.id === updatedRecord.id ? updatedRecord : record
-            )
+        updatedFinancialData = financialData.map(record => 
+            record.id === updatedRecord.id ? updatedRecord : record
         );
     } else {
-        setFinancialData(prevData => [...prevData, updatedRecord]);
+        updatedFinancialData = [...financialData, updatedRecord];
     }
+    setFinancialData(updatedFinancialData);
   };
   
   if (!isClient || currentAnimal === undefined) {
