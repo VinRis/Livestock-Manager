@@ -26,6 +26,7 @@ import AddAnimalSheet from "./add-animal-sheet";
 import AddCategorySheet from "./add-category-sheet";
 import AddNewCategorySheet from "./add-new-category-sheet";
 import EditCategorySheet from "./edit-category-sheet";
+import AddBatchSheet from "./add-batch-sheet";
 
 
 export type LivestockCategoryName = string;
@@ -49,6 +50,7 @@ export type LivestockCategory = {
 
 function LivestockCategoryList() {
   const [addAnimalSheetOpen, setAddAnimalSheetOpen] = useState(false);
+  const [addBatchSheetOpen, setAddBatchSheetOpen] = useState(false);
   const [addCategorySheetOpen, setAddCategorySheetOpen] = useState(false);
   const [addNewCategorySheetOpen, setAddNewCategorySheetOpen] = useState(false);
   const [editCategorySheetOpen, setEditCategorySheetOpen] = useState(false);
@@ -120,7 +122,9 @@ function LivestockCategoryList() {
 
   const handleAddClick = (category: LivestockCategory) => {
     setSelectedCategory(category.name);
-    if (category.count === 0) {
+    if (category.managementStyle === 'batch') {
+        setAddBatchSheetOpen(true);
+    } else if (category.count === 0) {
         setAddCategorySheetOpen(true);
     } else {
         setAddAnimalSheetOpen(true);
@@ -241,6 +245,9 @@ function LivestockCategoryList() {
       <AddAnimalSheet isOpen={addAnimalSheetOpen} onOpenChange={setAddAnimalSheetOpen} defaultCategory={selectedCategory as 'Cattle' | 'Sheep' | 'Goats'} >
         <div />
       </AddAnimalSheet>
+      <AddBatchSheet isOpen={addBatchSheetOpen} onOpenChange={setAddBatchSheetOpen} defaultCategory={selectedCategory} >
+        <div />
+      </AddBatchSheet>
       <AddCategorySheet
         isOpen={addCategorySheetOpen}
         onOpenChange={setAddCategorySheetOpen}
