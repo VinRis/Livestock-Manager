@@ -47,20 +47,13 @@ export function Combobox({
   }, [value]);
 
   const handleSelect = (currentValue: string) => {
-    const newValue = currentValue.toLowerCase() === value.toLowerCase() ? "" : currentValue;
-    onChange(newValue);
-    setInputValue(newValue);
-    setOpen(false);
+    onChange(currentValue === value ? "" : currentValue);
+    setOpen(false)
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-    onChange(e.target.value);
-  }
-  
-  const handleBlur = () => {
-    // On blur, the inputValue is the final value
-    onChange(inputValue);
+  const handleValueChange = (newValue: string) => {
+    setInputValue(newValue);
+    onChange(newValue);
   };
   
   const displayLabel = options.find(option => option.value.toLowerCase() === inputValue.toLowerCase())?.label || inputValue;
@@ -75,7 +68,7 @@ export function Combobox({
           className={cn("w-full justify-between", className)}
           disabled={disabled}
         >
-          {inputValue ? displayLabel : placeholder}
+          {value ? displayLabel : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -84,8 +77,7 @@ export function Combobox({
             <CommandInput 
                 placeholder={placeholder}
                 value={inputValue}
-                onValueChange={setInputValue}
-                onBlur={handleBlur}
+                onValueChange={handleValueChange}
             />
           <CommandList className="max-h-[200px] overflow-y-auto">
             <CommandEmpty>{emptyMessage}</CommandEmpty>
