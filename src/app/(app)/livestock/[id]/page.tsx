@@ -2,11 +2,11 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { notFound, useRouter } from "next/navigation";
+import { notFound, useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Edit, PlusCircle, Upload, GitMerge, User, Users, LineChart, Weight, Cake, MoreVertical, Trash2, Box, CalendarDays, DollarSign } from "lucide-react";
-import { getLivestockById, type HealthRecord, type ProductionMetric, type Livestock, livestockData, updateLivestock, financialData } from "@/lib/data";
+import { getLivestockById, type HealthRecord, type ProductionMetric, type Livestock, financialData as initialFinancialData } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -42,7 +42,7 @@ function calculateAge(birthDate: string) {
   return { years, months, text: `${years} years, ${months} months` };
 }
 
-function IndividualAnimalProfile({ initialAnimal, onUpdate }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void }) {
+function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[] }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -78,9 +78,9 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate }: { initialAnimal: L
     setEditForm(initialAnimal);
   }, [initialAnimal]);
 
-  const sire = useMemo(() => animal?.sireId ? getLivestockById(animal.sireId) : undefined, [animal]);
-  const dam = useMemo(() => animal?.damId ? getLivestockById(animal.damId) : undefined, [animal]);
-  const offspring = useMemo(() => livestockData.filter(a => a.sireId === animal?.id || a.damId === animal?.id), [animal]);
+  const sire = useMemo(() => animal?.sireId ? allLivestock.find(a => a.id === animal.sireId) : undefined, [animal, allLivestock]);
+  const dam = useMemo(() => animal?.damId ? allLivestock.find(a => a.id === animal.damId) : undefined, [animal, allLivestock]);
+  const offspring = useMemo(() => allLivestock.filter(a => a.sireId === animal?.id || a.damId === animal?.id), [animal, allLivestock]);
 
   if (!animal) {
     return notFound();
@@ -392,7 +392,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate }: { initialAnimal: L
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="unknown">Unknown</SelectItem>
-                                    {livestockData.filter(a => a.gender === 'Male' && a.id !== animal.id).map(male => (
+                                    {allLivestock.filter(a => a.gender === 'Male' && a.id !== animal.id).map(male => (
                                         <SelectItem key={male.id} value={male.id}>{male.name} ({male.tagId})</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -406,7 +406,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate }: { initialAnimal: L
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="unknown">Unknown</SelectItem>
-                                    {livestockData.filter(a => a.gender === 'Female' && a.id !== animal.id).map(female => (
+                                    {allLivestock.filter(a => a.gender === 'Female' && a.id !== animal.id).map(female => (
                                         <SelectItem key={female.id} value={female.id}>{female.name} ({female.tagId})</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -853,7 +853,7 @@ function IndividualAnimalProfile({ initialAnimal, onUpdate }: { initialAnimal: L
   );
 }
 
-function BatchProfile({ initialAnimal, onUpdate }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void }) {
+function BatchProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[] }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -1065,7 +1065,7 @@ function BatchProfile({ initialAnimal, onUpdate }: { initialAnimal: Livestock, o
     }
   };
 
-  const acquisitionCostRecord = financialData.find(f => f.description === `Purchase of batch: ${initialAnimal.name.split(' (')[0]}`);
+  const acquisitionCostRecord = initialFinancialData.find(f => f.description === `Purchase of batch: ${initialAnimal.name.split(' (')[0]}`);
   const animalCount = animal.tagId.split('-')[1];
 
   return (
@@ -1483,8 +1483,9 @@ function BatchProfile({ initialAnimal, onUpdate }: { initialAnimal: Livestock, o
   );
 }
 
-export default function LivestockDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function LivestockDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
   const [livestockList, setLivestockList] = useState<Livestock[]>([]);
   const [isClient, setIsClient] = useState(false);
 
@@ -1492,10 +1493,10 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
     setIsClient(true);
     try {
       const item = window.localStorage.getItem('livestockData');
-      setLivestockList(item ? JSON.parse(item) : livestockData);
+      setLivestockList(item ? JSON.parse(item) : []);
     } catch (error) {
       console.error(error);
-      setLivestockList(livestockData);
+      setLivestockList([]);
     }
   }, []);
 
@@ -1522,9 +1523,9 @@ export default function LivestockDetailPage({ params }: { params: { id: string }
   const isBatch = animal.tagId.startsWith('batch-');
 
   if (isBatch) {
-    return <BatchProfile initialAnimal={animal} onUpdate={handleUpdate} />;
+    return <BatchProfile initialAnimal={animal} onUpdate={handleUpdate} allLivestock={livestockList} />;
   } else {
-    return <IndividualAnimalProfile initialAnimal={animal} onUpdate={handleUpdate} />;
+    return <IndividualAnimalProfile initialAnimal={animal} onUpdate={handleUpdate} allLivestock={livestockList} />;
   }
 }
 
