@@ -7,7 +7,7 @@ import { notFound, useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Edit, PlusCircle, Upload, GitMerge, User, Users, LineChart, Weight, Cake, MoreVertical, Trash2, Box, CalendarDays, DollarSign } from "lucide-react";
-import { type HealthRecord, type ProductionMetric, type Livestock, financialData as initialFinancialDataFromData, livestockData as initialLivestockDataFromData } from "@/lib/data";
+import { type HealthRecord, type ProductionMetric, type Livestock, financialData as initialFinancialData, livestockData as initialLivestockData } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -1502,58 +1502,42 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
 export default function LivestockDetailPage() {
   const params = useParams();
   const id = params.id as string;
-  const [livestockList, setLivestockList] = useState<Livestock[]>(initialLivestockDataFromData);
-  const [financialData, setFinancialData] = useState<typeof initialFinancialDataFromData>(initialFinancialDataFromData);
+  const [livestockList, setLivestockList] = useState<Livestock[]>(initialLivestockData);
+  const [financialData, setFinancialData] = useState<typeof initialFinancialData>(initialFinancialData);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
     try {
       const livestockItem = window.localStorage.getItem('livestockData');
-      setLivestockList(livestockItem ? JSON.parse(livestockItem) : initialLivestockDataFromData);
+      setLivestockList(livestockItem ? JSON.parse(livestockItem) : initialLivestockData);
       
       const financialItem = window.localStorage.getItem('financialData');
-      setFinancialData(financialItem ? JSON.parse(financialItem) : initialFinancialDataFromData);
+      setFinancialData(financialItem ? JSON.parse(financialItem) : initialFinancialData);
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
-      setLivestockList(initialLivestockDataFromData);
-      setFinancialData(initialFinancialDataFromData);
+      setLivestockList(initialLivestockData);
+      setFinancialData(initialFinancialData);
     }
   }, []);
 
-  useEffect(() => {
-    if (isClient) {
-      try {
-        window.localStorage.setItem('livestockData', JSON.stringify(livestockList));
-      } catch (error) {
-        console.error("Failed to save livestock data to localStorage", error);
-      }
-    }
-  }, [livestockList, isClient]);
-
-   useEffect(() => {
-    if (isClient) {
-      try {
-        window.localStorage.setItem('financialData', JSON.stringify(financialData));
-      } catch (error) {
-        console.error("Failed to save financial data to localStorage", error);
-      }
-    }
-  }, [financialData, isClient]);
-
-  const animal = useMemo(() => livestockList.find(a => a.id === id), [id, livestockList]);
-
   const handleUpdate = (updatedAnimal: Livestock) => {
-    setLivestockList(prev => prev.map(a => a.id === updatedAnimal.id ? updatedAnimal : a));
+    const updatedList = livestockList.map(a => a.id === updatedAnimal.id ? updatedAnimal : a);
+    setLivestockList(updatedList);
+    window.localStorage.setItem('livestockData', JSON.stringify(updatedList));
   };
   
   const handleFinancialUpdate = (updatedRecord: any) => {
-    setFinancialData(prev => prev.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+    const updatedList = financialData.map(r => r.id === updatedRecord.id ? updatedRecord : r);
+    setFinancialData(updatedList);
+    window.localStorage.setItem('financialData', JSON.stringify(updatedList));
   }
   
   if (!isClient) {
     return null; // Or a loading spinner
   }
+  
+  const animal = livestockList.find(a => a.id === id);
 
   if (!animal) {
     return notFound();
