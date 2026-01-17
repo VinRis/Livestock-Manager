@@ -105,7 +105,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{currency}{totalIncome.toLocaleString()}</div>
+                <div className="text-2xl font-bold text-primary">{currency}{totalIncome.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">All-time income</p>
               </CardContent>
             </Card>
@@ -115,7 +115,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{currency}{totalExpense.toLocaleString()}</div>
+                <div className="text-2xl font-bold text-destructive">{currency}{totalExpense.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">All-time expenses</p>
               </CardContent>
             </Card>
@@ -146,11 +146,11 @@ export default function FinancePage() {
                               <h4 className="font-semibold text-muted-foreground">Last 30 Days Summary</h4>
                               <div className="flex items-center justify-between">
                                   <span className="flex items-center gap-2"><TrendingUp className="text-primary"/>Income</span>
-                                  <span className="font-semibold">{currency}{recentIncome.toLocaleString()}</span>
+                                  <span className="font-semibold text-primary">{currency}{recentIncome.toLocaleString()}</span>
                               </div>
                               <div className="flex items-center justify-between">
                                   <span className="flex items-center gap-2"><TrendingDown className="text-destructive"/>Expense</span>
-                                  <span className="font-semibold">{currency}{recentExpense.toLocaleString()}</span>
+                                  <span className="font-semibold text-destructive">{currency}{recentExpense.toLocaleString()}</span>
                               </div>
                               <div className="flex items-center justify-between border-t pt-2 mt-2">
                                   <span className="font-bold">Net</span>
