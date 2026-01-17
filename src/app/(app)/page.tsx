@@ -2,11 +2,12 @@
 "use client"
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { ArrowUpRight, CheckCircle, Clock, DollarSign, PlusCircle, ClipboardList, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
-import { tasksData, activityLogData, financialData } from "@/lib/data";
+import { tasksData, activityLogData as initialActivityLogData, financialData, type Activity } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import FinanceChart from "./finance/finance-chart";
 import { useCurrency } from "@/contexts/currency-context";
@@ -24,7 +25,21 @@ export default function DashboardPage() {
   const { currency } = useCurrency();
   const today = new Date().setHours(0, 0, 0, 0);
   const todaysTasks = tasksData.filter(task => new Date(task.dueDate).setHours(0, 0, 0, 0) === today && !task.completed);
-  const recentActivities = activityLogData.slice(0, 3);
+  
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+
+  useEffect(() => {
+    try {
+      const storedActivities = window.localStorage.getItem('activityLogData');
+      const loadedActivities = storedActivities ? JSON.parse(storedActivities) : initialActivityLogData;
+      const sorted = loadedActivities.sort((a: Activity, b: Activity) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setRecentActivities(sorted.slice(0, 3));
+    } catch (error) {
+      console.error("Failed to load activity log from localStorage for dashboard", error);
+      const sorted = initialActivityLogData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setRecentActivities(sorted.slice(0, 3));
+    }
+  }, []);
   
   const totalIncome = financialData.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
   const totalExpense = financialData.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
