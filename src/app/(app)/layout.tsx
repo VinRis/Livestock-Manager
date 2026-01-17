@@ -2,6 +2,7 @@
 "use client"
 
 import { MobileNav } from "@/components/mobile-nav";
+import { InstallPWA } from "@/components/install-pwa";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
 
@@ -11,6 +12,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {children}
       </div>
       <MobileNav />
+      <InstallPWA />
     </>
   );
 }
