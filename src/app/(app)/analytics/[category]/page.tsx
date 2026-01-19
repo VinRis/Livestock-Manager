@@ -1,17 +1,14 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
-import { ArrowLeft, Lightbulb, TrendingUp, Users } from "lucide-react";
+import { ArrowLeft, TrendingUp, Users } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { livestockData, categoriesData } from "@/lib/data";
 
 import ProductionChart from "../production-chart";
-import { ProfitSuggestions, ProfitSuggestionsSkeleton } from "../profit-suggestions";
-import { LivestockReport, LivestockReportSkeleton } from "./livestock-report";
 
 export default function CategoryAnalyticsPage({ params }: { params: { category: string } }) {
   const categoryName = params.category;
@@ -71,35 +68,6 @@ export default function CategoryAnalyticsPage({ params }: { params: { category: 
               <p className="text-xs text-muted-foreground">Across all animals</p>
             </CardContent>
           </Card>
-        </div>
-        
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-2">
-                        <Lightbulb className="h-6 w-6 text-primary" />
-                        <CardTitle>Production Insights Report</CardTitle>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                <Suspense fallback={<LivestockReportSkeleton />}>
-                    <LivestockReport livestockType={category.name} />
-                </Suspense>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-2">
-                        <Lightbulb className="h-6 w-6 text-primary" />
-                        <CardTitle>Profit & Wellness Opportunities</CardTitle>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                <Suspense fallback={<ProfitSuggestionsSkeleton />}>
-                    <ProfitSuggestions />
-                </Suspense>
-                </CardContent>
-            </Card>
         </div>
 
         {category.name === 'Cattle' && (
