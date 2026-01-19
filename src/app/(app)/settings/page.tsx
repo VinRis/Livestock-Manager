@@ -34,7 +34,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    const storedLogo = localStorage.getItem('pwaIconUrl');
+    const storedLogo = localStorage.getItem('farmLogoUrl');
     if (storedLogo) {
         setFarmLogoUrl(storedLogo);
     }
@@ -50,7 +50,7 @@ export default function SettingsPage() {
             const dataUrl = e.target?.result as string;
             if (!dataUrl) throw new Error("File could not be read.");
             
-            localStorage.setItem('pwaIconUrl', dataUrl);
+            localStorage.setItem('farmLogoUrl', dataUrl);
             setFarmLogoUrl(dataUrl);
 
             toast({
@@ -238,7 +238,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex-1">
                         <p className="text-sm font-medium">Upload Logo</p>
-                        <p className="text-xs text-muted-foreground">This will also be used as the app icon. (PNG, JPG up to 1MB)</p>
+                        <p className="text-xs text-muted-foreground">This logo will appear on your generated reports. (PNG, JPG up to 1MB)</p>
                     </div>
                     <Button variant="outline" onClick={() => logoInputRef.current?.click()}>Choose File</Button>
                     <input 

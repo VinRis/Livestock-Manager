@@ -4,7 +4,6 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { CurrencyProvider } from '@/contexts/currency-context';
-import PwaManifestHandler from '@/components/pwa-manifest-handler';
 
 export const metadata: Metadata = {
   manifest: '/manifest.json',
@@ -28,7 +27,6 @@ export default function RootLayout({
       <body className="font-body antialiased" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <CurrencyProvider>
-            <PwaManifestHandler />
             {children}
             <Toaster />
           </CurrencyProvider>

@@ -59,15 +59,25 @@ export const generateCsvReport = async (category: string) => {
 
 // --- PDF Report Generation ---
 
-const generatePdfHeader = (doc: jsPDF, farmName: string, manager: string, location: string) => {
+const generatePdfHeader = (doc: jsPDF, farmName: string, manager: string, location: string, logoUrl?: string | null) => {
+  if (logoUrl) {
+    try {
+      // Add logo on the left
+      doc.addImage(logoUrl, 'PNG', 14, 18, 20, 20);
+    } catch (e) {
+      console.error("Error adding logo to PDF:", e);
+    }
+  }
+
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(20);
-  doc.text(farmName, 14, 22);
+  // Adjust text position if logo is present
+  doc.text(farmName, logoUrl ? 40 : 14, 22);
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Manager: ${manager}`, 14, 30);
-  doc.text(`Location: ${location}`, 14, 35);
+  doc.text(`Manager: ${manager}`, logoUrl ? 40 : 14, 30);
+  doc.text(`Location: ${location}`, logoUrl ? 40 : 14, 35);
 
   doc.setFontSize(10);
   doc.text(`Report Date: ${format(new Date(), 'MMMM dd, yyyy')}`, doc.internal.pageSize.getWidth() - 14, 22, { align: 'right' });
@@ -95,7 +105,7 @@ const generateSummarySection = (doc: jsPDF, title: string, content: { label: str
     margin: { left: 14, right: 14 },
   });
 
-  return doc.autoTable.previous.finalY + 10;
+  return (doc.autoTable as any).previous.finalY + 10;
 };
 
 
@@ -104,8 +114,9 @@ export const generatePdfReport = async (category: string) => {
   const farmName = "Sunrise Farms"; // Placeholder
   const managerName = "John Doe"; // Placeholder
   const farmLocation = "Springfield, IL"; // Placeholder
+  const logoUrl = localStorage.getItem('farmLogoUrl');
 
-  generatePdfHeader(doc, farmName, managerName, farmLocation);
+  generatePdfHeader(doc, farmName, managerName, farmLocation, logoUrl);
 
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
@@ -147,12 +158,6 @@ export const generatePdfReport = async (category: string) => {
   finalY = generateSummarySection(doc, 'Last 365 Days Summary', yearSummary, finalY);
 
   // --- Detailed Records Table ---
-  doc.addPage();
-  generatePdfHeader(doc, farmName, managerName, farmLocation);
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('All Records', 14, 50);
-  
   const allRecords = animals.flatMap(animal => 
     [
       ...animal.healthRecords.map(r => ({ ...r, animalName: animal.name, recordType: 'Health' })),
@@ -163,23 +168,31 @@ export const generatePdfReport = async (category: string) => {
   const tableBody = allRecords.map(r => [
     r.animalName,
     r.recordType,
-    r.date,
+    format(new Date(r.date), 'yyyy-MM-dd HH:mm'),
     (r as any).event || (r as any).type,
     (r as any).description || (r as any).value,
   ]);
 
   doc.autoTable({
-    startY: 60,
+    startY: finalY > 200 ? undefined : finalY + 5, // Let autotable handle new page if summary is long
     head: [['Animal', 'Record Type', 'Date', 'Event/Type', 'Details/Value']],
     body: tableBody,
     theme: 'grid',
     headStyles: { fillColor: [34, 139, 34] },
-    margin: { left: 14, right: 14 },
+    margin: { top: 50, left: 14, right: 14 },
     didDrawPage: (data) => {
+        // Add header to each page
+        generatePdfHeader(doc, farmName, managerName, farmLocation, logoUrl);
+        
+        // Add table title
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('All Records', 14, 45);
+
         // Add footer
         doc.setFontSize(8);
-        const pageCount = doc.internal.pages.length;
-        doc.text(`Page ${data.pageNumber} of ${pageCount -1}`, data.settings.margin.left, doc.internal.pageSize.height - 10);
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, data.settings.margin.left, doc.internal.pageSize.height - 10);
     }
   });
 
