@@ -9,7 +9,7 @@ import { ArrowLeft, Download, HeartPulse, Users } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { livestockData as initialLivestockData, categoriesData as initialCategoriesData, type Livestock, type CategoryDefinition } from "@/lib/data";
+import { type Livestock, type CategoryDefinition } from "@/lib/data";
 import { generatePdfReport } from "@/lib/reports";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,12 +44,12 @@ export default function CategoryAnalyticsPage() {
     try {
       const storedLivestock = window.localStorage.getItem('livestockData');
       const storedCategories = window.localStorage.getItem('categoriesData');
-      setLivestockData(storedLivestock ? JSON.parse(storedLivestock) : initialLivestockData);
-      setCategoriesData(storedCategories ? JSON.parse(storedCategories) : initialCategoriesData);
+      setLivestockData(storedLivestock ? JSON.parse(storedLivestock) : []);
+      setCategoriesData(storedCategories ? JSON.parse(storedCategories) : []);
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
-      setLivestockData(initialLivestockData);
-      setCategoriesData(initialCategoriesData);
+      setLivestockData([]);
+      setCategoriesData([]);
     }
   }, []);
 

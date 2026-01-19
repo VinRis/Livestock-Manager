@@ -6,7 +6,7 @@ import { PlusCircle, Link as LinkIcon, MoreVertical, Edit, Trash2 } from "lucide
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { type Activity, livestockData, categoriesData as initialCategoriesData, type CategoryDefinition } from "@/lib/data";
+import { type Activity, type Livestock, type CategoryDefinition } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -59,6 +59,7 @@ export default function ActivityLogPage() {
   const { toast } = useToast();
   const [activityLog, setActivityLog] = useState<Activity[]>([]);
   const [categories, setCategories] = useState<CategoryDefinition[]>([]);
+  const [livestock, setLivestock] = useState<Livestock[]>([]);
   const [isClient, setIsClient] = useState(false);
   
   // Dialog states
@@ -82,16 +83,19 @@ export default function ActivityLogPage() {
     setIsClient(true);
     try {
       const storedActivities = window.localStorage.getItem('activityLogData');
-      const loadedActivities = storedActivities ? JSON.parse(storedActivities) : [];
-      setActivityLog(loadedActivities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      setActivityLog(storedActivities ? JSON.parse(storedActivities) : []);
       
       const storedCategories = window.localStorage.getItem('categoriesData');
-      const loadedCategories = storedCategories ? JSON.parse(storedCategories) : initialCategoriesData;
-      setCategories(loadedCategories);
+      setCategories(storedCategories ? JSON.parse(storedCategories) : []);
+
+      const storedLivestock = window.localStorage.getItem('livestockData');
+      setLivestock(storedLivestock ? JSON.parse(storedLivestock) : []);
+
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
       setActivityLog([]);
-      setCategories(initialCategoriesData);
+      setCategories([]);
+      setLivestock([]);
     }
   }, []);
 
@@ -112,7 +116,7 @@ export default function ActivityLogPage() {
       return;
     }
 
-    const selectedAnimal = livestockData.find(animal => animal.id === newActivity.livestockId);
+    const selectedAnimal = livestock.find(animal => animal.id === newActivity.livestockId);
 
     const activityToAdd: Activity = {
       id: `act-${Date.now()}`,
@@ -187,19 +191,19 @@ export default function ActivityLogPage() {
   };
 
   const activityTypes = ['Feeding', 'Health Check', 'Breeding', 'Movement', 'General', 'Production'];
-  const livestockOptions = livestockData.map(animal => ({ value: animal.id, label: `${animal.name} (${animal.tagId})`}));
+  const livestockOptions = livestock.map(animal => ({ value: animal.id, label: `${animal.name} (${animal.tagId})`}));
   const categoryOptions = categories.map(cat => cat.name);
 
   return (
     <>
       <PageHeader title="Farm Activity Log" />
 
-      {isClient && categories.length === 0 ? (
+      {isClient && livestock.length === 0 ? (
         <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
             <Card>
                 <CardContent className="flex flex-col items-center justify-center gap-4 p-12 text-center">
                     <h3 className="text-xl font-medium">Add Livestock to Get Started</h3>
-                    <p className="text-muted-foreground">You need to add a livestock category before you can log any farm activities.</p>
+                    <p className="text-muted-foreground">You need to add a livestock before you can log any farm activities.</p>
                     <Button asChild>
                         <Link href="/livestock">
                             <PlusCircle className="mr-2 h-4 w-4" />

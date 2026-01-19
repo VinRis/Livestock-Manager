@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { tasksData as initialTasksData, type Task, livestockData, categoriesData } from "@/lib/data";
+import { type Task, livestockData, categoriesData } from "@/lib/data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -123,11 +123,11 @@ export default function TasksPage() {
     setIsClient(true);
     try {
       const storedTasks = window.localStorage.getItem('tasksData');
-      const loadedTasks = storedTasks ? JSON.parse(storedTasks) : initialTasksData;
+      const loadedTasks = storedTasks ? JSON.parse(storedTasks) : [];
       setTasks(loadedTasks.sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
     } catch (error) {
       console.error("Failed to load tasks from localStorage", error);
-      setTasks(initialTasksData.sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+      setTasks([]);
     }
   }, []);
 

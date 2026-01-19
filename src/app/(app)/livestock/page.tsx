@@ -8,7 +8,7 @@ import { PlusCircle, MoreVertical, Trash2, Edit, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
-import { livestockData as initialLivestockData, categoriesData as initialCategoriesData, type CategoryDefinition, type Livestock } from "@/lib/data";
+import { type CategoryDefinition, type Livestock } from "@/lib/data";
 import { CowIcon, GoatIcon, SheepIcon } from "@/components/icons";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
@@ -419,27 +419,27 @@ export default function LivestockPage() {
 
   const [livestock, setLivestock] = useState<Livestock[]>(() => {
     if (typeof window === 'undefined') {
-      return initialLivestockData;
+      return [];
     }
     try {
       const item = window.localStorage.getItem('livestockData');
-      return item ? JSON.parse(item) : initialLivestockData;
+      return item ? JSON.parse(item) : [];
     } catch (error) {
       console.error(error);
-      return initialLivestockData;
+      return [];
     }
   });
 
   const [categories, setCategories] = useState<CategoryDefinition[]>(() => {
     if (typeof window === 'undefined') {
-      return initialCategoriesData;
+      return [];
     }
     try {
       const item = window.localStorage.getItem('categoriesData');
-      return item ? JSON.parse(item) : initialCategoriesData;
+      return item ? JSON.parse(item) : [];
     } catch (error) {
       console.error(error);
-      return initialCategoriesData;
+      return [];
     }
   });
 

@@ -1,8 +1,9 @@
+
 'use client';
 
 import Link from "next/link";
 import { useMemo, useState, useEffect } from "react";
-import { categoriesData as initialCategoriesData, livestockData as initialLivestockData, type CategoryDefinition, type Livestock } from "@/lib/data";
+import { type CategoryDefinition, type Livestock } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CowIcon, GoatIcon, SheepIcon } from "@/components/icons";
@@ -33,12 +34,12 @@ export default function AnalyticsPage() {
         try {
             const storedLivestock = window.localStorage.getItem('livestockData');
             const storedCategories = window.localStorage.getItem('categoriesData');
-            setLivestock(storedLivestock ? JSON.parse(storedLivestock) : initialLivestockData);
-            setCategories(storedCategories ? JSON.parse(storedCategories) : initialCategoriesData);
+            setLivestock(storedLivestock ? JSON.parse(storedLivestock) : []);
+            setCategories(storedCategories ? JSON.parse(storedCategories) : []);
         } catch (error) {
             console.error("Failed to load data from localStorage", error);
-            setLivestock(initialLivestockData);
-            setCategories(initialCategoriesData);
+            setLivestock([]);
+            setCategories([]);
         }
     }, []);
 
