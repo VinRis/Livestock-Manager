@@ -7,7 +7,7 @@ import { ArrowUpRight, CheckCircle, Clock, DollarSign, PlusCircle, ClipboardList
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
-import { tasksData, activityLogData as initialActivityLogData, financialData, type Activity } from "@/lib/data";
+import { tasksData as initialTasksData, activityLogData as initialActivityLogData, financialData as initialFinancialData, type Activity, type Task, type FinancialRecord } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import FinanceChart from "./finance/finance-chart";
 import { useCurrency } from "@/contexts/currency-context";
@@ -23,28 +23,61 @@ import {
 
 export default function DashboardPage() {
   const { currency } = useCurrency();
-  const today = new Date().setHours(0, 0, 0, 0);
-  const todaysTasks = tasksData.filter(task => new Date(task.dueDate).setHours(0, 0, 0, 0) === today && !task.completed);
-  
+  const [todaysTasks, setTodaysTasks] = useState<Task[]>([]);
   const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+  const [netProfit, setNetProfit] = useState(0);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpense, setTotalExpense] = useState(0);
 
   useEffect(() => {
+    // Activities
     try {
       const storedActivities = window.localStorage.getItem('activityLogData');
-      const loadedActivities = storedActivities ? JSON.parse(storedActivities) : initialActivityLogData;
-      const sorted = loadedActivities.sort((a: Activity, b: Activity) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const loadedActivities: Activity[] = storedActivities ? JSON.parse(storedActivities) : initialActivityLogData;
+      const sorted = loadedActivities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setRecentActivities(sorted.slice(0, 3));
     } catch (error) {
-      console.error("Failed to load activity log from localStorage for dashboard", error);
+      console.error("Failed to load activity log for dashboard", error);
       const sorted = initialActivityLogData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setRecentActivities(sorted.slice(0, 3));
     }
+    
+    // Tasks
+    try {
+        const storedTasks = window.localStorage.getItem('tasksData');
+        const loadedTasks: Task[] = storedTasks ? JSON.parse(storedTasks) : initialTasksData;
+        const today = new Date().setHours(0, 0, 0, 0);
+        const filteredTasks = loadedTasks.filter(task => new Date(task.dueDate).setHours(0, 0, 0, 0) === today && !task.completed);
+        setTodaysTasks(filteredTasks);
+    } catch (error) {
+        console.error("Failed to load tasks for dashboard", error);
+        const today = new Date().setHours(0, 0, 0, 0);
+        const filteredTasks = initialTasksData.filter(task => new Date(task.dueDate).setHours(0, 0, 0, 0) === today && !task.completed);
+        setTodaysTasks(filteredTasks);
+    }
+      
+    // Financials
+    try {
+        const storedFinancials = window.localStorage.getItem('financialData');
+        const loadedFinancials: FinancialRecord[] = storedFinancials ? JSON.parse(storedFinancials) : initialFinancialData;
+        
+        const income = loadedFinancials.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
+        const expense = loadedFinancials.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
+        
+        setTotalIncome(income);
+        setTotalExpense(expense);
+        setNetProfit(income - expense);
+    } catch (error) {
+        console.error("Failed to load financials for dashboard", error);
+        const income = initialFinancialData.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
+        const expense = initialFinancialData.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
+
+        setTotalIncome(income);
+        setTotalExpense(expense);
+        setNetProfit(income - expense);
+    }
   }, []);
   
-  const totalIncome = financialData.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
-  const totalExpense = financialData.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
-  const netProfit = totalIncome - totalExpense;
-
   return (
     <>
       <PageHeader title="Dashboard">

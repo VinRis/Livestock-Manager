@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { financialData } from "@/lib/data";
+import { financialData as initialFinancialData, FinancialRecord } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import FinanceChart from "./finance-chart";
 import { useCurrency } from "@/contexts/currency-context";
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
 
 const ClientFormattedDate = ({ date }: { date: string }) => {
   const [formattedDate, setFormattedDate] = useState('');
@@ -35,18 +36,47 @@ const ClientFormattedDate = ({ date }: { date: string }) => {
 
 export default function FinancePage() {
   const { currency } = useCurrency();
+  const { toast } = useToast();
+  const [financials, setFinancials] = useState<FinancialRecord[]>([]);
+  const [isClient, setIsClient] = useState(false);
+  
+  // Dialog state
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
+  
+  // Form state
   const [transactionType, setTransactionType] = useState<'Income' | 'Expense' | null>(null);
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
+  const [amount, setAmount] = useState('');
 
-  const totalIncome = financialData.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
-  const totalExpense = financialData.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
+  useEffect(() => {
+    setIsClient(true);
+    try {
+        const stored = window.localStorage.getItem('financialData');
+        const loaded = stored ? JSON.parse(stored) : initialFinancialData;
+        setFinancials(loaded);
+    } catch (e) {
+        console.error(e);
+        setFinancials(initialFinancialData);
+    }
+  }, []);
+
+  useEffect(() => {
+      if (isClient) {
+          window.localStorage.setItem('financialData', JSON.stringify(financials));
+      }
+  }, [financials, isClient]);
+
+  const totalIncome = financials.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
+  const totalExpense = financials.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
   const netProfit = totalIncome - totalExpense;
-  const recentTransactions = financialData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+  const recentTransactions = financials.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
 
   const last30Days = new Date();
   last30Days.setDate(last30Days.getDate() - 30);
-  const recentFinancials = financialData.filter(r => new Date(r.date) > last30Days);
+  const recentFinancials = financials.filter(r => new Date(r.date) > last30Days);
   const recentIncome = recentFinancials.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
   const recentExpense = recentFinancials.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
   const recentNet = recentIncome - recentExpense;
@@ -82,7 +112,40 @@ export default function FinancePage() {
   const resetModal = () => {
     setStep(1);
     setTransactionType(null);
+    setDate(new Date().toISOString().split('T')[0]);
+    setDescription('');
+    setCategory('');
+    setAmount('');
   };
+
+  const handleSaveTransaction = () => {
+      if (!transactionType || !date || !description || !category || !amount) {
+          toast({
+              variant: "destructive",
+              title: "Missing Information",
+              description: "Please fill out all fields for the transaction.",
+          });
+          return;
+      }
+      
+      const newTransaction: FinancialRecord = {
+          id: `fin-${Date.now()}`,
+          type: transactionType,
+          date,
+          description,
+          category,
+          amount: parseFloat(amount),
+      };
+
+      setFinancials(prev => [newTransaction, ...prev]);
+
+      toast({
+          title: "Transaction Saved",
+          description: "Your new transaction has been recorded.",
+      });
+
+      onOpenChange(false);
+  }
 
   const onOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -91,8 +154,8 @@ export default function FinancePage() {
     setOpen(isOpen);
   };
 
-  const incomeCategories = ["Milk Sales", "Livestock Sale", "Wool Sales"];
-  const expenseCategories = ["Feed", "Vet Services", "Utilities", "Maintenance"];
+  const incomeCategories = ["Milk Sales", "Livestock Sale", "Wool Sales", "Other"];
+  const expenseCategories = ["Feed", "Vet Services", "Utilities", "Maintenance", "Livestock Purchase", "Other"];
 
   return (
     <>
@@ -224,6 +287,9 @@ export default function FinancePage() {
                   ))}
                 </TableBody>
               </Table>
+               {financials.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">No transactions recorded yet.</div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -262,15 +328,15 @@ export default function FinancePage() {
                     <div className="grid gap-4 py-4">
                         <div className="space-y-2">
                             <Label htmlFor="date">Date</Label>
-                            <Input id="date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                            <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="description">Description</Label>
-                            <Input id="description" placeholder="e.g., Sale of 2000L milk" />
+                            <Input id="description" placeholder="e.g., Sale of 2000L milk" value={description} onChange={(e) => setDescription(e.target.value)} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="category">Category</Label>
-                            <Select>
+                            <Select value={category} onValueChange={setCategory}>
                                 <SelectTrigger id="category">
                                     <SelectValue placeholder="Select a category" />
                                 </SelectTrigger>
@@ -283,7 +349,7 @@ export default function FinancePage() {
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="amount">Amount</Label>
-                            <Input id="amount" type="number" placeholder="0.00" />
+                            <Input id="amount" type="number" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
                         </div>
                     </div>
                 )}
@@ -291,7 +357,7 @@ export default function FinancePage() {
                     {step === 2 && (
                         <>
                             <Button variant="outline" onClick={resetModal}>Back</Button>
-                            <Button onClick={() => onOpenChange(false)}>Save Transaction</Button>
+                            <Button onClick={handleSaveTransaction}>Save Transaction</Button>
                         </>
                     )}
                 </DialogFooter>

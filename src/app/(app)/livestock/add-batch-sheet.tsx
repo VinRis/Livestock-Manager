@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { financialData, type Livestock } from "@/lib/data";
+import { type FinancialRecord, type Livestock } from "@/lib/data";
 
 interface AddBatchSheetProps {
   children: React.ReactNode;
@@ -77,7 +77,7 @@ export default function AddBatchSheet({ children, isOpen, onOpenChange, defaultC
     onAddBatch(newBatch);
 
     if (cost > 0) {
-      const newExpense: import('@/lib/data').FinancialRecord = {
+      const newExpense: FinancialRecord = {
         id: `fin-${Date.now()}`,
         type: 'Expense',
         category: 'Livestock Purchase',
@@ -85,7 +85,14 @@ export default function AddBatchSheet({ children, isOpen, onOpenChange, defaultC
         date: acquisitionDate,
         description: `Purchase of batch: ${name}`,
       };
-      financialData.push(newExpense);
+      try {
+        const storedFinancials = window.localStorage.getItem('financialData');
+        const financials: FinancialRecord[] = storedFinancials ? JSON.parse(storedFinancials) : [];
+        financials.unshift(newExpense);
+        window.localStorage.setItem('financialData', JSON.stringify(financials));
+      } catch (error) {
+        console.error("Could not save financial record for batch.", error);
+      }
     }
 
     toast({

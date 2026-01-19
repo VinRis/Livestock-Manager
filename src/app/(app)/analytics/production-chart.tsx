@@ -9,14 +9,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-const chartData = [
-  { month: "January", yield: 25.5 },
-  { month: "February", yield: 26.2 },
-  { month: "March", yield: 27.8 },
-  { month: "April", yield: 28.1 },
-  { month: "May", yield: 28.5 },
-  { month: "June", yield: 27.9 },
-]
+const chartData: any[] = []
 
 const chartConfig = {
   yield: {

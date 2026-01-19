@@ -99,7 +99,8 @@ const TaskItem = ({ task, onToggle, onEdit, onDelete }: { task: Task; onToggle: 
 
 export default function TasksPage() {
   const { toast } = useToast();
-  const [tasks, setTasks] = useState<Task[]>(initialTasksData.sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isClient, setIsClient] = useState(false);
 
   // Dialog states
   const [isAddDialogOpen, setAddDialogOpen] = useState(false);
@@ -117,6 +118,24 @@ export default function TasksPage() {
   
   // State for editing/deleting
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+  useEffect(() => {
+    setIsClient(true);
+    try {
+      const storedTasks = window.localStorage.getItem('tasksData');
+      const loadedTasks = storedTasks ? JSON.parse(storedTasks) : initialTasksData;
+      setTasks(loadedTasks.sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+    } catch (error) {
+      console.error("Failed to load tasks from localStorage", error);
+      setTasks(initialTasksData.sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      window.localStorage.setItem('tasksData', JSON.stringify(tasks));
+    }
+  }, [tasks, isClient]);
 
   const handleToggleTask = (taskId: string, completed: boolean) => {
     setTasks(prevTasks =>

@@ -7,7 +7,7 @@ import { notFound, useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Edit, PlusCircle, Upload, GitMerge, User, Users, LineChart, Weight, Cake, MoreVertical, Trash2, Box, CalendarDays, DollarSign } from "lucide-react";
-import { type HealthRecord, type ProductionMetric, type Livestock, type FinancialRecord, CategoryDefinition, type Activity } from "@/lib/data";
+import { type HealthRecord, type ProductionMetric, type Livestock, type FinancialRecord, CategoryDefinition, type Activity, livestockData as initialLivestockData, financialData as initialFinancialData } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -1600,9 +1600,6 @@ export default function LivestockDetailPage() {
       const storedLivestock = window.localStorage.getItem('livestockData');
       const storedFinancials = window.localStorage.getItem('financialData');
       
-      const initialLivestockData: Livestock[] = [];
-      const initialFinancialData: FinancialRecord[] = [];
-
       const loadedLivestock = storedLivestock ? JSON.parse(storedLivestock) : initialLivestockData;
       const loadedFinancials = storedFinancials ? JSON.parse(storedFinancials) : initialFinancialData;
       
@@ -1611,6 +1608,8 @@ export default function LivestockDetailPage() {
 
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
+      setLivestockList(initialLivestockData);
+      setFinancialData(initialFinancialData);
     }
   }, []);
   
