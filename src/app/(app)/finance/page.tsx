@@ -99,27 +99,7 @@ export default function FinancePage() {
       <PageHeader title="Financials" />
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle>Total Income</CardTitle>
-                <DollarSign className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-primary">{currency}{totalIncome.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">All-time income</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle>Total Expenses</CardTitle>
-                <DollarSign className="h-4 w-4 text-destructive" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-destructive">{currency}{totalExpense.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">All-time expenses</p>
-              </CardContent>
-            </Card>
-            <Card>
+            <Card className="col-span-2 sm:col-span-1 sm:order-3">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle>Net Profit</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -129,6 +109,26 @@ export default function FinancePage() {
                   {currency}{netProfit.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">All-time net profit</p>
+              </CardContent>
+            </Card>
+            <Card className="sm:order-1">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle>Total Income</CardTitle>
+                <DollarSign className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-primary">{currency}{totalIncome.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">All-time income</p>
+              </CardContent>
+            </Card>
+            <Card className="sm:order-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle>Total Expenses</CardTitle>
+                <DollarSign className="h-4 w-4 text-destructive" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-destructive">{currency}{totalExpense.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">All-time expenses</p>
               </CardContent>
             </Card>
         </div>
