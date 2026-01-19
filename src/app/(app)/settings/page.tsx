@@ -300,6 +300,21 @@ export default function SettingsPage() {
         
         <Card>
           <CardHeader>
+            <CardTitle>Download Reports</CardTitle>
+            <CardDescription>Download your farm data in various formats.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/settings/reports">
+                <Download />
+                Go to Reports Page
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
             <CardTitle>Support & Feedback</CardTitle>
             <CardDescription>Have suggestions or need help? Reach out to us.</CardDescription>
           </CardHeader>
@@ -335,21 +350,6 @@ export default function SettingsPage() {
               <Link href="https://selar.com/m/kpf" target="_blank" rel="noopener noreferrer">
                 <Store />
                 Visit Store
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-         <Card>
-          <CardHeader>
-            <CardTitle>Download Reports</CardTitle>
-            <CardDescription>Download your farm data in various formats.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild>
-              <Link href="/settings/reports">
-                <Download />
-                Go to Reports Page
               </Link>
             </Button>
           </CardContent>
