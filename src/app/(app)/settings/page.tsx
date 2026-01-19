@@ -1,4 +1,3 @@
-
 "use client"
 
 import { PageHeader } from "@/components/page-header";
@@ -6,21 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, Moon, Sun, Download } from "lucide-react";
+import { Upload, Moon, Sun, Download, MessageSquare, Phone, ExternalLink, Store } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import React, { useRef, useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  livestockData, 
-  categoriesData, 
-  activityLogData, 
-  tasksData, 
-  financialData,
-  birdTypesData,
-  currencyData
-} from "@/lib/data";
 import Image from "next/image";
 
 export default function SettingsPage() {
@@ -73,13 +63,14 @@ export default function SettingsPage() {
   const handleBackup = () => {
     try {
       const backupData = {
-        livestockData,
-        categoriesData,
-        activityLogData,
-        tasksData,
-        financialData,
-        birdTypesData,
-        currencyData,
+        livestockData: JSON.parse(localStorage.getItem('livestockData') || '[]'),
+        categoriesData: JSON.parse(localStorage.getItem('categoriesData') || '[]'),
+        activityLogData: JSON.parse(localStorage.getItem('activityLogData') || '[]'),
+        tasksData: JSON.parse(localStorage.getItem('tasksData') || '[]'),
+        financialData: JSON.parse(localStorage.getItem('financialData') || '[]'),
+        farmLogoUrl: localStorage.getItem('farmLogoUrl') || '',
+        theme: localStorage.getItem('theme') || 'system',
+        currency: localStorage.getItem('currency') || '$',
         backupDate: new Date().toISOString(),
       };
       
@@ -131,25 +122,22 @@ export default function SettingsPage() {
             throw new Error("Invalid backup file format.");
         }
 
-        // IMPORTANT: This replaces the in-memory data for the current session.
-        // It does not modify the source files.
-        livestockData.splice(0, livestockData.length, ...restored.livestockData);
-        categoriesData.splice(0, categoriesData.length, ...restored.categoriesData);
-        activityLogData.splice(0, activityLogData.length, ...restored.activityLogData);
-        tasksData.splice(0, tasksData.length, ...restored.tasksData);
-        financialData.splice(0, financialData.length, ...restored.financialData);
-        birdTypesData.splice(0, birdTypesData.length, ...restored.birdTypesData);
-        currencyData.splice(0, currencyData.length, ...restored.currencyData);
+        localStorage.setItem('livestockData', JSON.stringify(restored.livestockData || []));
+        localStorage.setItem('categoriesData', JSON.stringify(restored.categoriesData || []));
+        localStorage.setItem('activityLogData', JSON.stringify(restored.activityLogData || []));
+        localStorage.setItem('tasksData', JSON.stringify(restored.tasksData || []));
+        localStorage.setItem('financialData', JSON.stringify(restored.financialData || []));
+        
+        if (restored.farmLogoUrl) localStorage.setItem('farmLogoUrl', restored.farmLogoUrl);
+        if (restored.theme) localStorage.setItem('theme', restored.theme);
+        if (restored.currency) localStorage.setItem('currency', restored.currency);
 
         toast({
           title: "Restore Successful",
-          description: "Your farm data has been restored from the backup. The changes will be lost on page reload.",
+          description: "Your farm data has been restored. The app will now reload.",
         });
         
-        // Force a re-render if needed, though state management should handle this
-        // Forcing a reload to reflect changes everywhere might be simplest here.
-        window.location.reload();
-
+        setTimeout(() => window.location.reload(), 1500);
 
       } catch (error) {
         console.error("Restore failed:", error);
@@ -307,6 +295,48 @@ export default function SettingsPage() {
               accept="application/json"
               onChange={handleRestore}
             />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Support & Feedback</CardTitle>
+            <CardDescription>Have suggestions or need help? Reach out to us.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button asChild variant="outline" className="w-full justify-start text-left">
+              <Link href="https://wa.me/254732364559" target="_blank" rel="noopener noreferrer">
+                <MessageSquare />
+                Chat on WhatsApp
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full justify-start text-left">
+              <Link href="tel:+254732364559">
+                <Phone />
+                Call Us: +254 732 364559
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full justify-start text-left">
+              <Link href="http://facebook.com/KienyejiPoultryFarmers" target="_blank" rel="noopener noreferrer">
+                <ExternalLink />
+                Visit our Facebook Page
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Online Store</CardTitle>
+            <CardDescription>Get useful templates and resources to help you manage your farm.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="https://selar.com/m/kpf" target="_blank" rel="noopener noreferrer">
+                <Store />
+                Visit Store
+              </Link>
+            </Button>
           </CardContent>
         </Card>
 
