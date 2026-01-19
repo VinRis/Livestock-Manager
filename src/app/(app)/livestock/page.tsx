@@ -21,12 +21,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import AddAnimalSheet from "./add-animal-sheet";
 import AddCategorySheet from "./add-category-sheet";
 import AddNewCategorySheet from "./add-new-category-sheet";
 import EditCategorySheet from "./edit-category-sheet";
 import AddBatchSheet from "./add-batch-sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 export type LivestockCategoryName = string;
@@ -408,7 +409,7 @@ function AnimalList({
     );
 }
 
-export default function LivestockPage() {
+function LivestockPageContent() {
   const searchParams = useSearchParams();
   const category = searchParams.get("category");
   const [isClient, setIsClient] = useState(false);
@@ -480,7 +481,19 @@ export default function LivestockPage() {
   };
   
   if (!isClient) {
-    return null; // Or a loading spinner
+    // This provides a fallback skeleton while the client-side code is loading.
+    return (
+        <>
+            <PageHeader title="Livestock" />
+            <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
+                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                    <Skeleton className="h-[270px] w-full rounded-lg" />
+                    <Skeleton className="h-[270px] w-full rounded-lg" />
+                    <Skeleton className="h-[270px] w-full rounded-lg" />
+                </div>
+            </main>
+        </>
+    );
   }
 
   if (category) {
@@ -502,4 +515,24 @@ export default function LivestockPage() {
     onAddAnimal={handleAddAnimal}
     onAddBatch={handleAddBatch}
   />;
+}
+
+
+export default function LivestockPage() {
+  return (
+    <Suspense fallback={
+      <>
+        <PageHeader title="Livestock" />
+        <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              <Skeleton className="h-[270px] w-full rounded-lg" />
+              <Skeleton className="h-[270px] w-full rounded-lg" />
+              <Skeleton className="h-[270px] w-full rounded-lg" />
+          </div>
+        </main>
+      </>
+    }>
+        <LivestockPageContent />
+    </Suspense>
+  )
 }
