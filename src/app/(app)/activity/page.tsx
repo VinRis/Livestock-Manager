@@ -6,7 +6,7 @@ import { PlusCircle, Link as LinkIcon, MoreVertical, Edit, Trash2 } from "lucide
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { activityLogData as initialActivityLogData, type Activity, livestockData, categoriesData as initialCategoriesData, type CategoryDefinition } from "@/lib/data";
+import { type Activity, livestockData, categoriesData as initialCategoriesData, type CategoryDefinition } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -82,7 +82,7 @@ export default function ActivityLogPage() {
     setIsClient(true);
     try {
       const storedActivities = window.localStorage.getItem('activityLogData');
-      const loadedActivities = storedActivities ? JSON.parse(storedActivities) : initialActivityLogData;
+      const loadedActivities = storedActivities ? JSON.parse(storedActivities) : [];
       setActivityLog(loadedActivities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       
       const storedCategories = window.localStorage.getItem('categoriesData');
@@ -90,7 +90,7 @@ export default function ActivityLogPage() {
       setCategories(loadedCategories);
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
-      setActivityLog(initialActivityLogData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      setActivityLog([]);
       setCategories(initialCategoriesData);
     }
   }, []);

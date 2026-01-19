@@ -7,7 +7,7 @@ import { ArrowUpRight, CheckCircle, Clock, DollarSign, PlusCircle, ClipboardList
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
-import { tasksData as initialTasksData, activityLogData as initialActivityLogData, financialData as initialFinancialData, type Activity, type Task, type FinancialRecord } from "@/lib/data";
+import { type Activity, type Task, type FinancialRecord } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import FinanceChart from "./finance/finance-chart";
 import { useCurrency } from "@/contexts/currency-context";
@@ -33,33 +33,30 @@ export default function DashboardPage() {
     // Activities
     try {
       const storedActivities = window.localStorage.getItem('activityLogData');
-      const loadedActivities: Activity[] = storedActivities ? JSON.parse(storedActivities) : initialActivityLogData;
+      const loadedActivities: Activity[] = storedActivities ? JSON.parse(storedActivities) : [];
       const sorted = loadedActivities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setRecentActivities(sorted.slice(0, 3));
     } catch (error) {
       console.error("Failed to load activity log for dashboard", error);
-      const sorted = initialActivityLogData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      setRecentActivities(sorted.slice(0, 3));
+      setRecentActivities([]);
     }
     
     // Tasks
     try {
         const storedTasks = window.localStorage.getItem('tasksData');
-        const loadedTasks: Task[] = storedTasks ? JSON.parse(storedTasks) : initialTasksData;
+        const loadedTasks: Task[] = storedTasks ? JSON.parse(storedTasks) : [];
         const today = new Date().setHours(0, 0, 0, 0);
         const filteredTasks = loadedTasks.filter(task => new Date(task.dueDate).setHours(0, 0, 0, 0) === today && !task.completed);
         setTodaysTasks(filteredTasks);
     } catch (error) {
         console.error("Failed to load tasks for dashboard", error);
-        const today = new Date().setHours(0, 0, 0, 0);
-        const filteredTasks = initialTasksData.filter(task => new Date(task.dueDate).setHours(0, 0, 0, 0) === today && !task.completed);
-        setTodaysTasks(filteredTasks);
+        setTodaysTasks([]);
     }
       
     // Financials
     try {
         const storedFinancials = window.localStorage.getItem('financialData');
-        const loadedFinancials: FinancialRecord[] = storedFinancials ? JSON.parse(storedFinancials) : initialFinancialData;
+        const loadedFinancials: FinancialRecord[] = storedFinancials ? JSON.parse(storedFinancials) : [];
         
         const income = loadedFinancials.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
         const expense = loadedFinancials.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
@@ -69,12 +66,9 @@ export default function DashboardPage() {
         setNetProfit(income - expense);
     } catch (error) {
         console.error("Failed to load financials for dashboard", error);
-        const income = initialFinancialData.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
-        const expense = initialFinancialData.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
-
-        setTotalIncome(income);
-        setTotalExpense(expense);
-        setNetProfit(income - expense);
+        setTotalIncome(0);
+        setTotalExpense(0);
+        setNetProfit(0);
     }
   }, []);
   
