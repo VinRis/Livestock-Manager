@@ -9,25 +9,23 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-const chartData: any[] = []
-
 const chartConfig = {
-  yield: {
-    label: "Yield (L/day)",
+  value: {
+    label: "Value",
     color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig
 
-export default function ProductionChart() {
+export default function ProductionChart({ data, dataKey }: { data: any[], dataKey: string }) {
   return (
     <ChartContainer config={chartConfig} className="h-[300px] w-full">
        <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+        <LineChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
           <YAxis tickLine={false} axisLine={false} />
           <Tooltip content={<ChartTooltipContent />} />
-          <Line type="monotone" dataKey="yield" stroke="var(--color-yield)" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey={dataKey} stroke="var(--color-value)" strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </ChartContainer>
