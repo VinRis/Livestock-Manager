@@ -123,84 +123,109 @@ function LivestockCategoryList({
   }
   
   const existingCategoryNames = useMemo(() => categoriesData.map(c => c.name), [categoriesData]);
+  const totalLivestockCount = useMemo(() => livestockData.length, [livestockData]);
 
   return (
     <>
       <PageHeader title="Livestock Categories" />
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category) => {
-            const categoryDefinition = categoriesData.find(c => c.name === category.name)!;
-            return (
-            <Card key={category.name}>
-              <CardHeader className="flex flex-row items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-3">
-                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <category.icon className="h-6 w-6" />
-                     </div>
-                     <div>
-                        <CardTitle>{category.name}</CardTitle>
-                        <CardDescription>
-                          {category.count} {category.managementStyle === 'batch' ? (category.count === 1 ? 'Batch' : 'Batches') : (category.count === 1 ? 'Animal' : 'Animals')}
-                        </CardDescription>
-                     </div>
-                  </div>
-                </div>
-                  <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                          </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                          <DropdownMenuItem onSelect={() => handleAddClick(category)}>
-                              <PlusCircle className="mr-2 h-4 w-4"/>Add {category.managementStyle === 'batch' ? 'Batch' : 'Animal'}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleEditClick(categoryDefinition)}><Edit className="mr-2 h-4 w-4"/>Edit Category</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleDeleteRequest(category.name)} className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4"/>Delete Category
-                          </DropdownMenuItem>
-                      </DropdownMenuContent>
-                  </DropdownMenu>
-              </CardHeader>
-              <CardContent>
-                {category.count > 0 ? (
-                    <>
-                        <div className="flex -space-x-4 rtl:space-x-reverse">
-                            {category.animals.slice(0,5).map(animal => (
-                                <Image
-                                    key={animal.id}
-                                    className="h-10 w-10 rounded-full border-2 border-card object-cover"
-                                    src={animal.imageUrl}
-                                    alt={animal.name}
-                                    width={40}
-                                    height={40}
-                                    data-ai-hint={animal.imageHint}
-                                />
-                            ))}
-                            {category.count > 5 && (
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium text-muted-foreground">
-                                    +{category.count - 5}
-                                </div>
-                            )}
-                        </div>
-                        <Button asChild variant="outline" className="mt-4 w-full">
-                            <Link href={`/livestock?category=${category.name.toLowerCase()}`}>View All</Link>
-                        </Button>
-                    </>
-                ) : (
-                    <div className="text-center text-muted-foreground py-4">
-                        <p>No {category.managementStyle === 'batch' ? 'batches' : 'animals'} in this category.</p>
-                        <Button variant="secondary" className="mt-2" onClick={() => handleAddClick(category)}>
-                             {category.managementStyle === 'batch' ? 'Add First Batch' : 'Add First Animal'}
-                        </Button>
-                    </div>
-                )}
+        {categories.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center gap-4 p-12 text-center">
+              <h3 className="text-xl font-medium">No Livestock Categories</h3>
+              <p className="text-muted-foreground">Get started by creating your first livestock category.</p>
+              <Button onClick={() => setAddNewCategorySheetOpen(true)}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Category
+              </Button>
+            </CardContent>
+          </Card>
+        ) : totalLivestockCount === 0 ? (
+           <Card>
+              <CardContent className="flex flex-col items-center justify-center gap-4 p-12 text-center">
+                  <h3 className="text-xl font-medium">Your farm has no livestock yet</h3>
+                  <p className="text-muted-foreground">Add your first animal or batch to get started.</p>
+                   <Button onClick={() => handleAddClick(categories[0])}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add to {categories[0].name}
+                  </Button>
               </CardContent>
             </Card>
-          )})}
-        </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {categories.map((category) => {
+              const categoryDefinition = categoriesData.find(c => c.name === category.name)!;
+              return (
+              <Card key={category.name}>
+                <CardHeader className="flex flex-row items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-3">
+                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <category.icon className="h-6 w-6" />
+                       </div>
+                       <div>
+                          <CardTitle>{category.name}</CardTitle>
+                          <CardDescription>
+                            {category.count} {category.managementStyle === 'batch' ? (category.count === 1 ? 'Batch' : 'Batches') : (category.count === 1 ? 'Animal' : 'Animals')}
+                          </CardDescription>
+                       </div>
+                    </div>
+                  </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onSelect={() => handleAddClick(category)}>
+                                <PlusCircle className="mr-2 h-4 w-4"/>Add {category.managementStyle === 'batch' ? 'Batch' : 'Animal'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleEditClick(categoryDefinition)}><Edit className="mr-2 h-4 w-4"/>Edit Category</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleDeleteRequest(category.name)} className="text-destructive">
+                              <Trash2 className="mr-2 h-4 w-4"/>Delete Category
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </CardHeader>
+                <CardContent>
+                  {category.count > 0 ? (
+                      <>
+                          <div className="flex -space-x-4 rtl:space-x-reverse">
+                              {category.animals.slice(0,5).map(animal => (
+                                  <Image
+                                      key={animal.id}
+                                      className="h-10 w-10 rounded-full border-2 border-card object-cover"
+                                      src={animal.imageUrl}
+                                      alt={animal.name}
+                                      width={40}
+                                      height={40}
+                                      data-ai-hint={animal.imageHint}
+                                  />
+                              ))}
+                              {category.count > 5 && (
+                                  <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium text-muted-foreground">
+                                      +{category.count - 5}
+                                  </div>
+                              )}
+                          </div>
+                          <Button asChild variant="outline" className="mt-4 w-full">
+                              <Link href={`/livestock?category=${category.name.toLowerCase()}`}>View All</Link>
+                          </Button>
+                      </>
+                  ) : (
+                      <div className="text-center text-muted-foreground py-4">
+                          <p>No {category.managementStyle === 'batch' ? 'batches' : 'animals'} in this category.</p>
+                          <Button variant="secondary" className="mt-2" onClick={() => handleAddClick(category)}>
+                               {category.managementStyle === 'batch' ? 'Add First Batch' : 'Add First Animal'}
+                          </Button>
+                      </div>
+                  )}
+                </CardContent>
+              </Card>
+            )})}
+          </div>
+        )}
       </main>
       
       <AddAnimalSheet 
