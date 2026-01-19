@@ -21,16 +21,54 @@ import {
   birdTypesData,
   currencyData
 } from "@/lib/data";
+import Image from "next/image";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const restoreInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [farmLogoUrl, setFarmLogoUrl] = useState<string | null>(null);
+
 
   useEffect(() => {
     setIsMounted(true);
+    const storedLogo = localStorage.getItem('pwaIconUrl');
+    if (storedLogo) {
+        setFarmLogoUrl(storedLogo);
+    }
   }, []);
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const dataUrl = e.target?.result as string;
+            if (!dataUrl) throw new Error("File could not be read.");
+            
+            localStorage.setItem('pwaIconUrl', dataUrl);
+            setFarmLogoUrl(dataUrl);
+
+            toast({
+                title: "Logo Updated",
+                description: "Your new farm logo has been saved.",
+            });
+
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Could not process the file.";
+            toast({
+                variant: "destructive",
+                title: "Upload Failed",
+                description: errorMessage,
+            });
+        }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleBackup = () => {
     try {
@@ -189,17 +227,28 @@ export default function SettingsPage() {
               <Input id="farm-name" placeholder="e.g., Sunrise Farms" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="farm-logo">Farm Logo</Label>
-              <div className="flex items-center gap-4 rounded-lg border p-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted">
-                    <Upload className="h-8 w-8 text-muted-foreground" />
+                <Label htmlFor="farm-logo">Farm Logo</Label>
+                <div className="flex items-center gap-4 rounded-lg border p-4">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted">
+                        {farmLogoUrl ? (
+                            <Image src={farmLogoUrl} alt="Farm Logo" width={64} height={64} className="h-16 w-16 rounded-lg object-cover" />
+                        ) : (
+                            <Upload className="h-8 w-8 text-muted-foreground" />
+                        )}
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-sm font-medium">Upload Logo</p>
+                        <p className="text-xs text-muted-foreground">This will also be used as the app icon. (PNG, JPG up to 1MB)</p>
+                    </div>
+                    <Button variant="outline" onClick={() => logoInputRef.current?.click()}>Choose File</Button>
+                    <input 
+                        type="file" 
+                        ref={logoInputRef} 
+                        className="hidden"
+                        accept="image/png, image/jpeg"
+                        onChange={handleLogoUpload}
+                    />
                 </div>
-                <div className="flex-1">
-                    <p className="text-sm font-medium">Upload Logo</p>
-                    <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
-                </div>
-                <Button variant="outline">Choose File</Button>
-              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="manager-name">Manager's Name</Label>
