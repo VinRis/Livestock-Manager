@@ -26,7 +26,7 @@ interface AddNewCategorySheetProps {
   existingCategories: string[];
 }
 
-const potentialCategories = ["Pigs", "Chickens", "Ducks", "Rabbits", "Turkeys", "Horses"];
+const potentialCategories = ["Alpacas", "Cattle", "Chickens", "Dogs", "Donkeys", "Doves", "Ducks", "Goats", "Geese", "Guinea Fowl", "Horses", "Llamas", "Ostrich", "Pheasants", "Pigeons", "Pigs", "Quail", "Rabbits", "Sheep", "Turkeys"];
 
 export default function AddNewCategorySheet({ children, isOpen, onOpenChange, onAddCategory, existingCategories }: AddNewCategorySheetProps) {
   const { toast } = useToast();
