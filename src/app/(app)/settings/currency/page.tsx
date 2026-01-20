@@ -1,9 +1,8 @@
-
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -21,14 +20,23 @@ export default function CurrencySettingsPage() {
   const { currency, setCurrency } = useCurrency();
   const [selectedCurrency, setSelectedCurrency] = React.useState(currency);
   const [customCurrencyName, setCustomCurrencyName] = React.useState('');
-  const [customCurrencyCode, setCustomCurrencyCode] = React.useState('');
+  const [customCurrencySymbol, setCustomCurrencySymbol] = React.useState('');
+
+  // When the component mounts on the client, the `currency` from context will be
+  // updated from localStorage. This effect ensures our local state `selectedCurrency`
+  // is in sync with the persisted value.
+  useEffect(() => {
+    setSelectedCurrency(currency);
+  }, [currency]);
 
   const handleSave = () => {
     let finalCurrency = selectedCurrency;
-    if (customCurrencyCode) {
-      finalCurrency = customCurrencyCode;
-      // Optionally, you could add the new custom currency to your main currency list here.
+
+    // If a custom symbol is entered, it takes precedence
+    if (customCurrencySymbol) {
+      finalCurrency = customCurrencySymbol;
     }
+    
     setCurrency(finalCurrency);
 
     toast({
@@ -59,9 +67,9 @@ export default function CurrencySettingsPage() {
               {currencyData.map((c) => (
                 <div key={c.code} className="flex items-center justify-between rounded-lg border p-4">
                   <Label htmlFor={`currency-${c.code}`} className="flex-1 cursor-pointer">
-                    {c.name} ({c.code})
+                    {c.name} ({c.symbol})
                   </Label>
-                  <RadioGroupItem value={c.code} id={`currency-${c.code}`} />
+                  <RadioGroupItem value={c.symbol} id={`currency-${c.code}`} />
                 </div>
               ))}
             </RadioGroup>
@@ -78,8 +86,8 @@ export default function CurrencySettingsPage() {
                     <Input id="custom-currency-name" placeholder="e.g., Bitcoin" value={customCurrencyName} onChange={(e) => setCustomCurrencyName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="custom-currency-code">Currency Code</Label>
-                    <Input id="custom-currency-code" placeholder="e.g., BTC" value={customCurrencyCode} onChange={(e) => setCustomCurrencyCode(e.target.value)} />
+                    <Label htmlFor="custom-currency-symbol">Currency Symbol</Label>
+                    <Input id="custom-currency-symbol" placeholder="e.g., BTC" value={customCurrencySymbol} onChange={(e) => setCustomCurrencySymbol(e.target.value)} />
                 </div>
             </CardContent>
             <CardFooter className="flex justify-center sm:justify-end">
