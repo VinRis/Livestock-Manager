@@ -413,19 +413,6 @@ export default function SettingsPage() {
             />
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>App Updates</CardTitle>
-            <CardDescription>Check for the latest version of the app and install it.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={handleUpdateAndReinstall}>
-              <RefreshCw />
-              Check for Updates
-            </Button>
-          </CardContent>
-        </Card>
         
         <Card>
           <CardHeader>
@@ -483,7 +470,19 @@ export default function SettingsPage() {
             </Button>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>App Updates</CardTitle>
+            <CardDescription>Check for the latest version of the app and install it.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleUpdateAndReinstall}>
+              <RefreshCw />
+              Check for Updates
+            </Button>
+          </CardContent>
+        </Card>
       </main>
     </>
   );
-}
