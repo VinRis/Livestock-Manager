@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { EditTransactionDialog } from './edit-transaction-dialog';
+import { EditTransactionDialog } from '../edit-transaction-dialog';
 
 const ClientFormattedDate = ({ date, className }: { date: string, className?: string }) => {
   const [formattedDate, setFormattedDate] = useState('');
