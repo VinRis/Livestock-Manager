@@ -65,6 +65,7 @@ export default function AllTransactionsPage() {
   
   // State for editing/deleting
   const [activeTransaction, setActiveTransaction] = useState<FinancialRecord | null>(null);
+  const [editFormState, setEditFormState] = useState<FinancialRecord | null>(null); // New state for edit form
 
   useEffect(() => {
     setIsClient(true);
@@ -102,6 +103,7 @@ export default function AllTransactionsPage() {
 
   const handleEditClick = (transaction: FinancialRecord) => {
     setActiveTransaction(transaction);
+    setEditFormState(transaction);
     setEditDialogOpen(true);
   };
   
@@ -111,12 +113,13 @@ export default function AllTransactionsPage() {
   }
 
   const handleUpdateTransaction = () => {
-    if (!activeTransaction) return;
+    if (!editFormState) return;
 
-    setFinancials(prev => prev.map(t => t.id === activeTransaction.id ? activeTransaction : t));
+    setFinancials(prev => prev.map(t => t.id === editFormState.id ? editFormState : t));
     toast({ title: "Transaction Updated", description: "Your transaction details have been saved." });
     setEditDialogOpen(false);
     setActiveTransaction(null);
+    setEditFormState(null);
   };
 
   const handleConfirmDelete = () => {
@@ -137,6 +140,14 @@ export default function AllTransactionsPage() {
 
   const incomeCategories = ["Milk Sales", "Livestock Sale", "Wool Sales", "Other"];
   const expenseCategories = ["Feed", "Vet Services", "Utilities", "Maintenance", "Livestock Purchase", "Other"];
+  
+  const onEditDialogChange = (isOpen: boolean) => {
+      if (!isOpen) {
+          setEditFormState(null);
+          setActiveTransaction(null);
+      }
+      setEditDialogOpen(isOpen);
+  }
 
 
   if (!isClient) {
@@ -289,29 +300,29 @@ export default function AllTransactionsPage() {
       </main>
 
       {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setEditDialogOpen}>
+      <Dialog open={isEditDialogOpen} onOpenChange={onEditDialogChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Transaction</DialogTitle>
           </DialogHeader>
-          {activeTransaction && (
+          {editFormState && (
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
-                <Input id="date" type="date" value={activeTransaction.date.split('T')[0]} onChange={(e) => setActiveTransaction(prev => prev ? {...prev, date: e.target.value} : null)} />
+                <Input id="date" type="date" value={editFormState.date.split('T')[0]} onChange={(e) => setEditFormState(prev => prev ? {...prev, date: e.target.value} : null)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
-                <Input id="description" value={activeTransaction.description} onChange={(e) => setActiveTransaction(prev => prev ? {...prev, description: e.target.value} : null)} />
+                <Input id="description" value={editFormState.description} onChange={(e) => setEditFormState(prev => prev ? {...prev, description: e.target.value} : null)} />
               </div>
               <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select value={activeTransaction.category} onValueChange={(value) => setActiveTransaction(prev => prev ? {...prev, category: value} : null)}>
+                  <Select value={editFormState.category} onValueChange={(value) => setEditFormState(prev => prev ? {...prev, category: value} : null)}>
                       <SelectTrigger id="category">
                           <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
-                          {(activeTransaction.type === 'Income' ? incomeCategories : expenseCategories).map(cat => (
+                          {(editFormState.type === 'Income' ? incomeCategories : expenseCategories).map(cat => (
                               <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                           ))}
                       </SelectContent>
@@ -319,12 +330,12 @@ export default function AllTransactionsPage() {
               </div>
               <div className="space-y-2">
                   <Label htmlFor="amount">Amount</Label>
-                  <Input id="amount" type="number" value={activeTransaction.amount} onChange={(e) => setActiveTransaction(prev => prev ? {...prev, amount: parseFloat(e.target.value) || 0} : null)} />
+                  <Input id="amount" type="number" value={editFormState.amount} onChange={(e) => setEditFormState(prev => prev ? {...prev, amount: parseFloat(e.target.value) || 0} : null)} />
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => onEditDialogChange(false)}>Cancel</Button>
             <Button onClick={handleUpdateTransaction}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
