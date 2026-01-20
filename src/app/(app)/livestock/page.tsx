@@ -254,7 +254,7 @@ function LivestockCategoryList({
         onAddCategory={onAddCategory}
         existingCategories={existingCategoryNames}
       >
-        <Button className="absolute bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
+        <Button className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
             <PlusCircle className="h-6 w-6" />
             <span className="sr-only">Add Category</span>
         </Button>
@@ -400,7 +400,7 @@ function AnimalList({
                 onAddBatch={onAddBatch}
                 livestockData={livestockData}
              >
-                <Button className="absolute bottom-20 right-4 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
+                <Button className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
                     <PlusCircle className="h-6 w-6" />
                     <span className="sr-only">Add {categoryDef.managementStyle === 'batch' ? 'Batch' : 'Animal'}</span>
                 </Button>
