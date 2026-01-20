@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const ClientFormattedDate = ({ date }: { date: string }) => {
   const [formattedDate, setFormattedDate] = useState('');
@@ -40,6 +41,7 @@ export default function FinancePage() {
   const { toast } = useToast();
   const [financials, setFinancials] = useState<FinancialRecord[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const isMobile = useIsMobile();
   
   // Dialog state
   const [open, setOpen] = useState(false);
@@ -169,7 +171,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className={cn("text-xl font-bold break-words", netProfit >= 0 ? 'text-primary' : 'text-destructive')}>
+                <div className={cn("text-xl font-bold break-all", netProfit >= 0 ? 'text-primary' : 'text-destructive')}>
                   {currency}{netProfit.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">All-time net profit</p>
@@ -181,7 +183,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl font-bold text-primary break-words">{currency}{totalIncome.toLocaleString()}</div>
+                <div className="text-xl font-bold text-primary break-all">{currency}{totalIncome.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">All-time income</p>
               </CardContent>
             </Card>
@@ -191,7 +193,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl font-bold text-destructive break-words">{currency}{totalExpense.toLocaleString()}</div>
+                <div className="text-xl font-bold text-destructive break-all">{currency}{totalExpense.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">All-time expenses</p>
               </CardContent>
             </Card>
@@ -208,17 +210,17 @@ export default function FinancePage() {
                           <p className="text-sm text-primary">Click to view graph</p>
                           <div className="space-y-2 text-sm">
                               <h4 className="font-semibold text-muted-foreground">Last 30 Days Summary</h4>
-                              <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
                                   <span className="flex items-center gap-2"><TrendingUp className="text-primary"/>Income</span>
-                                  <span className="font-semibold text-primary text-right break-words">{currency}{recentIncome.toLocaleString()}</span>
+                                  <span className="font-semibold text-primary text-right break-all">{currency}{recentIncome.toLocaleString()}</span>
                               </div>
-                              <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
                                   <span className="flex items-center gap-2"><TrendingDown className="text-destructive"/>Expense</span>
-                                  <span className="font-semibold text-destructive text-right break-words">{currency}{recentExpense.toLocaleString()}</span>
+                                  <span className="font-semibold text-destructive text-right break-all">{currency}{recentExpense.toLocaleString()}</span>
                               </div>
-                              <div className="flex items-center justify-between border-t pt-2 mt-2 gap-2">
+                              <div className="flex items-center justify-between border-t pt-2 mt-2 gap-2 flex-wrap">
                                   <span className="font-bold">Net</span>
-                                  <span className={cn("font-bold text-right break-words", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
+                                  <span className={cn("font-bold text-right break-all", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
                               </div>
                           </div>
                       </CardContent>
@@ -268,31 +270,47 @@ export default function FinancePage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentTransactions.map(record => (
-                    <TableRow key={record.id}>
-                      <TableCell>
-                        <div className="font-medium">{record.description}</div>
-                        <ClientFormattedDate date={record.date} />
-                      </TableCell>
-                       <TableCell>{record.category}</TableCell>
-                      <TableCell className={cn("text-right", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
-                        {record.type === 'Income' ? '+' : '-'}{currency}{record.amount.toLocaleString()}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-               {financials.length === 0 && (
+              {recentTransactions.length === 0 ? (
                   <div className="text-center text-muted-foreground py-8">No transactions recorded yet.</div>
+              ) : isMobile ? (
+                  <div className="space-y-3">
+                      {recentTransactions.map(record => (
+                          <div key={record.id} className="p-3 rounded-md border flex justify-between items-start gap-2">
+                              <div className="flex-1 space-y-1">
+                                  <p className="font-medium break-words">{record.description}</p>
+                                  <p className="text-sm text-muted-foreground">{record.category}</p>
+                                  <ClientFormattedDate date={record.date} />
+                              </div>
+                              <div className={cn("pl-2 text-right font-semibold", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
+                                  {record.type === 'Income' ? '+' : '-'}{currency}{record.amount.toLocaleString()}
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentTransactions.map(record => (
+                      <TableRow key={record.id}>
+                        <TableCell>
+                          <div className="font-medium">{record.description}</div>
+                          <ClientFormattedDate date={record.date} />
+                        </TableCell>
+                        <TableCell>{record.category}</TableCell>
+                        <TableCell className={cn("text-right", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
+                          {record.type === 'Income' ? '+' : '-'}{currency}{record.amount.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
