@@ -50,12 +50,10 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
   useEffect(() => {
     if (defaultCategory) {
         setCategory(defaultCategory);
-        setBreed('');
-    } else {
-        setCategory('');
-        setBreed('');
     }
-  }, [defaultCategory, isOpen]); // Reset when sheet is opened/closed or type changes
+    // Always clear breed when sheet opens or category changes
+    setBreed('');
+  }, [defaultCategory, isOpen]);
 
 
   const handleSaveAnimal = () => {
@@ -123,14 +121,14 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
       <SheetTrigger asChild>
         {children}
       </SheetTrigger>
-      <SheetContent className="max-h-[100vh] overflow-y-auto">
+      <SheetContent className="flex flex-col">
         <SheetHeader>
           <SheetTitle>Add a New Animal</SheetTitle>
           <SheetDescription>
             Enter the details for the new animal to add it to your records.
           </SheetDescription>
         </SheetHeader>
-        <div className="grid gap-4 py-4">
+        <div className="flex-1 grid gap-4 py-4 overflow-y-auto">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Daisy" />
