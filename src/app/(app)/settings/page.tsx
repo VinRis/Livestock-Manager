@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, Moon, Sun, Download, MessageSquare, Phone, ExternalLink, Store, BarChart3 } from "lucide-react";
+import { Upload, Moon, Sun, Download, MessageSquare, Phone, ExternalLink, Store, BarChart3, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import React, { useRef, useState, useEffect } from "react";
@@ -200,6 +200,62 @@ export default function SettingsPage() {
     }
   };
 
+  const handleUpdateAndReinstall = async () => {
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          const checkingToast = toast({
+            title: "Checking for updates...",
+            description: "Please wait a moment.",
+          });
+
+          await registration.update();
+
+          checkingToast.dismiss();
+
+          if (registration.waiting) {
+            toast({
+              title: "Update Available!",
+              description: "Activating the new version now. The app will reload.",
+            });
+            
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              window.location.reload();
+            });
+            
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+
+          } else {
+            toast({
+              title: "App is Up to Date",
+              description: "You are running the latest version.",
+            });
+          }
+        } else {
+             toast({
+                variant: "destructive",
+                title: "Update Check Failed",
+                description: "Could not find an active service worker registration.",
+            });
+        }
+      } catch (error) {
+        console.error('Error during service worker update:', error);
+        toast({
+            variant: "destructive",
+            title: "Update Check Failed",
+            description: "An error occurred while checking for updates.",
+        });
+      }
+    } else {
+        toast({
+            variant: "destructive",
+            title: "PWA Not Supported",
+            description: "Service workers are not supported in your browser.",
+        });
+    }
+  };
+
 
   return (
     <>
@@ -357,6 +413,19 @@ export default function SettingsPage() {
             />
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>App Updates</CardTitle>
+            <CardDescription>Check for the latest version of the app and install it.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleUpdateAndReinstall}>
+              <RefreshCw />
+              Check for Updates
+            </Button>
+          </CardContent>
+        </Card>
         
         <Card>
           <CardHeader>
@@ -418,5 +487,3 @@ export default function SettingsPage() {
     </>
   );
 }
-
-    
