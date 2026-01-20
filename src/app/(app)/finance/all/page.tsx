@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EditTransactionDialog } from "@/app/(app)/finance/edit-transaction-dialog";
-import { TransactionCardItem, TransactionTableRowItem } from './transaction-item';
+import { TransactionCardItem, TransactionTableRowItem } from '../transaction-item';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function AllTransactionsPage() {
