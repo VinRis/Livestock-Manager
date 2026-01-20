@@ -50,11 +50,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
   useEffect(() => {
     if (defaultCategory) {
         setCategory(defaultCategory);
-        if (breedOptions[defaultCategory as keyof typeof breedOptions]?.length > 0) {
-          setBreed(breedOptions[defaultCategory as keyof typeof breedOptions][0].value);
-        } else {
-          setBreed('');
-        }
+        setBreed('');
     } else {
         setCategory('');
         setBreed('');
@@ -109,7 +105,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
         setCategory('');
         setBreed('');
     } else {
-        setBreed(breedOptions[defaultCategory as keyof typeof breedOptions]?.[0]?.value || '');
+        setBreed('');
     }
     
     onOpenChange(false);
@@ -117,7 +113,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
   
   const handleCategoryChange = (value: string) => {
       setCategory(value);
-      setBreed(breedOptions[value as keyof typeof breedOptions]?.[0].value || '');
+      setBreed('');
   }
 
   const currentBreedOptions = category ? breedOptions[category as keyof typeof breedOptions] || [] : [];
