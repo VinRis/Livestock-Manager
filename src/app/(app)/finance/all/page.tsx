@@ -25,8 +25,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { EditTransactionDialog } from './edit-transaction-dialog';
-import { TransactionCardItem, TransactionTableRowItem } from './transaction-item';
+import { EditTransactionDialog } from '../edit-transaction-dialog';
+import { TransactionCardItem, TransactionTableRowItem } from '../transaction-item';
 
 export default function AllTransactionsPage() {
   const { currency } = useCurrency();
