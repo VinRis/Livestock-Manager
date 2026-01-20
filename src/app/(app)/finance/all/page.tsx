@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from "next/link";
 import { ArrowLeft, Edit, Trash2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { type FinancialRecord } from "@/lib/data";
-import { cn } from "@/lib/utils";
 import { useCurrency } from "@/contexts/currency-context";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -23,10 +22,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { EditTransactionDialog } from '../edit-transaction-dialog';
-import { TransactionCardItem, TransactionTableRowItem } from '../transaction-item';
+import { EditTransactionDialog } from "@/app/(app)/finance/edit-transaction-dialog";
+import { TransactionCardItem, TransactionTableRowItem } from './transaction-item';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function AllTransactionsPage() {
   const { currency } = useCurrency();
@@ -42,6 +40,8 @@ export default function AllTransactionsPage() {
   
   // State for editing/deleting
   const [activeTransaction, setActiveTransaction] = useState<FinancialRecord | null>(null);
+
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setIsClient(true);
@@ -124,6 +124,82 @@ export default function AllTransactionsPage() {
     return null; // Or a skeleton loader
   }
 
+  const renderContent = () => {
+    const noTransactions = (
+      <div className="text-center text-muted-foreground py-8">
+        No transactions found.
+      </div>
+    );
+
+    if (financials.length === 0) {
+      if (isMobile) return noTransactions;
+      return (
+        <Table>
+          <TableBody>
+            <TableRow>
+              <TableCell colSpan={6} className="h-24 text-center">
+                No transactions found.
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      )
+    }
+
+    if (isMobile) {
+      return (
+        <div className="space-y-3">
+          {financials.map(record => (
+              <TransactionCardItem
+                key={`mobile-${record.id}`}
+                record={record}
+                isSelected={selectedRows.includes(record.id)}
+                currency={currency}
+                onSelectRow={handleSelectRow}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteClick}
+              />
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox 
+                  checked={selectedRows.length === financials.length && financials.length > 0 ? true : (selectedRows.length > 0 ? 'indeterminate' : false)}
+                  onCheckedChange={handleSelectAll}
+                />
+              </TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-right w-[80px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {financials.map(record => (
+              <TransactionTableRowItem
+                key={record.id}
+                record={record}
+                isSelected={selectedRows.includes(record.id)}
+                currency={currency}
+                onSelectRow={handleSelectRow}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteClick}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  }
+
   return (
     <>
       <PageHeader title="All Transactions">
@@ -148,64 +224,7 @@ export default function AllTransactionsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Mobile Card View */}
-            <div className="space-y-3 md:hidden">
-              {financials.length > 0 ? financials.map(record => (
-                  <TransactionCardItem
-                    key={`mobile-${record.id}`}
-                    record={record}
-                    isSelected={selectedRows.includes(record.id)}
-                    currency={currency}
-                    onSelectRow={handleSelectRow}
-                    onEdit={handleEditClick}
-                    onDelete={handleDeleteClick}
-                  />
-              )) : (
-                  <div className="text-center text-muted-foreground py-8">
-                      No transactions found.
-                  </div>
-              )}
-            </div>
-
-            {/* Desktop Table View */}
-            <div className="hidden md:block rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">
-                      <Checkbox 
-                        checked={selectedRows.length === financials.length && financials.length > 0 ? true : (selectedRows.length > 0 ? 'indeterminate' : false)}
-                        onCheckedChange={handleSelectAll}
-                      />
-                    </TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="text-right w-[80px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {financials.length > 0 ? financials.map(record => (
-                    <TransactionTableRowItem
-                      key={record.id}
-                      record={record}
-                      isSelected={selectedRows.includes(record.id)}
-                      currency={currency}
-                      onSelectRow={handleSelectRow}
-                      onEdit={handleEditClick}
-                      onDelete={handleDeleteClick}
-                    />
-                  )) : (
-                    <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center">
-                        No transactions found.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+            {renderContent()}
           </CardContent>
         </Card>
       </main>
