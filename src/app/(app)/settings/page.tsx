@@ -45,6 +45,15 @@ export default function SettingsPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 10 * 1024 * 1024) { // 10MB size limit
+      toast({
+        variant: "destructive",
+        title: "File Too Large",
+        description: "Please upload a logo smaller than 10MB.",
+      });
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
         try {
@@ -267,14 +276,14 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex-1">
                         <p className="text-sm font-medium">Upload Logo</p>
-                        <p className="text-xs text-muted-foreground">This logo will appear on your generated reports. (PNG, JPG up to 1MB)</p>
+                        <p className="text-xs text-muted-foreground">This logo will appear on your generated reports. (PNG, JPG, GIF up to 10MB)</p>
                     </div>
                     <Button variant="outline" onClick={() => logoInputRef.current?.click()}>Choose File</Button>
                     <input 
                         type="file" 
                         ref={logoInputRef} 
                         className="hidden"
-                        accept="image/png, image/jpeg"
+                        accept="image/png, image/jpeg, image/gif"
                         onChange={handleLogoUpload}
                     />
                 </div>
