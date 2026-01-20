@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from "next/link";
 import { ArrowLeft, Edit, Trash2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -100,14 +100,14 @@ export default function AllTransactionsPage() {
     setDeleteDialogOpen(true);
   }
 
-  const handleUpdateTransaction = (updatedTransaction: FinancialRecord) => {
+  const handleUpdateTransaction = useCallback((updatedTransaction: FinancialRecord) => {
     if (!updatedTransaction) return;
 
     setFinancials(prev => prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t));
     toast({ title: "Transaction Updated", description: "Your transaction details have been saved." });
     setEditDialogOpen(false);
     setActiveTransaction(null);
-  };
+  }, [toast]);
 
   const handleConfirmDelete = () => {
     if (!activeTransaction) return;
@@ -125,12 +125,12 @@ export default function AllTransactionsPage() {
     setSelectedRows([]);
   }
 
-  const onEditDialogChange = (isOpen: boolean) => {
+  const onEditDialogChange = useCallback((isOpen: boolean) => {
       if (!isOpen) {
           setActiveTransaction(null);
       }
       setEditDialogOpen(isOpen);
-  }
+  }, []);
 
 
   if (!isClient) {
