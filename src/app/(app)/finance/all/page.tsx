@@ -36,7 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-const ClientFormattedDate = ({ date }: { date: string }) => {
+const ClientFormattedDate = ({ date, className }: { date: string, className?: string }) => {
   const [formattedDate, setFormattedDate] = useState('');
 
   useEffect(() => {
@@ -47,7 +47,7 @@ const ClientFormattedDate = ({ date }: { date: string }) => {
     return null;
   }
 
-  return <div className="text-sm text-muted-foreground">{formattedDate}</div>;
+  return <p className={cn("text-sm text-muted-foreground", className)}>{formattedDate}</p>;
 };
 
 
@@ -167,7 +167,59 @@ export default function AllTransactionsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="rounded-md border">
+            {/* Mobile Card View */}
+            <div className="space-y-3 md:hidden">
+              {financials.length > 0 ? financials.map(record => (
+                  <Card key={`mobile-${record.id}`} className={cn(selectedRows.includes(record.id) && "border-primary bg-accent/50")}>
+                      <CardContent className="p-4 flex items-start gap-3">
+                          <div className="flex-none mt-1">
+                              <Checkbox
+                                  checked={selectedRows.includes(record.id)}
+                                  onCheckedChange={(checked) => handleSelectRow(record.id, !!checked)}
+                                  id={`mobile-checkbox-${record.id}`}
+                              />
+                          </div>
+                          <label htmlFor={`mobile-checkbox-${record.id}`} className="flex-1 space-y-1">
+                              <div className="flex justify-between items-start">
+                                  <span className="font-medium pr-2">{record.description}</span>
+                                  <span className={cn("font-medium whitespace-nowrap", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
+                                      {record.type === 'Income' ? '+' : '-'}{currency}{record.amount.toLocaleString()}
+                                  </span>
+                              </div>
+                              <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                                  <Badge variant={record.type === 'Income' ? 'default' : 'destructive'} className="text-xs">{record.type}</Badge>
+                                  <span>{record.category}</span>
+                              </div>
+                              <ClientFormattedDate date={record.date} className="!text-xs" />
+                          </label>
+                          <div className="flex-none -mt-2 -mr-2">
+                              <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                                          <MoreVertical className="h-4 w-4" />
+                                      </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onSelect={() => handleEditClick(record)}>
+                                          <Edit className="mr-2 h-4 w-4"/>Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onSelect={() => handleDeleteClick(record)} className="text-destructive">
+                                          <Trash2 className="mr-2 h-4 w-4"/>Delete
+                                      </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                              </DropdownMenu>
+                          </div>
+                      </CardContent>
+                  </Card>
+              )) : (
+                  <div className="text-center text-muted-foreground py-8">
+                      No transactions found.
+                  </div>
+              )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -181,7 +233,7 @@ export default function AllTransactionsPage() {
                     <TableHead>Type</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right w-[80px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -312,5 +364,3 @@ export default function AllTransactionsPage() {
     </>
   );
 }
-
-    
