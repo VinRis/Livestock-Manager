@@ -93,7 +93,7 @@ export default function DashboardPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{currency}{netProfit.toLocaleString()}</div>
+              <div className="text-xl font-bold">{currency}{netProfit.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">+20.1% from last month</p>
             </CardContent>
           </Card>
@@ -103,7 +103,7 @@ export default function DashboardPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{currency}{totalIncome.toLocaleString()}</div>
+              <div className="text-xl font-bold">{currency}{totalIncome.toLocaleString()}</div>
                <p className="text-xs text-muted-foreground">Total income this year</p>
             </CardContent>
           </Card>
@@ -113,7 +113,7 @@ export default function DashboardPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{currency}{totalExpense.toLocaleString()}</div>
+              <div className="text-xl font-bold">{currency}{totalExpense.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">Total expenses this year</p>
             </CardContent>
           </Card>
@@ -123,7 +123,7 @@ export default function DashboardPage() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{todaysTasks.length}</div>
+              <div className="text-xl font-bold">{todaysTasks.length}</div>
               <p className="text-xs text-muted-foreground">tasks due today</p>
             </CardContent>
           </Card>

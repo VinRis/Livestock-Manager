@@ -169,7 +169,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className={cn("text-2xl font-bold", netProfit >= 0 ? 'text-primary' : 'text-destructive')}>
+                <div className={cn("text-xl font-bold", netProfit >= 0 ? 'text-primary' : 'text-destructive')}>
                   {currency}{netProfit.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">All-time net profit</p>
@@ -181,7 +181,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-primary">{currency}{totalIncome.toLocaleString()}</div>
+                <div className="text-xl font-bold text-primary">{currency}{totalIncome.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">All-time income</p>
               </CardContent>
             </Card>
@@ -191,7 +191,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-destructive">{currency}{totalExpense.toLocaleString()}</div>
+                <div className="text-xl font-bold text-destructive">{currency}{totalExpense.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">All-time expenses</p>
               </CardContent>
             </Card>
@@ -370,5 +370,3 @@ export default function FinancePage() {
     </>
   );
 }
-
-    

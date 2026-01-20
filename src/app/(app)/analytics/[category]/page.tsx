@@ -241,7 +241,7 @@ export default function CategoryAnalyticsPage() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalAnimals}</div>
+                  <div className="text-xl font-bold">{totalAnimals}</div>
                   <p className="text-xs text-muted-foreground">in this category</p>
                 </CardContent>
               </Card>
@@ -251,7 +251,7 @@ export default function CategoryAnalyticsPage() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{avgAgeText}</div>
+                  <div className="text-xl font-bold">{avgAgeText}</div>
                   <p className="text-xs text-muted-foreground">average age of herd</p>
                 </CardContent>
               </Card>
@@ -261,7 +261,7 @@ export default function CategoryAnalyticsPage() {
                   <HeartPulse className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalHealthRecords}</div>
+                  <div className="text-xl font-bold">{totalHealthRecords}</div>
                   <p className="text-xs text-muted-foreground">total health events logged</p>
                 </CardContent>
               </Card>
@@ -316,7 +316,7 @@ export default function CategoryAnalyticsPage() {
                       <CardTitle className="text-sm font-medium">{productionLabel}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{avgProduction}</div>
+                      <div className="text-xl font-bold">{avgProduction}</div>
                       <p className="text-xs text-muted-foreground">based on recorded metrics</p>
                     </CardContent>
                   </Card>
@@ -329,5 +329,3 @@ export default function CategoryAnalyticsPage() {
     </>
   );
 }
-
-    
