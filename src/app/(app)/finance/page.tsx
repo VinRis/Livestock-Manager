@@ -169,7 +169,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className={cn("text-xl font-bold", netProfit >= 0 ? 'text-primary' : 'text-destructive')}>
+                <div className={cn("text-xl font-bold break-words", netProfit >= 0 ? 'text-primary' : 'text-destructive')}>
                   {currency}{netProfit.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">All-time net profit</p>
@@ -181,7 +181,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl font-bold text-primary">{currency}{totalIncome.toLocaleString()}</div>
+                <div className="text-xl font-bold text-primary break-words">{currency}{totalIncome.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">All-time income</p>
               </CardContent>
             </Card>
@@ -191,7 +191,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl font-bold text-destructive">{currency}{totalExpense.toLocaleString()}</div>
+                <div className="text-xl font-bold text-destructive break-words">{currency}{totalExpense.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">All-time expenses</p>
               </CardContent>
             </Card>
@@ -208,17 +208,17 @@ export default function FinancePage() {
                           <p className="text-sm text-primary">Click to view graph</p>
                           <div className="space-y-2 text-sm">
                               <h4 className="font-semibold text-muted-foreground">Last 30 Days Summary</h4>
-                              <div className="flex items-center justify-between">
+                              <div className="flex items-center justify-between gap-2">
                                   <span className="flex items-center gap-2"><TrendingUp className="text-primary"/>Income</span>
-                                  <span className="font-semibold text-primary">{currency}{recentIncome.toLocaleString()}</span>
+                                  <span className="font-semibold text-primary text-right break-words">{currency}{recentIncome.toLocaleString()}</span>
                               </div>
-                              <div className="flex items-center justify-between">
+                              <div className="flex items-center justify-between gap-2">
                                   <span className="flex items-center gap-2"><TrendingDown className="text-destructive"/>Expense</span>
-                                  <span className="font-semibold text-destructive">{currency}{recentExpense.toLocaleString()}</span>
+                                  <span className="font-semibold text-destructive text-right break-words">{currency}{recentExpense.toLocaleString()}</span>
                               </div>
-                              <div className="flex items-center justify-between border-t pt-2 mt-2">
+                              <div className="flex items-center justify-between border-t pt-2 mt-2 gap-2">
                                   <span className="font-bold">Net</span>
-                                  <span className={cn("font-bold", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
+                                  <span className={cn("font-bold text-right break-words", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
                               </div>
                           </div>
                       </CardContent>
