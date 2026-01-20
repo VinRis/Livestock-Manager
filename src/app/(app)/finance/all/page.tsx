@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -24,22 +25,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { EditTransactionDialog } from '../edit-transaction-dialog';
-
-const ClientFormattedDate = ({ date, className }: { date: string, className?: string }) => {
-  const [formattedDate, setFormattedDate] = useState('');
-
-  useEffect(() => {
-    setFormattedDate(new Date(date).toLocaleDateString());
-  }, [date]);
-
-  if (!formattedDate) {
-    return null;
-  }
-
-  return <p className={cn("text-sm text-muted-foreground", className)}>{formattedDate}</p>;
-};
-
+import { EditTransactionDialog } from './edit-transaction-dialog';
+import { TransactionCardItem, TransactionTableRowItem } from './transaction-item';
 
 export default function AllTransactionsPage() {
   const { currency } = useCurrency();
@@ -82,23 +69,23 @@ export default function AllTransactionsPage() {
     }
   };
 
-  const handleSelectRow = (id: string, checked: boolean) => {
+  const handleSelectRow = useCallback((id: string, checked: boolean) => {
     if (checked) {
       setSelectedRows(prev => [...prev, id]);
     } else {
       setSelectedRows(prev => prev.filter(rowId => rowId !== id));
     }
-  };
+  }, []);
 
-  const handleEditClick = (transaction: FinancialRecord) => {
+  const handleEditClick = useCallback((transaction: FinancialRecord) => {
     setActiveTransaction(transaction);
     setEditDialogOpen(true);
-  };
+  }, []);
   
-  const handleDeleteClick = (transaction: FinancialRecord) => {
+  const handleDeleteClick = useCallback((transaction: FinancialRecord) => {
     setActiveTransaction(transaction);
     setDeleteDialogOpen(true);
-  }
+  }, []);
 
   const handleUpdateTransaction = useCallback((updatedTransaction: FinancialRecord) => {
     if (!updatedTransaction) return;
@@ -164,47 +151,15 @@ export default function AllTransactionsPage() {
             {/* Mobile Card View */}
             <div className="space-y-3 md:hidden">
               {financials.length > 0 ? financials.map(record => (
-                  <Card key={`mobile-${record.id}`} className={cn(selectedRows.includes(record.id) && "border-primary bg-accent/50")}>
-                      <CardContent className="p-4 flex items-start gap-3">
-                          <div className="flex-none mt-1">
-                              <Checkbox
-                                  checked={selectedRows.includes(record.id)}
-                                  onCheckedChange={(checked) => handleSelectRow(record.id, !!checked)}
-                                  id={`mobile-checkbox-${record.id}`}
-                              />
-                          </div>
-                          <label htmlFor={`mobile-checkbox-${record.id}`} className="flex-1 space-y-1">
-                              <div className="flex justify-between items-start">
-                                  <span className="font-medium pr-2">{record.description}</span>
-                                  <span className={cn("font-medium whitespace-nowrap", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
-                                      {record.type === 'Income' ? '+' : '-'}{currency}{record.amount.toLocaleString()}
-                                  </span>
-                              </div>
-                              <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
-                                  <Badge variant={record.type === 'Income' ? 'default' : 'destructive'} className="text-xs">{record.type}</Badge>
-                                  <span>{record.category}</span>
-                              </div>
-                              <ClientFormattedDate date={record.date} className="!text-xs" />
-                          </label>
-                          <div className="flex-none -mt-2 -mr-2">
-                              <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                                          <MoreVertical className="h-4 w-4" />
-                                      </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                      <DropdownMenuItem onSelect={() => handleEditClick(record)}>
-                                          <Edit className="mr-2 h-4 w-4"/>Edit
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onSelect={() => handleDeleteClick(record)} className="text-destructive">
-                                          <Trash2 className="mr-2 h-4 w-4"/>Delete
-                                      </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                              </DropdownMenu>
-                          </div>
-                      </CardContent>
-                  </Card>
+                  <TransactionCardItem
+                    key={`mobile-${record.id}`}
+                    record={record}
+                    isSelected={selectedRows.includes(record.id)}
+                    currency={currency}
+                    onSelectRow={handleSelectRow}
+                    onEdit={handleEditClick}
+                    onDelete={handleDeleteClick}
+                  />
               )) : (
                   <div className="text-center text-muted-foreground py-8">
                       No transactions found.
@@ -232,42 +187,15 @@ export default function AllTransactionsPage() {
                 </TableHeader>
                 <TableBody>
                   {financials.length > 0 ? financials.map(record => (
-                    <TableRow key={record.id} data-state={selectedRows.includes(record.id) ? "selected" : ""}>
-                      <TableCell>
-                        <Checkbox 
-                          checked={selectedRows.includes(record.id)}
-                          onCheckedChange={(checked) => handleSelectRow(record.id, !!checked)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">{record.description}</div>
-                        <ClientFormattedDate date={record.date} />
-                      </TableCell>
-                       <TableCell>
-                        <Badge variant={record.type === 'Income' ? 'default' : 'destructive'}>{record.type}</Badge>
-                       </TableCell>
-                       <TableCell>{record.category}</TableCell>
-                      <TableCell className={cn("text-right font-medium", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
-                        {record.type === 'Income' ? '+' : '-'}{currency}{record.amount.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreVertical className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => handleEditClick(record)}>
-                                    <Edit className="mr-2 h-4 w-4"/>Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => handleDeleteClick(record)} className="text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4"/>Delete
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
+                    <TransactionTableRowItem
+                      key={record.id}
+                      record={record}
+                      isSelected={selectedRows.includes(record.id)}
+                      currency={currency}
+                      onSelectRow={handleSelectRow}
+                      onEdit={handleEditClick}
+                      onDelete={handleDeleteClick}
+                    />
                   )) : (
                     <TableRow>
                       <TableCell colSpan={6} className="h-24 text-center">
