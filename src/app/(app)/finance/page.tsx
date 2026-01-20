@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 const ClientFormattedDate = ({ date }: { date: string }) => {
   const [formattedDate, setFormattedDate] = useState('');
@@ -260,8 +261,11 @@ export default function FinancePage() {
           
 
           <Card className="lg:col-span-3">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Recent Transactions</CardTitle>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/finance/all">View All</Link>
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
@@ -297,7 +301,7 @@ export default function FinancePage() {
 
        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
-                <Button className="fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
+                <Button className="fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full shadow-lg sm:bottom-20">
                     <PlusCircle className="h-6 w-6" />
                     <span className="sr-only">Add Transaction</span>
                 </Button>
@@ -366,3 +370,5 @@ export default function FinancePage() {
     </>
   );
 }
+
+    
