@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -52,7 +51,9 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
         setCategory(defaultCategory);
     }
     // Always clear breed when sheet opens or category changes
-    setBreed('');
+    if (isOpen) {
+        setBreed('');
+    }
   }, [defaultCategory, isOpen]);
 
 
@@ -97,13 +98,11 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
     setGender('');
     setSireId('unknown');
     setDamId('unknown');
+    setBreed('');
     
-    // Don't reset type/breed if it's defaulted
+    // Don't reset type if it's defaulted
     if (!defaultCategory) {
         setCategory('');
-        setBreed('');
-    } else {
-        setBreed('');
     }
     
     onOpenChange(false);
@@ -121,14 +120,14 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
       <SheetTrigger asChild>
         {children}
       </SheetTrigger>
-      <SheetContent className="flex flex-col">
-        <SheetHeader>
+      <SheetContent className="flex flex-col gap-0 p-0">
+        <SheetHeader className="p-6 pb-2">
           <SheetTitle>Add a New Animal</SheetTitle>
           <SheetDescription>
             Enter the details for the new animal to add it to your records.
           </SheetDescription>
         </SheetHeader>
-        <div className="flex-1 grid gap-4 py-4 overflow-y-auto">
+        <div className="flex-1 space-y-4 p-6 overflow-y-auto">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Daisy" />
@@ -211,7 +210,7 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
                 </div>
            </div>
         </div>
-        <SheetFooter>
+        <SheetFooter className="p-6 pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button onClick={handleSaveAnimal}>Save Animal</Button>
         </SheetFooter>
