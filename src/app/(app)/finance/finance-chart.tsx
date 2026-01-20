@@ -8,35 +8,35 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { financialData } from "@/lib/data"
+import { type FinancialRecord } from "@/lib/data"
 
-const monthlyData = financialData.reduce((acc, record) => {
-  const month = new Date(record.date).toLocaleString('default', { month: 'short' });
-  if (!acc[month]) {
-    acc[month] = { month, income: 0, expense: 0 };
-  }
-  if (record.type === 'Income') {
-    acc[month].income += record.amount;
-  } else {
-    acc[month].expense += record.amount;
-  }
-  return acc;
-}, {} as Record<string, { month: string; income: number; expense: number }>);
+export default function FinanceChart({ data }: { data: FinancialRecord[] }) {
+  const monthlyData = data.reduce((acc, record) => {
+    const month = new Date(record.date).toLocaleString('default', { month: 'short' });
+    if (!acc[month]) {
+      acc[month] = { month, income: 0, expense: 0 };
+    }
+    if (record.type === 'Income') {
+      acc[month].income += record.amount;
+    } else {
+      acc[month].expense += record.amount;
+    }
+    return acc;
+  }, {} as Record<string, { month: string; income: number; expense: number }>);
 
-const chartData = Object.values(monthlyData).reverse();
+  const chartData = Object.values(monthlyData).reverse();
 
-const chartConfig = {
-  income: {
-    label: "Income",
-    color: "hsl(var(--primary))",
-  },
-  expense: {
-    label: "Expense",
-    color: "hsl(var(--destructive))",
-  },
-} satisfies ChartConfig
+  const chartConfig = {
+    income: {
+      label: "Income",
+      color: "hsl(var(--primary))",
+    },
+    expense: {
+      label: "Expense",
+      color: "hsl(var(--destructive))",
+    },
+  } satisfies ChartConfig
 
-export default function FinanceChart() {
   return (
     <ChartContainer config={chartConfig} className="min-h-[250px] w-full min-w-[600px] md:min-h-[350px]">
       <ResponsiveContainer width="100%" height="100%">

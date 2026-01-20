@@ -28,6 +28,7 @@ export default function DashboardPage() {
   const [netProfit, setNetProfit] = useState(0);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
+  const [financialData, setFinancialData] = useState<FinancialRecord[]>([]);
 
   useEffect(() => {
     // Activities
@@ -57,6 +58,7 @@ export default function DashboardPage() {
     try {
         const storedFinancials = window.localStorage.getItem('financialData');
         const loadedFinancials: FinancialRecord[] = storedFinancials ? JSON.parse(storedFinancials) : [];
+        setFinancialData(loadedFinancials);
         
         const income = loadedFinancials.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
         const expense = loadedFinancials.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
@@ -66,6 +68,7 @@ export default function DashboardPage() {
         setNetProfit(income - expense);
     } catch (error) {
         console.error("Failed to load financials for dashboard", error);
+        setFinancialData([]);
         setTotalIncome(0);
         setTotalExpense(0);
         setNetProfit(0);
@@ -144,7 +147,7 @@ export default function DashboardPage() {
                       </DialogDescription>
                     </DialogHeader>
                     <div className="h-[400px] w-full pt-4 overflow-x-auto">
-                      <FinanceChart />
+                      <FinanceChart data={financialData} />
                     </div>
                   </DialogContent>
                 </Dialog>
