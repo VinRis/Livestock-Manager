@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
@@ -14,13 +13,6 @@ import { cn } from "@/lib/utils";
 import { useCurrency } from "@/contexts/currency-context";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter
-} from "@/components/ui/dialog";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -30,11 +22,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { EditTransactionDialog } from './edit-transaction-dialog';
 
 const ClientFormattedDate = ({ date, className }: { date: string, className?: string }) => {
   const [formattedDate, setFormattedDate] = useState('');
@@ -65,7 +55,6 @@ export default function AllTransactionsPage() {
   
   // State for editing/deleting
   const [activeTransaction, setActiveTransaction] = useState<FinancialRecord | null>(null);
-  const [editFormState, setEditFormState] = useState<FinancialRecord | null>(null); // New state for edit form
 
   useEffect(() => {
     setIsClient(true);
@@ -103,7 +92,6 @@ export default function AllTransactionsPage() {
 
   const handleEditClick = (transaction: FinancialRecord) => {
     setActiveTransaction(transaction);
-    setEditFormState(transaction);
     setEditDialogOpen(true);
   };
   
@@ -112,14 +100,13 @@ export default function AllTransactionsPage() {
     setDeleteDialogOpen(true);
   }
 
-  const handleUpdateTransaction = () => {
-    if (!editFormState) return;
+  const handleUpdateTransaction = (updatedTransaction: FinancialRecord) => {
+    if (!updatedTransaction) return;
 
-    setFinancials(prev => prev.map(t => t.id === editFormState.id ? editFormState : t));
+    setFinancials(prev => prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t));
     toast({ title: "Transaction Updated", description: "Your transaction details have been saved." });
     setEditDialogOpen(false);
     setActiveTransaction(null);
-    setEditFormState(null);
   };
 
   const handleConfirmDelete = () => {
@@ -138,12 +125,8 @@ export default function AllTransactionsPage() {
     setSelectedRows([]);
   }
 
-  const incomeCategories = ["Milk Sales", "Livestock Sale", "Wool Sales", "Other"];
-  const expenseCategories = ["Feed", "Vet Services", "Utilities", "Maintenance", "Livestock Purchase", "Other"];
-  
   const onEditDialogChange = (isOpen: boolean) => {
       if (!isOpen) {
-          setEditFormState(null);
           setActiveTransaction(null);
       }
       setEditDialogOpen(isOpen);
@@ -300,46 +283,12 @@ export default function AllTransactionsPage() {
       </main>
 
       {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={onEditDialogChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Transaction</DialogTitle>
-          </DialogHeader>
-          {editFormState && (
-            <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
-                <Input id="date" type="date" value={editFormState.date.split('T')[0]} onChange={(e) => setEditFormState(prev => prev ? {...prev, date: e.target.value} : null)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Input id="description" value={editFormState.description} onChange={(e) => setEditFormState(prev => prev ? {...prev, description: e.target.value} : null)} />
-              </div>
-              <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select value={editFormState.category} onValueChange={(value) => setEditFormState(prev => prev ? {...prev, category: value} : null)}>
-                      <SelectTrigger id="category">
-                          <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                          {(editFormState.type === 'Income' ? incomeCategories : expenseCategories).map(cat => (
-                              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                          ))}
-                      </SelectContent>
-                  </Select>
-              </div>
-              <div className="space-y-2">
-                  <Label htmlFor="amount">Amount</Label>
-                  <Input id="amount" type="number" value={editFormState.amount} onChange={(e) => setEditFormState(prev => prev ? {...prev, amount: parseFloat(e.target.value) || 0} : null)} />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => onEditDialogChange(false)}>Cancel</Button>
-            <Button onClick={handleUpdateTransaction}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EditTransactionDialog
+        isOpen={isEditDialogOpen}
+        onOpenChange={onEditDialogChange}
+        transaction={activeTransaction}
+        onSave={handleUpdateTransaction}
+      />
       
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
