@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Edit, Trash2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
@@ -22,19 +23,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { EditTransactionDialog } from "@/app/(app)/finance/edit-transaction-dialog";
 import { TransactionCardItem, TransactionTableRowItem } from '../transaction-item';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function AllTransactionsPage() {
   const { currency } = useCurrency();
   const { toast } = useToast();
+  const router = useRouter();
   const [financials, setFinancials] = useState<FinancialRecord[]>([]);
   const [isClient, setIsClient] = useState(false);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   
   // Dialog states
-  const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isBatchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
   
@@ -78,23 +78,13 @@ export default function AllTransactionsPage() {
   }, []);
 
   const handleEditClick = useCallback((transaction: FinancialRecord) => {
-    setActiveTransaction(transaction);
-    setEditDialogOpen(true);
-  }, []);
+    router.push(`/finance/all/${transaction.id}`);
+  }, [router]);
   
   const handleDeleteClick = useCallback((transaction: FinancialRecord) => {
     setActiveTransaction(transaction);
     setDeleteDialogOpen(true);
   }, []);
-
-  const handleUpdateTransaction = useCallback((updatedTransaction: FinancialRecord) => {
-    if (!updatedTransaction) return;
-
-    setFinancials(prev => prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t));
-    toast({ title: "Transaction Updated", description: "Your transaction details have been saved." });
-    setEditDialogOpen(false);
-    setActiveTransaction(null);
-  }, [toast]);
 
   const handleConfirmDelete = () => {
     if (!activeTransaction) return;
@@ -111,14 +101,6 @@ export default function AllTransactionsPage() {
     setBatchDeleteDialogOpen(false);
     setSelectedRows([]);
   }
-
-  const onEditDialogChange = useCallback((isOpen: boolean) => {
-      if (!isOpen) {
-          setActiveTransaction(null);
-      }
-      setEditDialogOpen(isOpen);
-  }, []);
-
 
   if (!isClient) {
     return null; // Or a skeleton loader
@@ -229,14 +211,6 @@ export default function AllTransactionsPage() {
         </Card>
       </main>
 
-      {/* Edit Dialog */}
-      <EditTransactionDialog
-        isOpen={isEditDialogOpen}
-        onOpenChange={onEditDialogChange}
-        transaction={activeTransaction}
-        onSave={handleUpdateTransaction}
-      />
-      
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
