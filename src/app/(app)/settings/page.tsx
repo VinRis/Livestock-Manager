@@ -19,7 +19,11 @@ export default function SettingsPage() {
   const restoreInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [isMounted, setIsMounted] = useState(false);
+  
   const [farmLogoUrl, setFarmLogoUrl] = useState<string | null>(null);
+  const [farmName, setFarmName] = useState('');
+  const [managerName, setManagerName] = useState('');
+  const [farmLocation, setFarmLocation] = useState('');
 
 
   useEffect(() => {
@@ -28,6 +32,12 @@ export default function SettingsPage() {
     if (storedLogo) {
         setFarmLogoUrl(storedLogo);
     }
+    const storedFarmName = localStorage.getItem('farmName');
+    if (storedFarmName) setFarmName(storedFarmName);
+    const storedManagerName = localStorage.getItem('managerName');
+    if (storedManagerName) setManagerName(storedManagerName);
+    const storedFarmLocation = localStorage.getItem('farmLocation');
+    if (storedFarmLocation) setFarmLocation(storedFarmLocation);
   }, []);
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,6 +79,9 @@ export default function SettingsPage() {
         tasksData: JSON.parse(localStorage.getItem('tasksData') || '[]'),
         financialData: JSON.parse(localStorage.getItem('financialData') || '[]'),
         farmLogoUrl: localStorage.getItem('farmLogoUrl') || '',
+        farmName: localStorage.getItem('farmName') || '',
+        managerName: localStorage.getItem('managerName') || '',
+        farmLocation: localStorage.getItem('farmLocation') || '',
         theme: localStorage.getItem('theme') || 'system',
         currency: localStorage.getItem('currency') || '$',
         backupDate: new Date().toISOString(),
@@ -129,6 +142,9 @@ export default function SettingsPage() {
         localStorage.setItem('financialData', JSON.stringify(restored.financialData || []));
         
         if (restored.farmLogoUrl) localStorage.setItem('farmLogoUrl', restored.farmLogoUrl);
+        if (restored.farmName) localStorage.setItem('farmName', restored.farmName);
+        if (restored.managerName) localStorage.setItem('managerName', restored.managerName);
+        if (restored.farmLocation) localStorage.setItem('farmLocation', restored.farmLocation);
         if (restored.theme) localStorage.setItem('theme', restored.theme);
         if (restored.currency) localStorage.setItem('currency', restored.currency);
 
@@ -153,6 +169,25 @@ export default function SettingsPage() {
       }
     };
     reader.readAsText(file);
+  };
+  
+  const handleSaveSettings = () => {
+    try {
+      localStorage.setItem('farmName', farmName);
+      localStorage.setItem('managerName', managerName);
+      localStorage.setItem('farmLocation', farmLocation);
+      toast({
+        title: "Settings Saved",
+        description: "Your farm details have been updated.",
+      });
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      toast({
+        variant: "destructive",
+        title: "Save Failed",
+        description: "Could not save your farm details.",
+      });
+    }
   };
 
 
@@ -212,7 +247,12 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="farm-name">Farm Name</Label>
-              <Input id="farm-name" placeholder="e.g., Sunrise Farms" />
+              <Input 
+                id="farm-name" 
+                placeholder="e.g., Sunrise Farms"
+                value={farmName}
+                onChange={(e) => setFarmName(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="farm-logo">Farm Logo</Label>
@@ -240,15 +280,25 @@ export default function SettingsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="manager-name">Manager's Name</Label>
-              <Input id="manager-name" placeholder="e.g., John Doe" />
+              <Input 
+                id="manager-name" 
+                placeholder="e.g., John Doe"
+                value={managerName}
+                onChange={(e) => setManagerName(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="farm-location">Farm Location</Label>
-              <Input id="farm-location" placeholder="e.g., Springfield, IL" />
+              <Input 
+                id="farm-location" 
+                placeholder="e.g., Springfield, IL"
+                value={farmLocation}
+                onChange={(e) => setFarmLocation(e.target.value)}
+              />
             </div>
           </CardContent>
           <CardFooter className="flex justify-center sm:justify-end">
-            <Button className="w-full sm:w-auto">Save Settings</Button>
+            <Button className="w-full sm:w-auto" onClick={handleSaveSettings}>Save Settings</Button>
           </CardFooter>
         </Card>
 

@@ -111,9 +111,9 @@ const generateSummarySection = (doc: jsPDF, title: string, content: { label: str
 
 export const generatePdfReport = async (category: string) => {
   const doc = new jsPDF();
-  const farmName = "Sunrise Farms"; // Placeholder
-  const managerName = "John Doe"; // Placeholder
-  const farmLocation = "Springfield, IL"; // Placeholder
+  const farmName = localStorage.getItem('farmName') || "Your Farm";
+  const managerName = localStorage.getItem('managerName') || "Farm Manager";
+  const farmLocation = localStorage.getItem('farmLocation') || "Your Location";
   const logoUrl = localStorage.getItem('farmLogoUrl');
 
   generatePdfHeader(doc, farmName, managerName, farmLocation, logoUrl);
