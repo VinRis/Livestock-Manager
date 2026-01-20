@@ -16,7 +16,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { categoriesData, type Livestock } from "@/lib/data";
-import { Combobox } from "@/components/ui/combobox";
 
 interface AddAnimalSheetProps {
   children: React.ReactNode;
@@ -26,14 +25,6 @@ interface AddAnimalSheetProps {
   onAddAnimal: (animal: Livestock) => void;
   livestockData: Livestock[];
 }
-
-const breedOptions = {
-    Cattle: ["Ayrshire", "Brown Swiss", "Guernsey", "Holstein", "Jersey", "Angus", "Hereford", "Shorthorn", "Simmental", "Charolais", "Brahman"].map(b => ({ value: b, label: b })),
-    Sheep: ["Merino", "Rambouillet", "Dorset", "Hampshire", "Suffolk", "Shropshire"].map(b => ({ value: b, label: b })),
-    Goats: ["Boer", "Nubian", "Alpine", "LaMancha", "Saanen", "Toggenburg"].map(b => ({ value: b, label: b })),
-    Pigs: ["Duroc", "Hampshire", "Yorkshire"].map(b => ({ value: b, label: b })),
-    Chickens: ["Leghorn", "Rhode Island Red", "Plymouth Rock"].map(b => ({ value: b, label: b })),
-};
 
 export default function AddAnimalSheet({ children, isOpen, onOpenChange, defaultCategory, onAddAnimal, livestockData }: AddAnimalSheetProps) {
   const { toast } = useToast();
@@ -113,8 +104,6 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
       setBreed('');
   }
 
-  const currentBreedOptions = category ? breedOptions[category as keyof typeof breedOptions] || [] : [];
-
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
@@ -152,12 +141,11 @@ export default function AddAnimalSheet({ children, isOpen, onOpenChange, default
             </div>
             <div className="space-y-2">
                 <Label htmlFor="breed">Breed</Label>
-                <Combobox
-                    options={currentBreedOptions}
+                <Input
+                    id="breed"
                     value={breed}
-                    onChange={setBreed}
-                    placeholder="Select or type breed..."
-                    emptyMessage="No preset breeds found."
+                    onChange={(e) => setBreed(e.target.value)}
+                    placeholder="e.g., Holstein"
                 />
             </div>
           </div>
