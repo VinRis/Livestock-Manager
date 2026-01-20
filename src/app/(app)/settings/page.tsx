@@ -247,8 +247,8 @@ export default function SettingsPage() {
               <Input id="farm-location" placeholder="e.g., Springfield, IL" />
             </div>
           </CardContent>
-          <CardFooter className="flex justify-end">
-            <Button>Save Settings</Button>
+          <CardFooter className="flex justify-center sm:justify-end">
+            <Button className="w-full sm:w-auto">Save Settings</Button>
           </CardFooter>
         </Card>
 
