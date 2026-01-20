@@ -23,8 +23,15 @@ export default function EditTransactionPage() {
     const { toast } = useToast();
     const transactionId = params.id as string;
 
-    const [transaction, setTransaction] = useState<FinancialRecord | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [originalTransaction, setOriginalTransaction] = useState<FinancialRecord | null>(null);
+    
+    // State for each form field
+    const [date, setDate] = useState('');
+    const [description, setDescription] = useState('');
+    const [category, setCategory] = useState('');
+    const [amount, setAmount] = useState<number|string>('');
+    const [type, setType] = useState<'Income' | 'Expense'>('Expense');
 
     useEffect(() => {
         if (!transactionId) return;
@@ -32,9 +39,14 @@ export default function EditTransactionPage() {
             const stored = window.localStorage.getItem('financialData');
             const financials: FinancialRecord[] = stored ? JSON.parse(stored) : [];
             const foundTransaction = financials.find(t => t.id === transactionId);
+            
             if (foundTransaction) {
-                // Ensure date is in 'YYYY-MM-DD' format for the input
-                setTransaction({ ...foundTransaction, date: foundTransaction.date.split('T')[0] });
+                setOriginalTransaction(foundTransaction);
+                setDate(foundTransaction.date.split('T')[0]);
+                setDescription(foundTransaction.description);
+                setCategory(foundTransaction.category);
+                setAmount(foundTransaction.amount);
+                setType(foundTransaction.type);
             }
         } catch (e) {
             console.error(e);
@@ -45,13 +57,22 @@ export default function EditTransactionPage() {
     }, [transactionId, toast]);
 
     const handleSave = () => {
-        if (!transaction) return;
+        if (!originalTransaction) return;
 
         try {
             const stored = window.localStorage.getItem('financialData');
             const financials: FinancialRecord[] = stored ? JSON.parse(stored) : [];
+            
+            const updatedTransaction: FinancialRecord = {
+                ...originalTransaction,
+                date: new Date(date).toISOString(),
+                description,
+                category,
+                amount: parseFloat(String(amount)) || 0,
+            };
+
             const updatedFinancials = financials.map(t =>
-                t.id === transaction.id ? { ...transaction, date: new Date(transaction.date).toISOString() } : t
+                t.id === updatedTransaction.id ? updatedTransaction : t
             );
             window.localStorage.setItem('financialData', JSON.stringify(updatedFinancials));
 
@@ -81,7 +102,7 @@ export default function EditTransactionPage() {
         )
     }
 
-    if (!transaction) {
+    if (!originalTransaction) {
         return (
             <>
                 <PageHeader title="Transaction Not Found" />
@@ -121,20 +142,20 @@ export default function EditTransactionPage() {
                     <CardContent className="grid gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="date">Date</Label>
-                          <Input id="date" type="date" value={transaction.date} onChange={(e) => setTransaction(t => t ? { ...t, date: e.target.value } : null)} />
+                          <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="description">Description</Label>
-                          <Input id="description" value={transaction.description} onChange={(e) => setTransaction(t => t ? { ...t, description: e.target.value } : null)} />
+                          <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="category">Category</Label>
-                            <Select value={transaction.category} onValueChange={(value) => setTransaction(t => t ? { ...t, category: value } : null)}>
+                            <Select value={category} onValueChange={setCategory}>
                                 <SelectTrigger id="category">
                                     <SelectValue placeholder="Select a category" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {(transaction.type === 'Income' ? incomeCategories : expenseCategories).map(cat => (
+                                    {(type === 'Income' ? incomeCategories : expenseCategories).map(cat => (
                                         <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -142,7 +163,7 @@ export default function EditTransactionPage() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="amount">Amount</Label>
-                            <Input id="amount" type="number" value={transaction.amount} onChange={(e) => setTransaction(t => t ? { ...t, amount: parseFloat(e.target.value) || 0 } : null)} />
+                            <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
                         </div>
                     </CardContent>
                     <CardFooter>
