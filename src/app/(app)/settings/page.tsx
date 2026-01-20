@@ -1,3 +1,4 @@
+
 "use client"
 
 import { PageHeader } from "@/components/page-header";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, Moon, Sun, Download, MessageSquare, Phone, ExternalLink, Store } from "lucide-react";
+import { Upload, Moon, Sun, Download, MessageSquare, Phone, ExternalLink, Store, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import React, { useRef, useState, useEffect } from "react";
@@ -350,14 +351,14 @@ export default function SettingsPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle>Download Reports</CardTitle>
-            <CardDescription>Download your farm data in various formats.</CardDescription>
+            <CardTitle>Analytics & Reports</CardTitle>
+            <CardDescription>View detailed analytics and download reports for each livestock category.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild>
-              <Link href="/settings/reports">
-                <Download />
-                Go to Reports Page
+              <Link href="/analytics">
+                <BarChart3 />
+                Go to Analytics
               </Link>
             </Button>
           </CardContent>
@@ -408,3 +409,5 @@ export default function SettingsPage() {
     </>
   );
 }
+
+    

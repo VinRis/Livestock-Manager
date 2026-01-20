@@ -4,14 +4,15 @@
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Download, HeartPulse, Users } from "lucide-react";
+import { ArrowLeft, Download, HeartPulse, Users, FileSpreadsheet } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { type Livestock, type CategoryDefinition } from "@/lib/data";
-import { generatePdfReport } from "@/lib/reports";
+import { generatePdfReport, generateCsvReport } from "@/lib/reports";
 import { useToast } from "@/hooks/use-toast";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 import ProductionChart from "../production-chart";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
@@ -146,7 +147,7 @@ export default function CategoryAnalyticsPage() {
     return notFound();
   }
   
-  const handleDownload = async () => {
+  const handleDownloadPdf = async () => {
     toast({
       title: 'Generating Report...',
       description: `Your PDF report for ${category.name} is being created.`,
@@ -154,6 +155,28 @@ export default function CategoryAnalyticsPage() {
 
     try {
       await generatePdfReport(category.name);
+      toast({
+        title: 'Download Ready!',
+        description: `Your ${category.name} report has been downloaded.`,
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: 'There was a problem generating your report.',
+      });
+      console.error("Report generation error:", error);
+    }
+  };
+  
+  const handleDownloadCsv = async () => {
+    toast({
+      title: 'Generating Report...',
+      description: `Your CSV report for ${category.name} is being created.`,
+    });
+
+    try {
+      await generateCsvReport(category.name);
       toast({
         title: 'Download Ready!',
         description: `Your ${category.name} report has been downloaded.`,
@@ -178,7 +201,21 @@ export default function CategoryAnalyticsPage() {
           <Button variant="outline" asChild>
             <Link href="/analytics"><ArrowLeft /> Back</Link>
           </Button>
-          <Button onClick={handleDownload} disabled={totalAnimals === 0}><Download /> PDF Report</Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button disabled={totalAnimals === 0}>
+                <Download /> Download Report
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={handleDownloadPdf}>
+                <Download className="mr-2 h-4 w-4" /> PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={handleDownloadCsv}>
+                <FileSpreadsheet className="mr-2 h-4 w-4" /> CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </PageHeader>
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
@@ -292,3 +329,5 @@ export default function CategoryAnalyticsPage() {
     </>
   );
 }
+
+    
