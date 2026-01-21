@@ -1255,6 +1255,35 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                         </TableBody>
                       </Table>
                     </div>
+                     {/* Mobile Card List */}
+                    <div className="block sm:hidden space-y-3">
+                        {animal.healthRecords.map((record) => (
+                            <Card key={record.id}>
+                                <CardContent className="p-4 flex justify-between items-start">
+                                    <div className="flex-1 space-y-2">
+                                        <p className="font-semibold">{record.event}</p>
+                                        <p className="text-sm text-muted-foreground">{record.description}</p>
+                                        <p className="text-xs text-muted-foreground pt-1">{new Date(record.date).toLocaleString()}</p>
+                                    </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 -mt-2 -mr-2">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onSelect={() => handleEditHealthRecord(record)}>
+                                                <Edit className="mr-2 h-4 w-4"/>Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleDeleteHealthRecord(record.id)} className="text-destructive">
+                                                <Trash2 className="mr-2 h-4 w-4"/>Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
                      {animal.healthRecords.length === 0 && (
                           <div className="text-center text-muted-foreground py-8">No health records found for this batch.</div>
                       )}
@@ -1341,6 +1370,34 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                             ))}
                           </TableBody>
                         </Table>
+                      </div>
+                      {/* Mobile Card List */}
+                      <div className="block sm:hidden space-y-3">
+                          {animal.productionMetrics.map((metric) => (
+                              <Card key={metric.id}>
+                                  <CardContent className="p-4 flex justify-between items-start">
+                                      <div className="flex-1 space-y-2">
+                                          <p className="font-semibold">{metric.type}: <span className="font-bold text-primary">{metric.value}</span></p>
+                                          <p className="text-xs text-muted-foreground pt-1">{new Date(metric.date).toLocaleString()}</p>
+                                      </div>
+                                      <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                              <Button variant="ghost" size="icon" className="h-8 w-8 -mt-2 -mr-2">
+                                                  <MoreVertical className="h-4 w-4" />
+                                              </Button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="end">
+                                              <DropdownMenuItem onSelect={() => handleEditMetric(metric)}>
+                                                  <Edit className="mr-2 h-4 w-4"/>Edit
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem onClick={() => handleDeleteMetric(metric.id)} className="text-destructive">
+                                                  <Trash2 className="mr-2 h-4 w-4"/>Delete
+                                              </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                      </DropdownMenu>
+                                  </CardContent>
+                              </Card>
+                          ))}
                       </div>
                       {animal.productionMetrics.length === 0 && (
                            <div className="text-center text-muted-foreground py-8">No production metrics found for this batch.</div>
