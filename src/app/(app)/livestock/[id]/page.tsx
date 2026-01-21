@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -1144,7 +1143,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <div className="text-xl font-bold">{animalCount}</div>
+                  <div className="text-xl font-bold">{(parseInt(animalCount, 10) || 0).toLocaleString()}</div>
                 </CardContent>
               </Card>
                <Card>
@@ -1166,7 +1165,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <div className="text-xl font-bold">{acquisitionCostRecord ? `${currency}${acquisitionCostRecord.amount}` : 'N/A'}</div>
+                  <div className="text-xl font-bold">{acquisitionCostRecord ? `${currency}${acquisitionCostRecord.amount.toLocaleString()}` : 'N/A'}</div>
                 </CardContent>
               </Card>
             </div>
