@@ -7,13 +7,14 @@ import { ArrowLeft, FileText, FileSpreadsheet, PlusCircle } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { type CategoryDefinition } from "@/lib/data";
+import { type CategoryDefinition, type Livestock } from "@/lib/data";
 import { generateCsvReport, generatePdfReport } from "@/lib/reports";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ReportsPage() {
   const { toast } = useToast();
   const [userCategories, setUserCategories] = useState<CategoryDefinition[]>([]);
+  const [livestockData, setLivestockData] = useState<Livestock[]>([]);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -21,9 +22,13 @@ export default function ReportsPage() {
     try {
       const storedCategories = window.localStorage.getItem('categoriesData');
       setUserCategories(storedCategories ? JSON.parse(storedCategories) : []);
+
+      const storedLivestock = window.localStorage.getItem('livestockData');
+      setLivestockData(storedLivestock ? JSON.parse(storedLivestock) : []);
     } catch (error) {
-      console.error("Failed to load categories from localStorage", error);
+      console.error("Failed to load data from localStorage", error);
       setUserCategories([]);
+      setLivestockData([]);
     }
   }, []);
 
@@ -35,9 +40,9 @@ export default function ReportsPage() {
 
     try {
       if (format === 'pdf') {
-        await generatePdfReport(category);
+        await generatePdfReport(category, livestockData);
       } else {
-        await generateCsvReport(category);
+        await generateCsvReport(category, livestockData);
       }
       toast({
         title: 'Download Ready!',

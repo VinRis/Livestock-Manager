@@ -1,7 +1,7 @@
 
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { livestockData, type HealthRecord, type ProductionMetric, type Livestock } from './data';
+import { type HealthRecord, type ProductionMetric, type Livestock } from './data';
 import { format } from 'date-fns';
 
 // Augment jsPDF with the autoTable method
@@ -13,7 +13,7 @@ declare module 'jspdf' {
 
 // --- CSV Report Generation ---
 
-export const generateCsvReport = async (category: string) => {
+export const generateCsvReport = async (category: string, livestockData: Livestock[]) => {
   const animalsInCategory = livestockData.filter(animal => animal.category === category);
   
   let csvContent = 'data:text/csv;charset=utf-8,';
@@ -109,7 +109,7 @@ const generateSummarySection = (doc: jsPDF, title: string, content: { label: str
 };
 
 
-export const generatePdfReport = async (category: string) => {
+export const generatePdfReport = async (category: string, livestockData: Livestock[]) => {
   const doc = new jsPDF();
   const farmName = localStorage.getItem('farmName') || "Your Farm";
   const managerName = localStorage.getItem('managerName') || "Farm Manager";

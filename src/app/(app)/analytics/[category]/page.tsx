@@ -154,7 +154,7 @@ export default function CategoryAnalyticsPage() {
     });
 
     try {
-      await generatePdfReport(category.name);
+      await generatePdfReport(category.name, livestockData);
       toast({
         title: 'Download Ready!',
         description: `Your ${category.name} report has been downloaded.`,
@@ -176,7 +176,7 @@ export default function CategoryAnalyticsPage() {
     });
 
     try {
-      await generateCsvReport(category.name);
+      await generateCsvReport(category.name, livestockData);
       toast({
         title: 'Download Ready!',
         description: `Your ${category.name} report has been downloaded.`,
@@ -234,7 +234,7 @@ export default function CategoryAnalyticsPage() {
            </Card>
         ) : (
           <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Animals</CardTitle>
