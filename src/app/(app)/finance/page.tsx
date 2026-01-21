@@ -164,14 +164,14 @@ export default function FinancePage() {
     <>
       <PageHeader title="Financials" />
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <Card className="col-span-2 sm:col-span-1 sm:order-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card className="col-span-1 sm:order-3">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle>Net Profit</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className={cn("text-xl font-bold break-all", netProfit >= 0 ? 'text-primary' : 'text-destructive')}>
+                <div className={cn("text-xl font-bold", netProfit >= 0 ? 'text-primary' : 'text-destructive')}>
                   {currency}{netProfit.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">All-time net profit</p>
@@ -183,7 +183,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl font-bold text-primary break-all">{currency}{totalIncome.toLocaleString()}</div>
+                <div className="text-xl font-bold text-primary">{currency}{totalIncome.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">All-time income</p>
               </CardContent>
             </Card>
@@ -193,7 +193,7 @@ export default function FinancePage() {
                 <DollarSign className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl font-bold text-destructive break-all">{currency}{totalExpense.toLocaleString()}</div>
+                <div className="text-xl font-bold text-destructive">{currency}{totalExpense.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">All-time expenses</p>
               </CardContent>
             </Card>
@@ -212,15 +212,15 @@ export default function FinancePage() {
                               <h4 className="font-semibold text-muted-foreground">Last 30 Days Summary</h4>
                               <div className="flex items-center justify-between gap-2 flex-wrap">
                                   <span className="flex items-center gap-2"><TrendingUp className="text-primary"/>Income</span>
-                                  <span className="font-semibold text-primary text-right break-all">{currency}{recentIncome.toLocaleString()}</span>
+                                  <span className="font-semibold text-primary text-right">{currency}{recentIncome.toLocaleString()}</span>
                               </div>
                               <div className="flex items-center justify-between gap-2 flex-wrap">
                                   <span className="flex items-center gap-2"><TrendingDown className="text-destructive"/>Expense</span>
-                                  <span className="font-semibold text-destructive text-right break-all">{currency}{recentExpense.toLocaleString()}</span>
+                                  <span className="font-semibold text-destructive text-right">{currency}{recentExpense.toLocaleString()}</span>
                               </div>
                               <div className="flex items-center justify-between border-t pt-2 mt-2 gap-2 flex-wrap">
                                   <span className="font-bold">Net</span>
-                                  <span className={cn("font-bold text-right break-all", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
+                                  <span className={cn("font-bold text-right", recentNet >= 0 ? "text-primary" : "text-destructive")}>{currency}{recentNet.toLocaleString()}</span>
                               </div>
                           </div>
                       </CardContent>
