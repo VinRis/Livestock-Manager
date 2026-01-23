@@ -138,13 +138,13 @@ export default function DashboardPage() {
             </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-center sm:text-left">
               <div className={cn("text-2xl font-bold", netProfit >= 0 ? "text-primary" : "text-destructive")}>{currency}{netProfit.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">Net profit {periodLabel}</p>
             </CardContent>
@@ -154,7 +154,7 @@ export default function DashboardPage() {
               <CardTitle className="text-sm font-medium">Total Income</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-center sm:text-left">
               <div className="text-2xl font-bold text-primary">{currency}{totalIncome.toLocaleString()}</div>
                <p className="text-xs text-muted-foreground">Total income {periodLabel}</p>
             </CardContent>
@@ -164,7 +164,7 @@ export default function DashboardPage() {
               <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-center sm:text-left">
               <div className="text-2xl font-bold text-destructive">{currency}{totalExpense.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">Total expenses {periodLabel}</p>
             </CardContent>
@@ -174,7 +174,7 @@ export default function DashboardPage() {
               <CardTitle className="text-sm font-medium">Today's Tasks</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-center sm:text-left">
               <div className="text-2xl font-bold">{todaysTasks.length}</div>
               <p className="text-xs text-muted-foreground">tasks due today</p>
             </CardContent>
