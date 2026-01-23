@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, Moon, Sun, Download, MessageSquare, Phone, ExternalLink, Store, BarChart3, RefreshCw } from "lucide-react";
+import { Upload, Moon, Sun, Download, MessageSquare, Phone, ExternalLink, Store, BarChart3, RefreshCw, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import React, { useRef, useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -386,24 +387,32 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Data &amp; App Management</CardTitle>
-            <CardDescription>Backup your farm data. It's recommended to do this weekly to prevent data loss.</CardDescription>
           </CardHeader>
-          <CardContent className="flex gap-4">
-            <Button variant="outline" onClick={handleBackup}>
-              <Download />
-              Backup Data
-            </Button>
-            <Button onClick={handleRestoreClick}>
-              <Upload />
-              Restore Data
-            </Button>
-            <input 
-              type="file" 
-              ref={restoreInputRef} 
-              className="hidden"
-              accept="application/json"
-              onChange={handleRestore}
-            />
+          <CardContent className="space-y-4">
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Important!</AlertTitle>
+              <AlertDescription>
+                Backup your farm data regularly. It's recommended to do this weekly to prevent data loss.
+              </AlertDescription>
+            </Alert>
+            <div className="flex gap-4">
+              <Button variant="outline" onClick={handleBackup}>
+                <Download />
+                Backup Data
+              </Button>
+              <Button onClick={handleRestoreClick}>
+                <Upload />
+                Restore Data
+              </Button>
+              <input 
+                type="file" 
+                ref={restoreInputRef} 
+                className="hidden"
+                accept="application/json"
+                onChange={handleRestore}
+              />
+            </div>
           </CardContent>
         </Card>
         
