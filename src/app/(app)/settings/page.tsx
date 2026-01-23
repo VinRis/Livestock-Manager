@@ -373,13 +373,6 @@ export default function SettingsPage() {
                 <CardTitle>App Preferences</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                 <div className="space-y-2">
-                    <Label>Egg Tray Sizes</Label>
-                    <p className="text-xs text-muted-foreground">Set the default number of eggs per tray for different bird types.</p>
-                     <Button asChild variant="outline">
-                        <Link href="/settings/egg-tray-sizes">Manage Egg Tray Sizes</Link>
-                    </Button>
-                </div>
                 <div className="space-y-2">
                     <Label>Currency</Label>
                     <p className="text-xs text-muted-foreground">Set the currency for all financial notations.</p>
@@ -392,8 +385,8 @@ export default function SettingsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Data & App Management</CardTitle>
-            <CardDescription>Backup or restore your farm data.</CardDescription>
+            <CardTitle>Data &amp; App Management</CardTitle>
+            <CardDescription>Backup your farm data. It's recommended to do this weekly to prevent data loss.</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-4">
             <Button variant="outline" onClick={handleBackup}>
@@ -416,7 +409,7 @@ export default function SettingsPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle>Analytics & Reports</CardTitle>
+            <CardTitle>Analytics &amp; Reports</CardTitle>
             <CardDescription>View detailed analytics and download reports for each livestock category.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -431,7 +424,7 @@ export default function SettingsPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle>Support & Feedback</CardTitle>
+            <CardTitle>Support &amp; Feedback</CardTitle>
             <CardDescription>Have suggestions or need help? Reach out to us.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
