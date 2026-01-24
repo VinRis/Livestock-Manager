@@ -99,16 +99,6 @@ export default function ActivityLogPage() {
     }
   }, []);
 
-  useEffect(() => {
-    if (isClient) {
-      const timer = setTimeout(() => {
-        window.localStorage.setItem('activityLogData', JSON.stringify(activityLog));
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [activityLog, isClient]);
-
-
   const handleLogActivity = () => {
     if (!newActivity.type || !newActivity.date) {
       toast({
@@ -130,8 +120,13 @@ export default function ActivityLogPage() {
       livestockName: selectedAnimal?.name,
       livestockCategory: newActivity.livestockCategory,
     };
+    
+    const updatedLog = [activityToAdd, ...activityLog].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    setActivityLog(updatedLog);
 
-    setActivityLog(prevLog => [activityToAdd, ...prevLog].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    setTimeout(() => {
+        window.localStorage.setItem('activityLogData', JSON.stringify(updatedLog));
+    }, 0);
 
     toast({
       title: "Activity Logged",
@@ -158,9 +153,13 @@ export default function ActivityLogPage() {
   const handleUpdateActivity = () => {
     if (!selectedActivity) return;
 
-    setActivityLog(prevLog =>
-      prevLog.map(act => (act.id === selectedActivity.id ? selectedActivity : act))
-    );
+    const updatedLog = activityLog.map(act => (act.id === selectedActivity.id ? selectedActivity : act));
+    setActivityLog(updatedLog);
+
+    setTimeout(() => {
+        window.localStorage.setItem('activityLogData', JSON.stringify(updatedLog));
+    }, 0);
+
 
     toast({
       title: "Activity Updated",
@@ -180,8 +179,13 @@ export default function ActivityLogPage() {
 
   const handleConfirmDelete = () => {
     if (!selectedActivity) return;
+    
+    const updatedLog = activityLog.filter(act => act.id !== selectedActivity.id);
+    setActivityLog(updatedLog);
 
-    setActivityLog(prevLog => prevLog.filter(act => act.id !== selectedActivity.id));
+    setTimeout(() => {
+        window.localStorage.setItem('activityLogData', JSON.stringify(updatedLog));
+    }, 0);
 
     toast({
       variant: "destructive",

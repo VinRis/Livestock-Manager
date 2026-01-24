@@ -51,15 +51,6 @@ export default function FinancePage() {
     }
   }, []);
 
-  useEffect(() => {
-      if (isClient) {
-          const timer = setTimeout(() => {
-            window.localStorage.setItem('financialData', JSON.stringify(financials));
-          }, 0);
-          return () => clearTimeout(timer);
-      }
-  }, [financials, isClient]);
-
   const totalIncome = financials.filter(r => r.type === 'Income').reduce((sum, r) => sum + r.amount, 0);
   const totalExpense = financials.filter(r => r.type === 'Expense').reduce((sum, r) => sum + r.amount, 0);
   const netProfit = totalIncome - totalExpense;
@@ -128,7 +119,12 @@ export default function FinancePage() {
           amount: parseFloat(amount),
       };
 
-      setFinancials(prev => [newTransaction, ...prev]);
+      const updatedFinancials = [newTransaction, ...financials];
+      setFinancials(updatedFinancials);
+
+      setTimeout(() => {
+        window.localStorage.setItem('financialData', JSON.stringify(updatedFinancials));
+      }, 0);
 
       toast({
           title: "Transaction Saved",

@@ -40,18 +40,13 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 const TaskItem = React.memo(({ task, onToggle, onEdit, onDelete }: { task: Task; onToggle: (id: string, completed: boolean) => void; onEdit: (task: Task) => void; onDelete: (task: Task) => void; }) => {
-  const [isClient, setIsClient] = React.useState(false);
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   return (
     <div className={cn("flex items-start gap-3 rounded-lg p-3 hover:bg-accent", task.completed && "opacity-60")}>
       <Checkbox id={`task-${task.id}`} checked={task.completed} onCheckedChange={(checked) => onToggle(task.id, !!checked)} className="mt-1" />
       <label htmlFor={`task-${task.id}`} className="flex-1 cursor-pointer">
         <p className={cn("font-medium", task.completed && "line-through")}>{task.title}</p>
         <div className="flex items-center gap-2 flex-wrap">
-          {isClient && <p className="text-sm text-muted-foreground">{format(new Date(task.dueDate), 'P')}</p>}
+          <p className="text-sm text-muted-foreground">{format(new Date(task.dueDate), 'P')}</p>
           <Badge variant="secondary">{task.category}</Badge>
           {task.livestockId && task.livestockName && (
               <Button variant="link" size="sm" className="h-auto p-0" asChild>
@@ -125,22 +120,16 @@ export default function TasksPage() {
     }
   }, []);
 
-  useEffect(() => {
-    if (isClient) {
-      const timer = setTimeout(() => {
-        window.localStorage.setItem('tasksData', JSON.stringify(tasks));
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [tasks, isClient]);
-
   const handleToggleTask = useCallback((taskId: string, completed: boolean) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task =>
+    const updatedTasks = tasks.map(task =>
         task.id === taskId ? { ...task, completed } : task
-      ).sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-    );
-  }, []);
+      ).sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+
+    setTasks(updatedTasks);
+    setTimeout(() => {
+      window.localStorage.setItem('tasksData', JSON.stringify(updatedTasks));
+    }, 0);
+  }, [tasks]);
 
   const handleAddTask = () => {
     if (!newTask.title || !newTask.dueDate || !newTask.category) {
@@ -165,7 +154,11 @@ export default function TasksPage() {
       livestockCategory: newTask.livestockCategory,
     };
 
-    setTasks(prevTasks => [taskToAdd, ...prevTasks].sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+    const updatedTasks = [taskToAdd, ...tasks].sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    setTasks(updatedTasks);
+    setTimeout(() => {
+      window.localStorage.setItem('tasksData', JSON.stringify(updatedTasks));
+    }, 0);
 
     toast({
       title: "Task Added",
@@ -183,18 +176,18 @@ export default function TasksPage() {
   };
   
   const handleEditClick = useCallback((task: Task) => {
-    setTimeout(() => {
-        setSelectedTask(task);
-        setEditDialogOpen(true);
-    }, 0);
+    setSelectedTask(task);
+    setEditDialogOpen(true);
   }, []);
 
   const handleUpdateTask = () => {
     if (!selectedTask) return;
 
-    setTasks(prevTasks =>
-      prevTasks.map(t => (t.id === selectedTask.id ? selectedTask : t))
-    );
+    const updatedTasks = tasks.map(t => (t.id === selectedTask.id ? selectedTask : t));
+    setTasks(updatedTasks);
+    setTimeout(() => {
+      window.localStorage.setItem('tasksData', JSON.stringify(updatedTasks));
+    }, 0);
 
     toast({
       title: "Task Updated",
@@ -206,16 +199,18 @@ export default function TasksPage() {
   };
   
   const handleDeleteClick = useCallback((task: Task) => {
-    setTimeout(() => {
-        setSelectedTask(task);
-        setDeleteDialogOpen(true);
-    }, 0);
+    setSelectedTask(task);
+    setDeleteDialogOpen(true);
   }, []);
 
   const handleConfirmDelete = () => {
     if (!selectedTask) return;
 
-    setTasks(prevTasks => prevTasks.filter(t => t.id !== selectedTask.id));
+    const updatedTasks = tasks.filter(t => t.id !== selectedTask.id);
+    setTasks(updatedTasks);
+    setTimeout(() => {
+      window.localStorage.setItem('tasksData', JSON.stringify(updatedTasks));
+    }, 0);
 
     toast({
       variant: "destructive",
@@ -453,5 +448,3 @@ export default function TasksPage() {
     </>
   );
 }
-
-    

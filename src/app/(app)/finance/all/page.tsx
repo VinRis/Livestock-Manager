@@ -55,15 +55,6 @@ export default function AllTransactionsPage() {
     }
   }, []);
 
-  useEffect(() => {
-      if (isClient) {
-          const timer = setTimeout(() => {
-            window.localStorage.setItem('financialData', JSON.stringify(financials));
-          }, 0);
-          return () => clearTimeout(timer);
-      }
-  }, [financials, isClient]);
-
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
       setSelectedRows(financials.map(t => t.id));
@@ -92,14 +83,24 @@ export default function AllTransactionsPage() {
   const handleConfirmDelete = () => {
     if (!activeTransaction) return;
     
-    setFinancials(prev => prev.filter(t => t.id !== activeTransaction.id));
+    const updatedFinancials = financials.filter(t => t.id !== activeTransaction.id);
+    setFinancials(updatedFinancials);
+    setTimeout(() => {
+      window.localStorage.setItem('financialData', JSON.stringify(updatedFinancials));
+    }, 0);
+
     toast({ variant: "destructive", title: "Transaction Deleted", description: "The transaction has been removed." });
     setDeleteDialogOpen(false);
     setActiveTransaction(null);
   };
   
   const handleConfirmBatchDelete = () => {
-    setFinancials(prev => prev.filter(t => !selectedRows.includes(t.id)));
+    const updatedFinancials = financials.filter(t => !selectedRows.includes(t.id));
+    setFinancials(updatedFinancials);
+    setTimeout(() => {
+      window.localStorage.setItem('financialData', JSON.stringify(updatedFinancials));
+    }, 0);
+
     toast({ variant: "destructive", title: `${selectedRows.length} Transactions Deleted`, description: "The selected transactions have been removed." });
     setBatchDeleteDialogOpen(false);
     setSelectedRows([]);

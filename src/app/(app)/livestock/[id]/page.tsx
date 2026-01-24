@@ -1675,28 +1675,12 @@ export default function LivestockDetailPage() {
     }
   }, [id, isClient, livestockList]);
 
-  useEffect(() => {
-    if (isClient) {
-      const timer = setTimeout(() => {
-        window.localStorage.setItem('livestockData', JSON.stringify(livestockList));
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [livestockList, isClient]);
-
-  useEffect(() => {
-    if (isClient) {
-      const timer = setTimeout(() => {
-        window.localStorage.setItem('financialData', JSON.stringify(financialData));
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [financialData, isClient]);
-
-
   const handleUpdate = (updatedAnimal: Livestock) => {
     const updatedList = livestockList.map(a => a.id === updatedAnimal.id ? updatedAnimal : a);
     setLivestockList(updatedList);
+    setTimeout(() => {
+        window.localStorage.setItem('livestockData', JSON.stringify(updatedList));
+    }, 0);
   };
   
   const handleFinancialUpdate = (updatedRecord: FinancialRecord) => {
@@ -1711,6 +1695,9 @@ export default function LivestockDetailPage() {
         updatedFinancialData = [...financialData, updatedRecord];
     }
     setFinancialData(updatedFinancialData);
+    setTimeout(() => {
+        window.localStorage.setItem('financialData', JSON.stringify(updatedFinancialData));
+    }, 0);
   };
   
   if (!isClient || currentAnimal === undefined) {

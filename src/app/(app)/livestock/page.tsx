@@ -414,76 +414,68 @@ function LivestockPageContent() {
   const category = searchParams.get("category");
   const [isClient, setIsClient] = useState(false);
 
+  const [livestock, setLivestock] = useState<Livestock[]>([]);
+  const [categories, setCategories] = useState<CategoryDefinition[]>([]);
+
   useEffect(() => {
     setIsClient(true);
-  }, []);
-
-  const [livestock, setLivestock] = useState<Livestock[]>(() => {
-    if (typeof window === 'undefined') {
-      return [];
-    }
     try {
       const item = window.localStorage.getItem('livestockData');
-      return item ? JSON.parse(item) : [];
+      setLivestock(item ? JSON.parse(item) : []);
     } catch (error) {
       console.error(error);
-      return [];
-    }
-  });
-
-  const [categories, setCategories] = useState<CategoryDefinition[]>(() => {
-    if (typeof window === 'undefined') {
-      return [];
+      setLivestock([]);
     }
     try {
       const item = window.localStorage.getItem('categoriesData');
-      return item ? JSON.parse(item) : [];
+      setCategories(item ? JSON.parse(item) : []);
     } catch (error) {
       console.error(error);
-      return [];
+      setCategories([]);
     }
-  });
-
-  useEffect(() => {
-    if (isClient) {
-      const timer = setTimeout(() => {
-        window.localStorage.setItem('livestockData', JSON.stringify(livestock));
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [livestock, isClient]);
-
-  useEffect(() => {
-    if (isClient) {
-      const timer = setTimeout(() => {
-        window.localStorage.setItem('categoriesData', JSON.stringify(categories));
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [categories, isClient]);
-
+  }, []);
 
   const handleAddAnimal = (animal: Livestock) => {
-    setLivestock(prev => [...prev, animal]);
+    const updatedLivestock = [...livestock, animal];
+    setLivestock(updatedLivestock);
+    setTimeout(() => {
+        window.localStorage.setItem('livestockData', JSON.stringify(updatedLivestock));
+    }, 0);
   };
   
   const handleAddBatch = (batch: Livestock) => {
-    setLivestock(prev => [...prev, batch]);
+    const updatedLivestock = [...livestock, batch];
+    setLivestock(updatedLivestock);
+    setTimeout(() => {
+        window.localStorage.setItem('livestockData', JSON.stringify(updatedLivestock));
+    }, 0);
   };
 
   const handleAddCategory = (newCategoryName: string, managementStyle: ManagementStyle) => {
     if (newCategoryName && !categories.some(c => c.name.toLowerCase() === newCategoryName.toLowerCase())) {
       const newCategory = { name: newCategoryName, icon: 'CowIcon', managementStyle: managementStyle };
-      setCategories(prev => [...prev, newCategory]);
+      const updatedCategories = [...categories, newCategory];
+      setCategories(updatedCategories);
+      setTimeout(() => {
+        window.localStorage.setItem('categoriesData', JSON.stringify(updatedCategories));
+      }, 0);
     }
   };
 
   const handleDeleteCategory = (categoryName: LivestockCategoryName) => {
-    setCategories(prev => prev.filter(c => c.name !== categoryName));
+    const updatedCategories = categories.filter(c => c.name !== categoryName);
+    setCategories(updatedCategories);
+    setTimeout(() => {
+        window.localStorage.setItem('categoriesData', JSON.stringify(updatedCategories));
+    }, 0);
   };
 
   const handleUpdateCategory = (updatedCategory: CategoryDefinition) => {
-    setCategories(prev => prev.map(c => c.name === updatedCategory.name ? updatedCategory : c));
+    const updatedCategories = categories.map(c => c.name === updatedCategory.name ? updatedCategory : c);
+    setCategories(updatedCategories);
+    setTimeout(() => {
+        window.localStorage.setItem('categoriesData', JSON.stringify(updatedCategories));
+    }, 0);
   };
   
   if (!isClient) {
