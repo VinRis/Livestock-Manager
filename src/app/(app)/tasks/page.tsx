@@ -37,64 +37,58 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
-const ClientFormattedDate = React.memo(({ date, className }: { date: string, className?: string }) => {
+const TaskItem = React.memo(({ task, onToggle, onEdit, onDelete }: { task: Task; onToggle: (id: string, completed: boolean) => void; onEdit: (task: Task) => void; onDelete: (task: Task) => void; }) => {
   const [isClient, setIsClient] = React.useState(false);
   React.useEffect(() => {
     setIsClient(true);
   }, []);
 
   return (
-    <p className={cn("text-sm text-muted-foreground", className)}>
-      {isClient ? new Date(date).toLocaleDateString() : <>&nbsp;</>}
-    </p>
-  );
+    <div className={cn("flex items-start gap-3 rounded-lg p-3 hover:bg-accent", task.completed && "opacity-60")}>
+      <Checkbox id={`task-${task.id}`} checked={task.completed} onCheckedChange={(checked) => onToggle(task.id, !!checked)} className="mt-1" />
+      <label htmlFor={`task-${task.id}`} className="flex-1 cursor-pointer">
+        <p className={cn("font-medium", task.completed && "line-through")}>{task.title}</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          {isClient && <p className="text-sm text-muted-foreground">{format(new Date(task.dueDate), 'P')}</p>}
+          <Badge variant="secondary">{task.category}</Badge>
+          {task.livestockId && task.livestockName && (
+              <Button variant="link" size="sm" className="h-auto p-0" asChild>
+                  <Link href={`/livestock/${task.livestockId}`} className="text-xs">
+                      <LinkIcon className="mr-1 h-3 w-3"/>
+                      {task.livestockName}
+                  </Link>
+              </Button>
+          )}
+          {task.livestockCategory && !task.livestockId && (
+              <Button variant="link" size="sm" className="h-auto p-0" asChild>
+                  <Link href={`/livestock?category=${task.livestockCategory.toLowerCase()}`} className="text-xs">
+                      <LinkIcon className="mr-1 h-3 w-3"/>
+                      {task.livestockCategory}
+                  </Link>
+              </Button>
+          )}
+        </div>
+      </label>
+      <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="h-4 w-4" />
+              </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => onEdit(task)}>
+                  <Edit className="mr-2 h-4 w-4"/>Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onDelete(task)} className="text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4"/>Delete
+              </DropdownMenuItem>
+          </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  )
 });
-ClientFormattedDate.displayName = 'ClientFormattedDate';
-
-const TaskItem = React.memo(({ task, onToggle, onEdit, onDelete }: { task: Task; onToggle: (id: string, completed: boolean) => void; onEdit: (task: Task) => void; onDelete: (task: Task) => void; }) => (
-  <div className={cn("flex items-start gap-3 rounded-lg p-3 hover:bg-accent", task.completed && "opacity-60")}>
-    <Checkbox id={`task-${task.id}`} checked={task.completed} onCheckedChange={(checked) => onToggle(task.id, !!checked)} className="mt-1" />
-    <label htmlFor={`task-${task.id}`} className="flex-1 cursor-pointer">
-      <p className={cn("font-medium", task.completed && "line-through")}>{task.title}</p>
-      <div className="flex items-center gap-2 flex-wrap">
-        <ClientFormattedDate date={task.dueDate} />
-        <Badge variant="secondary">{task.category}</Badge>
-        {task.livestockId && task.livestockName && (
-            <Button variant="link" size="sm" className="h-auto p-0" asChild>
-                <Link href={`/livestock/${task.livestockId}`} className="text-xs">
-                    <LinkIcon className="mr-1 h-3 w-3"/>
-                    {task.livestockName}
-                </Link>
-            </Button>
-        )}
-        {task.livestockCategory && !task.livestockId && (
-            <Button variant="link" size="sm" className="h-auto p-0" asChild>
-                <Link href={`/livestock?category=${task.livestockCategory.toLowerCase()}`} className="text-xs">
-                    <LinkIcon className="mr-1 h-3 w-3"/>
-                    {task.livestockCategory}
-                </Link>
-            </Button>
-        )}
-      </div>
-    </label>
-    <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
-            </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => onEdit(task)}>
-                <Edit className="mr-2 h-4 w-4"/>Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onDelete(task)} className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4"/>Delete
-            </DropdownMenuItem>
-        </DropdownMenuContent>
-    </DropdownMenu>
-  </div>
-));
 TaskItem.displayName = 'TaskItem';
 
 export default function TasksPage() {
@@ -456,3 +450,5 @@ export default function TasksPage() {
     </>
   );
 }
+
+    

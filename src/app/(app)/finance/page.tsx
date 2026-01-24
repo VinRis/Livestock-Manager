@@ -3,6 +3,7 @@
 
 import { DollarSign, PlusCircle, TrendingDown, TrendingUp } from "lucide-react";
 import React, { useState, useMemo, useEffect } from 'react';
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,20 +20,6 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-const ClientFormattedDate = React.memo(({ date, className }: { date: string, className?: string }) => {
-  const [isClient, setIsClient] = React.useState(false);
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  return (
-    <div className={cn("text-sm text-muted-foreground", className)}>
-      {isClient ? new Date(date).toLocaleDateString() : <>&nbsp;</>}
-    </div>
-  );
-});
-ClientFormattedDate.displayName = 'ClientFormattedDate';
 
 export default function FinancePage() {
   const { currency } = useCurrency();
@@ -277,7 +264,7 @@ export default function FinancePage() {
                               <div className="flex-1 space-y-1">
                                   <p className="font-medium break-words">{record.description}</p>
                                   <p className="text-sm text-muted-foreground">{record.category}</p>
-                                  <ClientFormattedDate date={record.date} />
+                                  {isClient && <p className="text-sm text-muted-foreground">{format(new Date(record.date), 'P')}</p>}
                               </div>
                               <div className={cn("pl-2 text-right font-semibold", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
                                   {record.type === 'Income' ? '+' : '-'}{currency}{record.amount.toLocaleString()}
@@ -299,7 +286,7 @@ export default function FinancePage() {
                       <TableRow key={record.id}>
                         <TableCell>
                           <div className="font-medium">{record.description}</div>
-                          <ClientFormattedDate date={record.date} />
+                           {isClient && <p className="text-sm text-muted-foreground">{format(new Date(record.date), 'P')}</p>}
                         </TableCell>
                         <TableCell>{record.category}</TableCell>
                         <TableCell className={cn("text-right", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
@@ -386,3 +373,5 @@ export default function FinancePage() {
     </>
   );
 }
+
+    

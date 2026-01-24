@@ -11,21 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { type FinancialRecord } from '@/lib/data';
 import { cn } from '@/lib/utils';
-
-// This component is now memoized and uses a client-side check to avoid hydration issues without causing extra re-renders for the whole list.
-const ClientFormattedDate = React.memo(({ date, className }: { date: string; className?: string }) => {
-  const [isClient, setIsClient] = React.useState(false);
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  return (
-    <p className={cn("text-sm text-muted-foreground", className)}>
-      {isClient ? new Date(date).toLocaleDateString() : <>&nbsp;</>}
-    </p>
-  );
-});
-ClientFormattedDate.displayName = 'ClientFormattedDate';
+import { format } from 'date-fns';
 
 type TransactionItemProps = {
     record: FinancialRecord;
@@ -38,6 +24,11 @@ type TransactionItemProps = {
 
 // Mobile Card Item wrapped in React.memo
 export const TransactionCardItem = React.memo(({ record, isSelected, currency, onSelectRow, onEdit, onDelete }: TransactionItemProps) => {
+    const [isClient, setIsClient] = React.useState(false);
+    React.useEffect(() => {
+        setIsClient(true);
+    }, []);
+
     return (
         <Card className={cn(isSelected && "border-primary bg-accent/50")}>
             <CardContent className="p-4 flex items-start gap-3">
@@ -59,7 +50,7 @@ export const TransactionCardItem = React.memo(({ record, isSelected, currency, o
                         <Badge variant={record.type === 'Income' ? 'default' : 'destructive'} className="text-xs">{record.type}</Badge>
                         <span>{record.category}</span>
                     </div>
-                    <ClientFormattedDate date={record.date} className="!text-xs" />
+                    {isClient && <p className="text-xs text-muted-foreground">{format(new Date(record.date), 'P')}</p>}
                 </label>
                 <div className="flex-none -mt-2 -mr-2">
                     <DropdownMenu>
@@ -86,6 +77,11 @@ TransactionCardItem.displayName = 'TransactionCardItem';
 
 // Desktop Table Row Item wrapped in React.memo
 export const TransactionTableRowItem = React.memo(({ record, isSelected, currency, onSelectRow, onEdit, onDelete }: TransactionItemProps) => {
+    const [isClient, setIsClient] = React.useState(false);
+    React.useEffect(() => {
+        setIsClient(true);
+    }, []);
+    
     return (
         <TableRow data-state={isSelected ? "selected" : ""}>
             <TableCell>
@@ -96,7 +92,7 @@ export const TransactionTableRowItem = React.memo(({ record, isSelected, currenc
             </TableCell>
             <TableCell>
                 <div className="font-medium">{record.description}</div>
-                <ClientFormattedDate date={record.date} />
+                {isClient && <p className="text-sm text-muted-foreground">{format(new Date(record.date), 'P')}</p>}
             </TableCell>
             <TableCell>
                 <Badge variant={record.type === 'Income' ? 'default' : 'destructive'}>{record.type}</Badge>
@@ -126,3 +122,5 @@ export const TransactionTableRowItem = React.memo(({ record, isSelected, currenc
     );
 });
 TransactionTableRowItem.displayName = 'TransactionTableRowItem';
+
+    
