@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Edit, Trash2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { type FinancialRecord } from "@/lib/data";
@@ -26,6 +26,8 @@ import {
 import { TransactionCardItem, TransactionTableRowItem } from '../transaction-item';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+const ITEMS_PER_PAGE = 25;
+
 export default function AllTransactionsPage() {
   const { currency } = useCurrency();
   const { toast } = useToast();
@@ -41,6 +43,9 @@ export default function AllTransactionsPage() {
   // State for editing/deleting
   const [activeTransaction, setActiveTransaction] = useState<FinancialRecord | null>(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -54,6 +59,21 @@ export default function AllTransactionsPage() {
         setFinancials([]);
     }
   }, []);
+
+  // Pagination Calculations
+  const totalPages = Math.ceil(financials.length / ITEMS_PER_PAGE);
+  const paginatedFinancials = financials.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
@@ -85,6 +105,12 @@ export default function AllTransactionsPage() {
     
     const updatedFinancials = financials.filter(t => t.id !== activeTransaction.id);
     setFinancials(updatedFinancials);
+
+    // Adjust current page if the last item on a page is deleted
+    if (paginatedFinancials.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+    }
+    
     setTimeout(() => {
       window.localStorage.setItem('financialData', JSON.stringify(updatedFinancials));
     }, 0);
@@ -97,6 +123,7 @@ export default function AllTransactionsPage() {
   const handleConfirmBatchDelete = () => {
     const updatedFinancials = financials.filter(t => !selectedRows.includes(t.id));
     setFinancials(updatedFinancials);
+    setCurrentPage(1); // Reset to first page after batch delete
     setTimeout(() => {
       window.localStorage.setItem('financialData', JSON.stringify(updatedFinancials));
     }, 0);
@@ -116,26 +143,24 @@ export default function AllTransactionsPage() {
         No transactions found.
       </div>
     );
-
+    
     if (financials.length === 0) {
-      if (isMobile) return noTransactions;
-      return (
-        <Table>
-          <TableBody>
-            <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
-                No transactions found.
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      )
+      return noTransactions;
+    }
+
+    if (paginatedFinancials.length === 0) {
+        return (
+            <div className="text-center text-muted-foreground py-8">
+                No transactions on this page.
+                <Button variant="link" onClick={() => setCurrentPage(1)}>Go to first page</Button>
+            </div>
+        );
     }
 
     if (isMobile) {
       return (
         <div className="space-y-3">
-          {financials.map(record => (
+          {paginatedFinancials.map(record => (
               <TransactionCardItem
                 key={`mobile-${record.id}`}
                 record={record}
@@ -169,7 +194,7 @@ export default function AllTransactionsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {financials.map(record => (
+            {paginatedFinancials.map(record => (
               <TransactionTableRowItem
                 key={record.id}
                 record={record}
@@ -212,6 +237,23 @@ export default function AllTransactionsPage() {
           <CardContent>
             {renderContent()}
           </CardContent>
+          {totalPages > 1 && (
+            <CardFooter>
+                <div className="flex items-center justify-between w-full">
+                    <div className="text-xs text-muted-foreground">
+                        Page {currentPage} of {totalPages}
+                    </div>
+                    <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={currentPage === 1}>
+                        Previous
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleNextPage} disabled={currentPage === totalPages}>
+                        Next
+                    </Button>
+                    </div>
+                </div>
+            </CardFooter>
+          )}
         </Card>
       </main>
 

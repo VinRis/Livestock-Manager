@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { PlusCircle, Link as LinkIcon, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { type Activity, type Livestock, type CategoryDefinition } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,6 +36,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Combobox } from "@/components/ui/combobox";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+
+const ITEMS_PER_PAGE = 20;
 
 const formatRelativeDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -78,6 +80,9 @@ export default function ActivityLogPage() {
   
   // State for editing/deleting
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     setIsClient(true);
@@ -98,6 +103,20 @@ export default function ActivityLogPage() {
       setLivestock([]);
     }
   }, []);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(activityLog.length / ITEMS_PER_PAGE);
+  const paginatedActivities = activityLog.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
 
   const handleLogActivity = () => {
     if (!newActivity.type || !newActivity.date) {
@@ -182,6 +201,10 @@ export default function ActivityLogPage() {
     
     const updatedLog = activityLog.filter(act => act.id !== selectedActivity.id);
     setActivityLog(updatedLog);
+    
+    if (paginatedActivities.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+    }
 
     setTimeout(() => {
         window.localStorage.setItem('activityLogData', JSON.stringify(updatedLog));
@@ -229,7 +252,7 @@ export default function ActivityLogPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-6">
-                    {activityLog.map((activity) => (
+                    {paginatedActivities.map((activity) => (
                         <div key={activity.id} className="relative pl-8">
                         <div className="absolute left-0 top-1 h-full border-l-2 border-border"></div>
                         <div className="absolute left-[-5px] top-1 h-3 w-3 rounded-full bg-primary"></div>
@@ -282,6 +305,23 @@ export default function ActivityLogPage() {
                     )}
                     </div>
                 </CardContent>
+                {totalPages > 1 && (
+                    <CardFooter>
+                        <div className="flex items-center justify-between w-full">
+                            <div className="text-xs text-muted-foreground">
+                                Page {currentPage} of {totalPages}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={currentPage === 1}>
+                                    Previous
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={handleNextPage} disabled={currentPage === totalPages}>
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
+                    </CardFooter>
+                )}
                 </Card>
             </main>
 

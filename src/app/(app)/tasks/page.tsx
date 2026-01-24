@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { PlusCircle, Link as LinkIcon, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+
+const ITEMS_PER_PAGE = 20;
 
 const TaskItem = React.memo(({ task, onToggle, onEdit, onDelete }: { task: Task; onToggle: (id: string, completed: boolean) => void; onEdit: (task: Task) => void; onDelete: (task: Task) => void; }) => {
   return (
@@ -86,6 +88,32 @@ const TaskItem = React.memo(({ task, onToggle, onEdit, onDelete }: { task: Task;
 });
 TaskItem.displayName = 'TaskItem';
 
+const PaginationControls = ({
+    totalPages,
+    currentPage,
+    setCurrentPage,
+}: {
+    totalPages: number;
+    currentPage: number;
+    setCurrentPage: (page: number) => void;
+}) => {
+    if (totalPages <= 1) return null;
+
+    return (
+        <div className="flex items-center justify-end gap-2 pt-4">
+            <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+            </span>
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1}>
+                Previous
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages}>
+                Next
+            </Button>
+        </div>
+    );
+};
+
 export default function TasksPage() {
   const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -96,6 +124,9 @@ export default function TasksPage() {
   const [isEditDialogOpen, setEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  // Pagination states
+  const [pagination, setPagination] = useState({ today: 1, upcoming: 1, past: 1 });
+  
   // Form state
   const [newTask, setNewTask] = useState({
     title: '',
@@ -222,38 +253,48 @@ export default function TasksPage() {
     setSelectedTask(null);
   };
 
+  const { todaysTasks, upcomingTasks, pastTasks } = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    const todays: Task[] = [];
+    const upcoming: Task[] = [];
+    const past: Task[] = [];
 
-  const todaysTasks = tasks.filter(task => {
-    const dueDate = new Date(task.dueDate);
-    dueDate.setHours(0,0,0,0);
-    return dueDate.getTime() === today.getTime();
-  });
-  
-  const upcomingTasks = tasks.filter(task => {
-     const dueDate = new Date(task.dueDate);
-     dueDate.setHours(0,0,0,0);
-     return dueDate.getTime() > today.getTime();
-  });
+    tasks.forEach(task => {
+        const dueDate = new Date(task.dueDate);
+        dueDate.setHours(0,0,0,0);
+        if (dueDate.getTime() === today.getTime()) {
+            todays.push(task);
+        } else if (dueDate.getTime() > today.getTime()) {
+            upcoming.push(task);
+        } else {
+            past.push(task);
+        }
+    });
 
-  const pastTasks = tasks.filter(task => {
-    const dueDate = new Date(task.dueDate);
-    dueDate.setHours(0,0,0,0);
-    return dueDate.getTime() < today.getTime();
-  });
+    return { todaysTasks: todays, upcomingTasks: upcoming, pastTasks: past };
+  }, [tasks]);
 
   const taskCategories: Task['category'][] = ['Health', 'Feeding', 'Maintenance', 'Admin'];
   const livestockOptions = livestockData.map(animal => ({ value: animal.id, label: `${animal.name} (${animal.tagId})`}));
   const categoryOptions = categoriesData.map(cat => ({ value: cat.name, label: cat.name }));
 
-  
+  const getPaginatedData = (data: Task[], page: number) => {
+    const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
+    const paginatedData = data.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+    return { paginatedData, totalPages };
+  };
+
+  const todayData = getPaginatedData(todaysTasks, pagination.today);
+  const upcomingData = getPaginatedData(upcomingTasks, pagination.upcoming);
+  const pastData = getPaginatedData(pastTasks, pagination.past);
+
   return (
     <>
       <PageHeader title="Task Scheduler" />
       <main className="flex-1 space-y-4 p-4 pt-2 sm:p-6 sm:pt-2">
-        <Tabs defaultValue="today" className="w-full">
+        <Tabs defaultValue="today" className="w-full" onValueChange={() => setPagination({ today: 1, upcoming: 1, past: 1 })}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="today">Today</TabsTrigger>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
@@ -263,8 +304,9 @@ export default function TasksPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                  {todaysTasks.length > 0 ? todaysTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick} />) : <p className="text-muted-foreground text-center p-4">No tasks for today.</p>}
+                  {todayData.paginatedData.length > 0 ? todayData.paginatedData.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick} />) : <p className="text-muted-foreground text-center p-4">No tasks for today.</p>}
                 </div>
+                <PaginationControls totalPages={todayData.totalPages} currentPage={pagination.today} setCurrentPage={(page) => setPagination(p => ({...p, today: page}))} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -272,8 +314,9 @@ export default function TasksPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                   {upcomingTasks.length > 0 ? upcomingTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick}/>) : <p className="text-muted-foreground text-center p-4">No upcoming tasks.</p>}
+                   {upcomingData.paginatedData.length > 0 ? upcomingData.paginatedData.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick}/>) : <p className="text-muted-foreground text-center p-4">No upcoming tasks.</p>}
                 </div>
+                <PaginationControls totalPages={upcomingData.totalPages} currentPage={pagination.upcoming} setCurrentPage={(page) => setPagination(p => ({...p, upcoming: page}))} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -281,8 +324,9 @@ export default function TasksPage() {
             <Card>
               <CardContent className="pt-6">
                  <div className="space-y-2">
-                   {pastTasks.length > 0 ? pastTasks.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick}/>) : <p className="text-muted-foreground text-center p-4">No past tasks.</p>}
+                   {pastData.paginatedData.length > 0 ? pastData.paginatedData.map(task => <TaskItem key={task.id} task={task} onToggle={handleToggleTask} onEdit={handleEditClick} onDelete={handleDeleteClick}/>) : <p className="text-muted-foreground text-center p-4">No past tasks.</p>}
                 </div>
+                <PaginationControls totalPages={pastData.totalPages} currentPage={pagination.past} setCurrentPage={(page) => setPagination(p => ({...p, past: page}))} />
               </CardContent>
             </Card>
           </TabsContent>
