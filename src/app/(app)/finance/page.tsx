@@ -53,7 +53,10 @@ export default function FinancePage() {
 
   useEffect(() => {
       if (isClient) {
-          window.localStorage.setItem('financialData', JSON.stringify(financials));
+          const timer = setTimeout(() => {
+            window.localStorage.setItem('financialData', JSON.stringify(financials));
+          }, 0);
+          return () => clearTimeout(timer);
       }
   }, [financials, isClient]);
 

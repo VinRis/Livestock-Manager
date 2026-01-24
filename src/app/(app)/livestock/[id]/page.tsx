@@ -1165,7 +1165,7 @@ function BatchProfile({ initialAnimal, onUpdate, allLivestock, onFinancialUpdate
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 pt-0">
-                  <div className="text-xl font-bold">{acquisitionCostRecord ? `${currency}${acquisitionCostRecord.amount.toLocaleString()}` : 'N/A'}</div>
+                  <div className="text-xl font-bold">{acquisitionCostRecord ? `${currency}${(acquisitionCostRecord.amount || 0).toLocaleString()}` : 'N/A'}</div>
                 </CardContent>
               </Card>
             </div>
@@ -1677,13 +1677,19 @@ export default function LivestockDetailPage() {
 
   useEffect(() => {
     if (isClient) {
-      window.localStorage.setItem('livestockData', JSON.stringify(livestockList));
+      const timer = setTimeout(() => {
+        window.localStorage.setItem('livestockData', JSON.stringify(livestockList));
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [livestockList, isClient]);
 
   useEffect(() => {
     if (isClient) {
-      window.localStorage.setItem('financialData', JSON.stringify(financialData));
+      const timer = setTimeout(() => {
+        window.localStorage.setItem('financialData', JSON.stringify(financialData));
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [financialData, isClient]);
 

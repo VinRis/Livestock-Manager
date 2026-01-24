@@ -446,13 +446,19 @@ function LivestockPageContent() {
 
   useEffect(() => {
     if (isClient) {
-      window.localStorage.setItem('livestockData', JSON.stringify(livestock));
+      const timer = setTimeout(() => {
+        window.localStorage.setItem('livestockData', JSON.stringify(livestock));
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [livestock, isClient]);
 
   useEffect(() => {
     if (isClient) {
-      window.localStorage.setItem('categoriesData', JSON.stringify(categories));
+      const timer = setTimeout(() => {
+        window.localStorage.setItem('categoriesData', JSON.stringify(categories));
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [categories, isClient]);
 

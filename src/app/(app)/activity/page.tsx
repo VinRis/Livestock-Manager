@@ -101,7 +101,10 @@ export default function ActivityLogPage() {
 
   useEffect(() => {
     if (isClient) {
-      window.localStorage.setItem('activityLogData', JSON.stringify(activityLog));
+      const timer = setTimeout(() => {
+        window.localStorage.setItem('activityLogData', JSON.stringify(activityLog));
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [activityLog, isClient]);
 

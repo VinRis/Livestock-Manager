@@ -127,7 +127,10 @@ export default function TasksPage() {
 
   useEffect(() => {
     if (isClient) {
-      window.localStorage.setItem('tasksData', JSON.stringify(tasks));
+      const timer = setTimeout(() => {
+        window.localStorage.setItem('tasksData', JSON.stringify(tasks));
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [tasks, isClient]);
 
