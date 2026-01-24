@@ -20,21 +20,19 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const ClientFormattedDate = ({ date }: { date: string }) => {
-  const [formattedDate, setFormattedDate] = useState('');
+const ClientFormattedDate = React.memo(({ date, className }: { date: string, className?: string }) => {
+  const [isClient, setIsClient] = React.useState(false);
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  useEffect(() => {
-    // This code runs only on the client, after hydration
-    setFormattedDate(new Date(date).toLocaleDateString());
-  }, [date]);
-
-  // Render a placeholder or null on the server and initial client render
-  if (!formattedDate) {
-    return null;
-  }
-
-  return <div className="text-sm text-muted-foreground">{formattedDate}</div>;
-};
+  return (
+    <div className={cn("text-sm text-muted-foreground", className)}>
+      {isClient ? new Date(date).toLocaleDateString() : <>&nbsp;</>}
+    </div>
+  );
+});
+ClientFormattedDate.displayName = 'ClientFormattedDate';
 
 export default function FinancePage() {
   const { currency } = useCurrency();

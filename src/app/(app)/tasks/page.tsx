@@ -38,20 +38,19 @@ import { useToast } from "@/hooks/use-toast";
 import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 
-const ClientFormattedDate = ({ date }: { date: string }) => {
-  const [formattedDate, setFormattedDate] = useState('');
+const ClientFormattedDate = React.memo(({ date, className }: { date: string, className?: string }) => {
+  const [isClient, setIsClient] = React.useState(false);
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  useEffect(() => {
-    setFormattedDate(new Date(date).toLocaleDateString());
-  }, [date]);
-
-  // Render a placeholder on the server and during the initial client render
-  if (!formattedDate) {
-    return <span className="text-sm text-muted-foreground">Loading date...</span>;
-  }
-
-  return <p className="text-sm text-muted-foreground">{formattedDate}</p>;
-};
+  return (
+    <p className={cn("text-sm text-muted-foreground", className)}>
+      {isClient ? new Date(date).toLocaleDateString() : <>&nbsp;</>}
+    </p>
+  );
+});
+ClientFormattedDate.displayName = 'ClientFormattedDate';
 
 const TaskItem = React.memo(({ task, onToggle, onEdit, onDelete }: { task: Task; onToggle: (id: string, completed: boolean) => void; onEdit: (task: Task) => void; onDelete: (task: Task) => void; }) => (
   <div className={cn("flex items-start gap-3 rounded-lg p-3 hover:bg-accent", task.completed && "opacity-60")}>
