@@ -30,6 +30,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useCurrency } from "@/contexts/currency-context";
+import { saveDataToLocalStorage } from "@/lib/storage";
 
 function calculateAge(birthDate: string) {
   const birth = new Date(birthDate);
@@ -45,21 +46,19 @@ function calculateAge(birthDate: string) {
 
 // Function to add a new activity to localStorage
 const addActivityToLog = (activity: Omit<Activity, 'id'>) => {
-    setTimeout(() => {
-        try {
-            const storedActivities = window.localStorage.getItem('activityLogData');
-            const initialActivityLogData: Activity[] = [];
-            const currentActivities: Activity[] = storedActivities ? JSON.parse(storedActivities) : initialActivityLogData;
-            const newActivity: Activity = {
-                ...activity,
-                id: `act-${Date.now()}`,
-            };
-            const updatedActivities = [newActivity, ...currentActivities];
-            window.localStorage.setItem('activityLogData', JSON.stringify(updatedActivities));
-        } catch (error) {
-            console.error("Could not add activity to log:", error);
-        }
-    }, 0);
+    try {
+        const storedActivities = window.localStorage.getItem('activityLogData');
+        const initialActivityLogData: Activity[] = [];
+        const currentActivities: Activity[] = storedActivities ? JSON.parse(storedActivities) : initialActivityLogData;
+        const newActivity: Activity = {
+            ...activity,
+            id: `act-${Date.now()}`,
+        };
+        const updatedActivities = [newActivity, ...currentActivities];
+        saveDataToLocalStorage('activityLogData', updatedActivities);
+    } catch (error) {
+        console.error("Could not add activity to log:", error);
+    }
 };
 
 function IndividualAnimalProfile({ initialAnimal, onUpdate, allLivestock }: { initialAnimal: Livestock, onUpdate: (updatedAnimal: Livestock) => void, allLivestock: Livestock[] }) {
@@ -1678,9 +1677,7 @@ export default function LivestockDetailPage() {
   const handleUpdate = (updatedAnimal: Livestock) => {
     const updatedList = livestockList.map(a => a.id === updatedAnimal.id ? updatedAnimal : a);
     setLivestockList(updatedList);
-    setTimeout(() => {
-        window.localStorage.setItem('livestockData', JSON.stringify(updatedList));
-    }, 0);
+    saveDataToLocalStorage('livestockData', updatedList);
   };
   
   const handleFinancialUpdate = (updatedRecord: FinancialRecord) => {
@@ -1695,9 +1692,7 @@ export default function LivestockDetailPage() {
         updatedFinancialData = [...financialData, updatedRecord];
     }
     setFinancialData(updatedFinancialData);
-    setTimeout(() => {
-        window.localStorage.setItem('financialData', JSON.stringify(updatedFinancialData));
-    }, 0);
+    saveDataToLocalStorage('financialData', updatedFinancialData);
   };
   
   if (!isClient || currentAnimal === undefined) {

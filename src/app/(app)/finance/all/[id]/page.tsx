@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { type FinancialRecord } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
+import { saveDataToLocalStorage } from "@/lib/storage";
 
 const incomeCategories = ["Milk Sales", "Livestock Sale", "Wool Sales", "Other"];
 const expenseCategories = ["Feed", "Vet Services", "Utilities", "Maintenance", "Livestock Purchase", "Other"];
@@ -59,29 +60,31 @@ export default function EditTransactionPage() {
     const handleSave = () => {
         if (!originalTransaction) return;
 
+        let financials: FinancialRecord[] = [];
         try {
             const stored = window.localStorage.getItem('financialData');
-            const financials: FinancialRecord[] = stored ? JSON.parse(stored) : [];
-            
-            const updatedTransaction: FinancialRecord = {
-                ...originalTransaction,
-                date: new Date(date).toISOString(),
-                description,
-                category,
-                amount: parseFloat(String(amount)) || 0,
-            };
-
-            const updatedFinancials = financials.map(t =>
-                t.id === updatedTransaction.id ? updatedTransaction : t
-            );
-            window.localStorage.setItem('financialData', JSON.stringify(updatedFinancials));
-
-            toast({ title: "Transaction Updated", description: "Your changes have been saved." });
-            router.push('/finance/all');
+            financials = stored ? JSON.parse(stored) : [];
         } catch (e) {
             console.error(e);
-            toast({ variant: "destructive", title: "Error", description: "Could not save your changes." });
+            toast({ variant: "destructive", title: "Error", description: "Could not load existing transactions." });
+            return;
         }
+
+        const updatedTransaction: FinancialRecord = {
+            ...originalTransaction,
+            date: new Date(date).toISOString(),
+            description,
+            category,
+            amount: parseFloat(String(amount)) || 0,
+        };
+
+        const updatedFinancials = financials.map(t =>
+            t.id === updatedTransaction.id ? updatedTransaction : t
+        );
+        saveDataToLocalStorage('financialData', updatedFinancials);
+
+        toast({ title: "Transaction Updated", description: "Your changes have been saved." });
+        router.push('/finance/all');
     };
     
     if (isLoading) {

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { TransactionCardItem, TransactionTableRowItem } from '../transaction-item';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { saveDataToLocalStorage } from '@/lib/storage';
 
 const ITEMS_PER_PAGE = 25;
 
@@ -111,9 +112,7 @@ export default function AllTransactionsPage() {
         setCurrentPage(currentPage - 1);
     }
     
-    setTimeout(() => {
-      window.localStorage.setItem('financialData', JSON.stringify(updatedFinancials));
-    }, 0);
+    saveDataToLocalStorage('financialData', updatedFinancials);
 
     toast({ variant: "destructive", title: "Transaction Deleted", description: "The transaction has been removed." });
     setDeleteDialogOpen(false);
@@ -124,9 +123,7 @@ export default function AllTransactionsPage() {
     const updatedFinancials = financials.filter(t => !selectedRows.includes(t.id));
     setFinancials(updatedFinancials);
     setCurrentPage(1); // Reset to first page after batch delete
-    setTimeout(() => {
-      window.localStorage.setItem('financialData', JSON.stringify(updatedFinancials));
-    }, 0);
+    saveDataToLocalStorage('financialData', updatedFinancials);
 
     toast({ variant: "destructive", title: `${selectedRows.length} Transactions Deleted`, description: "The selected transactions have been removed." });
     setBatchDeleteDialogOpen(false);

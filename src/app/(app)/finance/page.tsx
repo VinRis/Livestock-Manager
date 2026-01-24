@@ -20,6 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { saveDataToLocalStorage } from "@/lib/storage";
 
 export default function FinancePage() {
   const { currency } = useCurrency();
@@ -122,9 +123,7 @@ export default function FinancePage() {
       const updatedFinancials = [newTransaction, ...financials];
       setFinancials(updatedFinancials);
 
-      setTimeout(() => {
-        window.localStorage.setItem('financialData', JSON.stringify(updatedFinancials));
-      }, 0);
+      saveDataToLocalStorage('financialData', updatedFinancials);
 
       toast({
           title: "Transaction Saved",

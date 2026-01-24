@@ -36,6 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Combobox } from "@/components/ui/combobox";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { saveDataToLocalStorage } from "@/lib/storage";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -142,10 +143,7 @@ export default function ActivityLogPage() {
     
     const updatedLog = [activityToAdd, ...activityLog].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     setActivityLog(updatedLog);
-
-    setTimeout(() => {
-        window.localStorage.setItem('activityLogData', JSON.stringify(updatedLog));
-    }, 0);
+    saveDataToLocalStorage('activityLogData', updatedLog);
 
     toast({
       title: "Activity Logged",
@@ -163,10 +161,8 @@ export default function ActivityLogPage() {
   };
   
   const handleEditClick = (activity: Activity) => {
-    setTimeout(() => {
-        setSelectedActivity(activity);
-        setEditDialogOpen(true);
-    }, 0);
+    setSelectedActivity(activity);
+    setEditDialogOpen(true);
   };
 
   const handleUpdateActivity = () => {
@@ -174,11 +170,7 @@ export default function ActivityLogPage() {
 
     const updatedLog = activityLog.map(act => (act.id === selectedActivity.id ? selectedActivity : act));
     setActivityLog(updatedLog);
-
-    setTimeout(() => {
-        window.localStorage.setItem('activityLogData', JSON.stringify(updatedLog));
-    }, 0);
-
+    saveDataToLocalStorage('activityLogData', updatedLog);
 
     toast({
       title: "Activity Updated",
@@ -190,10 +182,8 @@ export default function ActivityLogPage() {
   };
   
   const handleDeleteClick = (activity: Activity) => {
-    setTimeout(() => {
-        setSelectedActivity(activity);
-        setDeleteDialogOpen(true);
-    }, 0);
+    setSelectedActivity(activity);
+    setDeleteDialogOpen(true);
   };
 
   const handleConfirmDelete = () => {
@@ -206,9 +196,7 @@ export default function ActivityLogPage() {
         setCurrentPage(currentPage - 1);
     }
 
-    setTimeout(() => {
-        window.localStorage.setItem('activityLogData', JSON.stringify(updatedLog));
-    }, 0);
+    saveDataToLocalStorage('activityLogData', updatedLog);
 
     toast({
       variant: "destructive",

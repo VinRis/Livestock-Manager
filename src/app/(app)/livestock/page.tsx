@@ -28,6 +28,7 @@ import AddNewCategorySheet from "./add-new-category-sheet";
 import EditCategorySheet from "./edit-category-sheet";
 import AddBatchSheet from "./add-batch-sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { saveDataToLocalStorage } from "@/lib/storage";
 
 
 export type LivestockCategoryName = string;
@@ -77,10 +78,8 @@ function LivestockCategoryList({
   const [deletingCategory, setDeletingCategory] = useState<LivestockCategoryName | null>(null);
   
   const handleDeleteRequest = (categoryName: LivestockCategoryName) => {
-    setTimeout(() => {
-        setDeletingCategory(categoryName);
-        setDeleteConfirmationOpen(true);
-    }, 0);
+    setDeletingCategory(categoryName);
+    setDeleteConfirmationOpen(true);
   };
   
   const handleConfirmDelete = () => {
@@ -91,10 +90,8 @@ function LivestockCategoryList({
   };
 
   const handleEditClick = (category: CategoryDefinition) => {
-    setTimeout(() => {
-        setEditingCategory(category);
-        setEditCategorySheetOpen(true);
-    }, 0);
+    setEditingCategory(category);
+    setEditCategorySheetOpen(true);
   }
   
   const categories: LivestockCategory[] = useMemo(() => {
@@ -438,17 +435,13 @@ function LivestockPageContent() {
   const handleAddAnimal = (animal: Livestock) => {
     const updatedLivestock = [...livestock, animal];
     setLivestock(updatedLivestock);
-    setTimeout(() => {
-        window.localStorage.setItem('livestockData', JSON.stringify(updatedLivestock));
-    }, 0);
+    saveDataToLocalStorage('livestockData', updatedLivestock);
   };
   
   const handleAddBatch = (batch: Livestock) => {
     const updatedLivestock = [...livestock, batch];
     setLivestock(updatedLivestock);
-    setTimeout(() => {
-        window.localStorage.setItem('livestockData', JSON.stringify(updatedLivestock));
-    }, 0);
+    saveDataToLocalStorage('livestockData', updatedLivestock);
   };
 
   const handleAddCategory = (newCategoryName: string, managementStyle: ManagementStyle) => {
@@ -456,26 +449,20 @@ function LivestockPageContent() {
       const newCategory = { name: newCategoryName, icon: 'CowIcon', managementStyle: managementStyle };
       const updatedCategories = [...categories, newCategory];
       setCategories(updatedCategories);
-      setTimeout(() => {
-        window.localStorage.setItem('categoriesData', JSON.stringify(updatedCategories));
-      }, 0);
+      saveDataToLocalStorage('categoriesData', updatedCategories);
     }
   };
 
   const handleDeleteCategory = (categoryName: LivestockCategoryName) => {
     const updatedCategories = categories.filter(c => c.name !== categoryName);
     setCategories(updatedCategories);
-    setTimeout(() => {
-        window.localStorage.setItem('categoriesData', JSON.stringify(updatedCategories));
-    }, 0);
+    saveDataToLocalStorage('categoriesData', updatedCategories);
   };
 
   const handleUpdateCategory = (updatedCategory: CategoryDefinition) => {
     const updatedCategories = categories.map(c => c.name === updatedCategory.name ? updatedCategory : c);
     setCategories(updatedCategories);
-    setTimeout(() => {
-        window.localStorage.setItem('categoriesData', JSON.stringify(updatedCategories));
-    }, 0);
+    saveDataToLocalStorage('categoriesData', updatedCategories);
   };
   
   if (!isClient) {

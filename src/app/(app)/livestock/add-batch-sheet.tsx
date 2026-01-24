@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { type FinancialRecord, type Livestock } from "@/lib/data";
+import { saveDataToLocalStorage } from "@/lib/storage";
 
 interface AddBatchSheetProps {
   children: React.ReactNode;
@@ -89,7 +90,7 @@ export default function AddBatchSheet({ children, isOpen, onOpenChange, defaultC
         const storedFinancials = window.localStorage.getItem('financialData');
         const financials: FinancialRecord[] = storedFinancials ? JSON.parse(storedFinancials) : [];
         financials.unshift(newExpense);
-        window.localStorage.setItem('financialData', JSON.stringify(financials));
+        saveDataToLocalStorage('financialData', financials);
       } catch (error) {
         console.error("Could not save financial record for batch.", error);
       }

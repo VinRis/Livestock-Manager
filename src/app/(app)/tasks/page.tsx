@@ -38,6 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { saveDataToLocalStorage } from "@/lib/storage";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -152,15 +153,14 @@ export default function TasksPage() {
   }, []);
 
   const handleToggleTask = useCallback((taskId: string, completed: boolean) => {
-    const updatedTasks = tasks.map(task =>
-        task.id === taskId ? { ...task, completed } : task
-      ).sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
-
-    setTasks(updatedTasks);
-    setTimeout(() => {
-      window.localStorage.setItem('tasksData', JSON.stringify(updatedTasks));
-    }, 0);
-  }, [tasks]);
+    setTasks(prevTasks => {
+        const updatedTasks = prevTasks.map(task =>
+            task.id === taskId ? { ...task, completed } : task
+        ).sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+        saveDataToLocalStorage('tasksData', updatedTasks);
+        return updatedTasks;
+    });
+  }, []);
 
   const handleAddTask = () => {
     if (!newTask.title || !newTask.dueDate || !newTask.category) {
@@ -187,9 +187,7 @@ export default function TasksPage() {
 
     const updatedTasks = [taskToAdd, ...tasks].sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
     setTasks(updatedTasks);
-    setTimeout(() => {
-      window.localStorage.setItem('tasksData', JSON.stringify(updatedTasks));
-    }, 0);
+    saveDataToLocalStorage('tasksData', updatedTasks);
 
     toast({
       title: "Task Added",
@@ -216,9 +214,7 @@ export default function TasksPage() {
 
     const updatedTasks = tasks.map(t => (t.id === selectedTask.id ? selectedTask : t));
     setTasks(updatedTasks);
-    setTimeout(() => {
-      window.localStorage.setItem('tasksData', JSON.stringify(updatedTasks));
-    }, 0);
+    saveDataToLocalStorage('tasksData', updatedTasks);
 
     toast({
       title: "Task Updated",
@@ -239,9 +235,7 @@ export default function TasksPage() {
 
     const updatedTasks = tasks.filter(t => t.id !== selectedTask.id);
     setTasks(updatedTasks);
-    setTimeout(() => {
-      window.localStorage.setItem('tasksData', JSON.stringify(updatedTasks));
-    }, 0);
+    saveDataToLocalStorage('tasksData', updatedTasks);
 
     toast({
       variant: "destructive",
