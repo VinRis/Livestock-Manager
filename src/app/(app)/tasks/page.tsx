@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { PlusCircle, Link as LinkIcon, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -53,7 +53,7 @@ const ClientFormattedDate = ({ date }: { date: string }) => {
   return <p className="text-sm text-muted-foreground">{formattedDate}</p>;
 };
 
-const TaskItem = ({ task, onToggle, onEdit, onDelete }: { task: Task; onToggle: (id: string, completed: boolean) => void; onEdit: (task: Task) => void; onDelete: (task: Task) => void; }) => (
+const TaskItem = React.memo(({ task, onToggle, onEdit, onDelete }: { task: Task; onToggle: (id: string, completed: boolean) => void; onEdit: (task: Task) => void; onDelete: (task: Task) => void; }) => (
   <div className={cn("flex items-start gap-3 rounded-lg p-3 hover:bg-accent", task.completed && "opacity-60")}>
     <Checkbox id={`task-${task.id}`} checked={task.completed} onCheckedChange={(checked) => onToggle(task.id, !!checked)} className="mt-1" />
     <label htmlFor={`task-${task.id}`} className="flex-1 cursor-pointer">
@@ -95,7 +95,8 @@ const TaskItem = ({ task, onToggle, onEdit, onDelete }: { task: Task; onToggle: 
         </DropdownMenuContent>
     </DropdownMenu>
   </div>
-);
+));
+TaskItem.displayName = 'TaskItem';
 
 export default function TasksPage() {
   const { toast } = useToast();
@@ -137,13 +138,13 @@ export default function TasksPage() {
     }
   }, [tasks, isClient]);
 
-  const handleToggleTask = (taskId: string, completed: boolean) => {
+  const handleToggleTask = useCallback((taskId: string, completed: boolean) => {
     setTasks(prevTasks =>
       prevTasks.map(task =>
         task.id === taskId ? { ...task, completed } : task
       ).sort((a,b) => (a.completed ? 1 : -1) - (b.completed ? 1 : -1) || new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     );
-  };
+  }, []);
 
   const handleAddTask = () => {
     if (!newTask.title || !newTask.dueDate || !newTask.category) {
@@ -185,12 +186,12 @@ export default function TasksPage() {
     setAddDialogOpen(false);
   };
   
-  const handleEditClick = (task: Task) => {
+  const handleEditClick = useCallback((task: Task) => {
     setTimeout(() => {
         setSelectedTask(task);
         setEditDialogOpen(true);
     }, 0);
-  };
+  }, []);
 
   const handleUpdateTask = () => {
     if (!selectedTask) return;
@@ -208,12 +209,12 @@ export default function TasksPage() {
     setSelectedTask(null);
   };
   
-  const handleDeleteClick = (task: Task) => {
+  const handleDeleteClick = useCallback((task: Task) => {
     setTimeout(() => {
         setSelectedTask(task);
         setDeleteDialogOpen(true);
     }, 0);
-  };
+  }, []);
 
   const handleConfirmDelete = () => {
     if (!selectedTask) return;
