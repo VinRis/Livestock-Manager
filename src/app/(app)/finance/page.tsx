@@ -140,7 +140,7 @@ export default function FinancePage() {
     setOpen(isOpen);
   };
 
-  const incomeCategories = ["Milk Sales", "Livestock Sale", "Wool Sales", "Other"];
+  const incomeCategories = ["Milk Sales", "Livestock Sale", "Egg Sales", "Wool Sales", "Crop Sales", "Manure/Fertilizer Sales", "Other"];
   const expenseCategories = ["Feed", "Vet Services", "Utilities", "Maintenance", "Livestock Purchase", "Other"];
 
   return (
@@ -262,7 +262,7 @@ export default function FinancePage() {
                               <div className="flex-1 space-y-1">
                                   <p className="font-medium break-words">{record.description}</p>
                                   <p className="text-sm text-muted-foreground">{record.category}</p>
-                                  {isClient && <p className="text-sm text-muted-foreground">{format(new Date(record.date), 'P')}</p>}
+                                  <p className="text-sm text-muted-foreground">{format(new Date(record.date), 'P')}</p>
                               </div>
                               <div className={cn("pl-2 text-right font-semibold", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
                                   {record.type === 'Income' ? '+' : '-'}{currency}{record.amount.toLocaleString()}
@@ -284,7 +284,7 @@ export default function FinancePage() {
                       <TableRow key={record.id}>
                         <TableCell>
                           <div className="font-medium">{record.description}</div>
-                           {isClient && <p className="text-sm text-muted-foreground">{format(new Date(record.date), 'P')}</p>}
+                           <p className="text-sm text-muted-foreground">{format(new Date(record.date), 'P')}</p>
                         </TableCell>
                         <TableCell>{record.category}</TableCell>
                         <TableCell className={cn("text-right", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>

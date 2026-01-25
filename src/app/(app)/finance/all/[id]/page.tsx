@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const incomeCategories = ["Milk Sales", "Livestock Sale", "Wool Sales", "Other"];
+const incomeCategories = ["Milk Sales", "Livestock Sale", "Egg Sales", "Wool Sales", "Crop Sales", "Manure/Fertilizer Sales", "Other"];
 const expenseCategories = ["Feed", "Vet Services", "Utilities", "Maintenance", "Livestock Purchase", "Other"];
 
 export default function EditTransactionPage() {
