@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -14,6 +14,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { type FinancialRecord } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { saveDataToLocalStorage } from "@/lib/storage";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const incomeCategories = ["Milk Sales", "Livestock Sale", "Wool Sales", "Other"];
 const expenseCategories = ["Feed", "Vet Services", "Utilities", "Maintenance", "Livestock Purchase", "Other"];
@@ -26,6 +36,7 @@ export default function EditTransactionPage() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [originalTransaction, setOriginalTransaction] = useState<FinancialRecord | null>(null);
+    const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
     
     // State for each form field
     const [date, setDate] = useState('');
@@ -87,6 +98,29 @@ export default function EditTransactionPage() {
         router.push('/finance/all');
     };
     
+    const handleDelete = () => {
+        let financials: FinancialRecord[] = [];
+        try {
+            const stored = window.localStorage.getItem('financialData');
+            financials = stored ? JSON.parse(stored) : [];
+        } catch (e) {
+            console.error(e);
+            toast({ variant: "destructive", title: "Error", description: "Could not load existing transactions." });
+            return;
+        }
+
+        const updatedFinancials = financials.filter(t => t.id !== transactionId);
+        saveDataToLocalStorage('financialData', updatedFinancials);
+        
+        toast({
+            variant: "destructive",
+            title: "Transaction Deleted",
+            description: "The transaction has been permanently removed.",
+        });
+
+        router.push('/finance/all');
+    };
+
     if (isLoading) {
         return (
             <>
@@ -169,11 +203,32 @@ export default function EditTransactionPage() {
                             <Input id="amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
                         </div>
                     </CardContent>
-                    <CardFooter>
-                        <Button onClick={handleSave} className="w-full">Save Changes</Button>
+                    <CardFooter className="flex flex-col sm:flex-row sm:justify-end gap-2">
+                        <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)} className="w-full sm:w-auto sm:mr-auto">
+                            <Trash2 /> Delete
+                        </Button>
+                        <Button variant="outline" onClick={() => router.push('/finance/all')} className="w-full sm:w-auto">Cancel</Button>
+                        <Button onClick={handleSave} className="w-full sm:w-auto">Save Changes</Button>
                     </CardFooter>
                 </Card>
             </main>
+
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete this transaction.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 }

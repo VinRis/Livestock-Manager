@@ -2,11 +2,10 @@
 "use client";
 
 import React from 'react';
-import { MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { TableRow, TableCell } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { type FinancialRecord } from '@/lib/data';
@@ -15,31 +14,21 @@ import { format } from 'date-fns';
 
 type TransactionItemProps = {
     record: FinancialRecord;
-    isSelected: boolean;
     currency: string;
-    onSelectRow: (id: string, checked: boolean) => void;
     onEdit: (record: FinancialRecord) => void;
-    onDelete: (record: FinancialRecord) => void;
 };
 
 // Mobile Card Item wrapped in React.memo
-export const TransactionCardItem = React.memo(({ record, isSelected, currency, onSelectRow, onEdit, onDelete }: TransactionItemProps) => {
+export const TransactionCardItem = React.memo(({ record, currency, onEdit }: TransactionItemProps) => {
     const [isClient, setIsClient] = React.useState(false);
     React.useEffect(() => {
         setIsClient(true);
     }, []);
 
     return (
-        <Card className={cn(isSelected && "border-primary bg-accent/50")}>
+        <Card>
             <CardContent className="p-4 flex items-start gap-3">
-                <div className="flex-none mt-1">
-                    <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={(checked) => onSelectRow(record.id, !!checked)}
-                        id={`mobile-checkbox-${record.id}`}
-                    />
-                </div>
-                <label htmlFor={`mobile-checkbox-${record.id}`} className="flex-1 space-y-1">
+                <div className="flex-1 space-y-1">
                     <div className="flex justify-between items-start">
                         <span className="font-medium pr-2">{record.description}</span>
                         <span className={cn("font-medium whitespace-nowrap", record.type === 'Income' ? 'text-primary' : 'text-destructive')}>
@@ -51,7 +40,7 @@ export const TransactionCardItem = React.memo(({ record, isSelected, currency, o
                         <span>{record.category}</span>
                     </div>
                     {isClient && <p className="text-xs text-muted-foreground">{format(new Date(record.date), 'P')}</p>}
-                </label>
+                </div>
                 <div className="flex-none -mt-2 -mr-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -63,9 +52,6 @@ export const TransactionCardItem = React.memo(({ record, isSelected, currency, o
                             <DropdownMenuItem onSelect={() => onEdit(record)}>
                                 <Edit className="mr-2 h-4 w-4"/>Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => onDelete(record)} className="text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4"/>Delete
-                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -76,20 +62,14 @@ export const TransactionCardItem = React.memo(({ record, isSelected, currency, o
 TransactionCardItem.displayName = 'TransactionCardItem';
 
 // Desktop Table Row Item wrapped in React.memo
-export const TransactionTableRowItem = React.memo(({ record, isSelected, currency, onSelectRow, onEdit, onDelete }: TransactionItemProps) => {
+export const TransactionTableRowItem = React.memo(({ record, currency, onEdit }: TransactionItemProps) => {
     const [isClient, setIsClient] = React.useState(false);
     React.useEffect(() => {
         setIsClient(true);
     }, []);
     
     return (
-        <TableRow data-state={isSelected ? "selected" : ""}>
-            <TableCell>
-                <Checkbox 
-                    checked={isSelected}
-                    onCheckedChange={(checked) => onSelectRow(record.id, !!checked)}
-                />
-            </TableCell>
+        <TableRow>
             <TableCell>
                 <div className="font-medium">{record.description}</div>
                 {isClient && <p className="text-sm text-muted-foreground">{format(new Date(record.date), 'P')}</p>}
@@ -112,9 +92,6 @@ export const TransactionTableRowItem = React.memo(({ record, isSelected, currenc
                         <DropdownMenuItem onSelect={() => onEdit(record)}>
                             <Edit className="mr-2 h-4 w-4"/>Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => onDelete(record)} className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4"/>Delete
-                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </TableCell>
@@ -122,5 +99,3 @@ export const TransactionTableRowItem = React.memo(({ record, isSelected, currenc
     );
 });
 TransactionTableRowItem.displayName = 'TransactionTableRowItem';
-
-    
